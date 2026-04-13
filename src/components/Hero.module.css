@@ -1,0 +1,106 @@
+.hero {
+  padding: clamp(60px, 9vw, 120px) var(--gutter) clamp(80px, 10vw, 140px);
+  max-width: 1600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: clamp(40px, 6vw, 80px);
+  align-items: center;
+}
+
+.text {
+  max-width: 640px;
+}
+
+.display {
+  font-family: var(--font-display);
+  font-size: clamp(56px, 9vw, 120px);
+  font-weight: 500;
+  line-height: 0.98;
+  letter-spacing: -0.025em;
+  margin: 0 0 32px;
+  max-width: 12ch;
+}
+
+.lede {
+  font-size: clamp(18px, 1.4vw, 21px);
+  line-height: 1.6;
+  color: var(--rui-slate);
+  max-width: 58ch;
+  margin: 0 0 40px;
+  letter-spacing: -0.09px;
+}
+
+.ctaRow {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Scatter plot visualization ---------- */
+.viz {
+  margin: 0;
+  background: var(--rui-surface);
+  border-radius: var(--radius-card);
+  padding: 32px 32px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.viz svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.vizCaption {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--rui-slate);
+  margin: 0;
+  max-width: 46ch;
+}
+
+.boundary {
+  animation: dash 1200ms ease-out both;
+}
+
+@keyframes dash {
+  from {
+    stroke-dashoffset: 600;
+    opacity: 0;
+  }
+  to {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .boundary {
+    animation: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .hero {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+
+  .display {
+    max-width: 14ch;
+  }
+}
+
+@media (max-width: 520px) {
+  .ctaRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .viz {
+    padding: 24px 20px 20px;
+  }
+}

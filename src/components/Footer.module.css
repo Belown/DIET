@@ -1,0 +1,15 @@
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 32px var(--gutter);
+  border-top: 1px solid var(--rui-border);
+  font-size: 14px;
+  color: var(--rui-gray);
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.meta {
+  color: var(--rui-gray);
+}
