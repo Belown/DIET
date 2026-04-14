@@ -37,7 +37,7 @@ function buildBins(samples: CVSample[], key: Feature): HistBin[] {
 export default function DatasetPhase() {
   const samples = defaultDataset;
   const stats = useMemo(() => summarizeByGroup(samples), [samples]);
-  const [view, setView] = useState<View>("table");
+  const [view, setView] = useState<View>("distribution");
 
   const histograms = useMemo(
     () => FEATURES.map((f) => ({ ...f, bins: buildBins(samples, f.key) })),
@@ -65,17 +65,6 @@ export default function DatasetPhase() {
             <button
               type="button"
               role="tab"
-              aria-selected={view === "table"}
-              className={`${styles.toggleBtn} ${
-                view === "table" ? styles.toggleBtnOn : ""
-              }`}
-              onClick={() => setView("table")}
-            >
-              Table
-            </button>
-            <button
-              type="button"
-              role="tab"
               aria-selected={view === "distribution"}
               className={`${styles.toggleBtn} ${
                 view === "distribution" ? styles.toggleBtnOn : ""
@@ -83,6 +72,17 @@ export default function DatasetPhase() {
               onClick={() => setView("distribution")}
             >
               Distribution
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === "table"}
+              className={`${styles.toggleBtn} ${
+                view === "table" ? styles.toggleBtnOn : ""
+              }`}
+              onClick={() => setView("table")}
+            >
+              Table
             </button>
           </div>
         </div>

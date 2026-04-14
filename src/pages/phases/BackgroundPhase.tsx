@@ -54,12 +54,14 @@ export default function BackgroundPhase() {
       </section>
 
       <section className={`${phase.panel} ${styles.sectionPanel}`}>
-        <p className={styles.eyebrow}>§ 02 · Anatomy of a CV</p>
+        <p className={styles.eyebrow}>§ 02 · What the model sees</p>
         <h2 className={styles.h2}>
-          Three features. Three biases hiding in plain sight.
+          Three numbers. One decision.
+          <br />
+          A lot left out.
         </h2>
         <p className={styles.body}>
-          The simulator hands you three knobs to evaluate each candidate. None of them are neutral.
+          Your classifier operates on three features. Each one captures something real about a candidate — and each one leaves out something equally real. That gap between what the number measures and what you actually care about is where disparate outcomes are born.
         </p>
 
         <div className={styles.axisStack}>
@@ -68,9 +70,9 @@ export default function BackgroundPhase() {
               X · Tech score
             </span>
             <div>
-              <h3 className={styles.axisT}>Looks objective. Isn't quite.</h3>
+              <h3 className={styles.axisT}>The model's strongest signal — and its anchor.</h3>
               <p className={styles.axisB}>
-                A standardized test feels meritocratic — same questions, same rubric. But access to test prep, tutors, and quiet study time isn't evenly distributed, so even "objective" measurements drift along socioeconomic lines.
+                Tech score correlates well with job performance, so the model leans on it heavily. The problem: it also correlates with access to preparation, not just aptitude. Two candidates with the same underlying ability can land far apart on this axis depending on their background — and the model has no way to tell the difference.
               </p>
             </div>
           </article>
@@ -80,9 +82,9 @@ export default function BackgroundPhase() {
               Y · Years of experience
             </span>
             <div>
-              <h3 className={styles.axisT}>The systemic axis.</h3>
+              <h3 className={styles.axisT}>Where the boundary hits hardest.</h3>
               <p className={styles.axisB}>
-                The most vulnerable feature. A low experience score might not be because of skill, but career breaks, late starts, and the hurdles of getting that first chance. Trusting this column verbatim is how the past programs the future.
+                Experience is a reasonable predictor of readiness. But a  lower value on this axis does not mean they are less capable, but because the group might had less entry-level opportunities historically. A threshold that treats this number as a pure merit signal ends up encoding that unequal history into every future hiring decision.
               </p>
             </div>
           </article>
@@ -93,10 +95,10 @@ export default function BackgroundPhase() {
             </span>
             <div>
               <h3 className={styles.axisT}>
-                A signal of free time as much as skill.
+                An extra dimension — unlocked later.
               </h3>
               <p className={styles.axisB}>
-                Side projects are a real signal — but mostly of who could afford to build them. In Phase 3 you'll <em>unlock</em> this dimension, and it'll do something surprising to the shape of "fair".
+                Portfolio score captures independent work outside of formal employment — side projects, open-source contributions, self-directed builds. It's a real signal of initiative, but it requires time and resources that not everyone has equally. 
               </p>
             </div>
           </article>
@@ -104,40 +106,40 @@ export default function BackgroundPhase() {
       </section>
 
       <section className={`${phase.panel} ${styles.sectionPanel}`}>
-        <p className={styles.eyebrow}>§ 03 · Why one line fails</p>
+        <p className={styles.eyebrow}>§ 03 · The accuracy trap</p>
         <h2 className={styles.h2}>
-          A single straight line is a policy decision in disguise.
+          High accuracy but still might systematically wrong about one group.
         </h2>
         <p className={styles.body}>
-          When you draw a 2D boundary on tech × experience, you're not just classifying — you're declaring a single bar that everyone must clear. Watch what happens to the qualified Group B candidates that sit just below it.
+          As you already know a line won't fit every point. When you optimize that line for <em>overall</em> accuracy on data, which is already shifted downward — not because candidate are less capable, but because the experience axis encodes historical inequity. The line that maximizes your accuracy metric isn't drawn in neutral space. It's drawn over a skewed distribution, and the threshold it sets becomes a policy that applies equally to an unequal starting point.
         </p>
         <BoundaryDiagram />
         <p className={styles.body}>
-          The circled points are the <em>false negatives</em> — people the model said no to who, by the ground truth, would have succeeded. You'll fix this in the simulator in two ways: relax the threshold per group, or lift the problem into 3D and find the manifold a flat line can't.
+          The circled candidates are genuinely qualified — the ground truth says so. But they sit just below the line, because their experience scores reflect systemic hurdles, not lack of ability. Your model doesn't know the difference. It learned from the numbers, and the numbers carry the history. This is what 80% accuracy can look like when you break it down by group.
         </p>
       </section>
 
-      <section
-        className={`${phase.panel} ${styles.sectionPanel} ${styles.dark}`}
-      >
-        <p className={`${styles.eyebrow} ${styles.eyebrowLight}`}>
+      <section className={`${phase.panel} ${styles.sectionPanel}`}>
+        <p className={styles.eyebrow}>
           § 04 · The ethics audit
         </p>
-        <h2 className={`${styles.h2} ${styles.h2Light}`}>
+        <h2 className={styles.h2}>
           Equal opportunity, not equal averages.
         </h2>
-        <p className={styles.bodyLight}>
+        <p className={styles.body}>
           Most fairness metrics ask: <em>did we treat the groups the same?</em>{" "}
           The one we care about is sharper:
         </p>
         <p className={styles.formula}>
           | TPR<sub>A</sub> − TPR<sub>B</sub> | ≤ ε
         </p>
-        <p className={styles.bodyLight}>
+        <p className={styles.body}>
           That's the <strong>True Positive Rate</strong> by group — or, as we'll call it, the <em>Qualified Candidate Discovery Rate</em>. It guarantees that if you're genuinely qualified, your odds of being seen don't depend on which group you were born into.
+          <br/>
+          And the most critical part is accepting that this is a trade-off, not a bug to fix. Pushing the TPR gap toward zero often means accepting a slightly lower overall accuracy — because correcting for an unequal starting point requires treating the groups differently, not identically.
         </p>
 
-        <div className={styles.audit}>
+        {/* <div className={styles.audit}>
           <div className={styles.auditCol}>
             <p className={styles.auditK}>The boss demands</p>
             <p className={styles.auditV}>Overall accuracy &gt; 80%</p>
@@ -152,7 +154,7 @@ export default function BackgroundPhase() {
               You can't always have both with a single line.
             </p>
           </div>
-        </div>
+        </div> */}
       </section>
 
       <div className={styles.continueBar}>
