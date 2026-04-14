@@ -1,7 +1,7 @@
 .shell {
   position: relative;
   display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) 320px;
+  grid-template-columns: 280px minmax(0, 1fr);
   min-height: 100vh;
   background: var(--rui-white);
   transition: grid-template-columns 0.3s ease;
@@ -45,8 +45,7 @@
   opacity: 0.4;
 }
 
-.sidebar,
-.metrics {
+.sidebar {
   background: var(--rui-surface);
   padding: 32px 24px;
   display: flex;
@@ -55,17 +54,7 @@
   top: 0;
   max-height: 100vh;
   overflow-y: auto;
-}
-
-.sidebar {
   border-right: 1px solid var(--rui-border);
-}
-
-.metrics {
-  border-left: 1px solid var(--rui-border);
-  gap: 12px;
-  overflow: hidden;
-  min-width: 0;
 }
 
 .sidebarLogo {
@@ -183,44 +172,6 @@
   margin-bottom: 40px;
 }
 
-.metricsToggle {
-  position: fixed;
-  top: 20px;
-  z-index: 50;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: var(--rui-surface);
-  border: 1px solid var(--rui-border);
-  border-radius: 9999px;
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--rui-slate);
-  cursor: pointer;
-  transition: right 0.3s ease, background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
-  white-space: nowrap;
-}
-
-.metricsToggle:hover {
-  background: var(--rui-surface-hover);
-  color: var(--rui-dark);
-}
-
-.metricsToggleOpen {
-  background: var(--rui-white);
-  border-color: var(--rui-dark);
-  color: var(--rui-dark);
-}
-
-.metricsToggleIcon {
-  font-size: 14px;
-  line-height: 1;
-}
-
 .crumb {
   font-family: var(--font-display);
   font-size: 13px;
@@ -249,101 +200,9 @@
   min-height: 400px;
 }
 
-.metricCard {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 16px;
-  background: var(--rui-white);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--rui-border);
-}
-
-.metricK {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--rui-gray);
-}
-
-.metricV {
-  font-family: var(--font-display);
-  font-size: 24px;
-  font-weight: 500;
-  color: var(--rui-dark);
-}
-
-.metricSub {
-  font-size: 14px;
-  color: var(--rui-slate);
-  font-weight: 400;
-}
-
-.groupCard {
-  background: var(--rui-white);
-  border: 1px solid var(--rui-border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.groupHead {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-}
-
-.dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 9999px;
-}
-
-.dotA {
-  background: var(--rui-blue);
-}
-
-.dotB {
-  background: #e61e49;
-}
-
-.groupName {
-  font-family: var(--font-display);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--rui-dark);
-  flex: 1;
-}
-
-.groupCount {
-  font-size: 12px;
-  color: var(--rui-gray);
-}
-
-.groupRow {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--rui-slate);
-}
-
-.groupRow span:last-child {
-  font-family: var(--font-display);
-  color: var(--rui-dark);
-  font-weight: 500;
-}
-
 @media (max-width: 1100px) {
   .shell {
     grid-template-columns: 240px minmax(0, 1fr);
-  }
-  .metrics {
-    display: none;
   }
 }
 

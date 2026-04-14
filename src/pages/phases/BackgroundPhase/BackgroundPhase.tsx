@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import phase from "./Phase.module.css";
+import phase from "../Phase.module.css";
 import styles from "./BackgroundPhase.module.css";
 
 export default function BackgroundPhase() {

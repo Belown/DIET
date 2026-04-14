@@ -3,8 +3,8 @@ import {
   defaultDataset,
   summarizeByGroup,
   type CVSample,
-} from "../../data/dataset";
-import styles from "./Phase.module.css";
+} from "../../../data/dataset";
+import styles from "../Phase.module.css";
 
 type View = "table" | "distribution";
 type Feature = "techScore" | "experience" | "portfolio";

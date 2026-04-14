@@ -2,17 +2,18 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing/Landing";
 import About from "./pages/About";
 import SimulatorLayout from "./components/SimulatorLayout/SimulatorLayout";
-import BackgroundPhase from "./pages/phases/BackgroundPhase";
-import DatasetPhase from "./pages/phases/DatasetPhase";
-import ClassifierPhase from "./pages/phases/ClassifierPhase";
-import EvaluationPhase from "./pages/phases/EvaluationPhase";
+import BackgroundPhase from "./pages/phases/BackgroundPhase/BackgroundPhase";
+import DatasetPhase from "./pages/phases/DatasetPhase/DatasetPhase";
+import ClassifierPhase from "./pages/phases/ClassifierPhase/ClassifierPhase";
+import EvaluationPhase from "./pages/phases/EvaluationPhase/EvaluationPhase";
+import { SimulatorProvider } from "./context/SimulatorContext";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/about" element={<About />} />
-      <Route path="/simulator" element={<SimulatorLayout />}>
+      <Route path="/simulator" element={<SimulatorProvider><SimulatorLayout /></SimulatorProvider>}>
         <Route index element={<Navigate to="background" replace />} />
         <Route path="background" element={<BackgroundPhase />} />
         <Route path="dataset" element={<DatasetPhase />} />
