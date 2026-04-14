@@ -2,17 +2,17 @@
 
 A prioritized list of next steps for the DIET fairness simulator web app. Grouped by phase; earlier items unblock later ones.
 
-## 1. Routing & shell
+## 1. Routing & shell ✅
 
-- Add `react-router-dom`; carve routes: `/` (landing), `/simulator`, `/simulator/:phase`, `/about`
-- Build a `SimulatorLayout` — left sidebar with the ML pipeline nodes (Dataset → Classifier → Evaluation), main canvas area, right-side metrics panel
-- Wire the landing's "Start exploring" CTA to `/simulator`
+- [x] Add `react-router-dom`; carve routes: `/` (landing), `/simulator`, `/simulator/:phase`, `/about`
+- [x] Build a `SimulatorLayout` — left sidebar with the ML pipeline nodes (Dataset → Classifier → Evaluation), main canvas area, right-side metrics panel
+- [x] Wire the landing's "Start exploring" CTA to `/simulator`
 
-## 2. Data layer
+## 2. Data layer ✅
 
-- Define the synthetic CV dataset shape: `{ techScore, experience, portfolio, group, qualified }` (`group` = A|B, `qualified` = ground truth)
-- Write a generator that produces the baked-in historical skew (Group B shifted down on tech/experience, but equal portfolio distribution — the "hidden feature" that rewards phase 2)
-- Keep the dataset in a module so Phase 3 can inject fresh samples to reveal hidden bias
+- [x] Define the synthetic CV dataset shape: `{ techScore, experience, portfolio, group, qualified }` (`group` = A|B, `qualified` = ground truth)
+- [x] Write a generator that produces the baked-in historical skew (Group B shifted down on tech/experience, but equal portfolio distribution — the "hidden feature" that rewards phase 2)
+- [x] Keep the dataset in a module so Phase 3 can inject fresh samples to reveal hidden bias
 
 ## 3. Dataset Inspector (Preparation §1)
 

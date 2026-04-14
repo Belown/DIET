@@ -4,7 +4,11 @@
       "Bash(npm --version)",
       "Bash(npm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(echo \"exit=$?\")",
+      "Bash(npx vite:*)",
+      "Bash(mv SimulatorLayout.tsx SimulatorLayout/SimulatorLayout.tsx)",
+      "Bash(mv SimulatorLayout.module.css SimulatorLayout/SimulatorLayout.module.css)"
     ]
   }
 }

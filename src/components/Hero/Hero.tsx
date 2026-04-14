@@ -1,16 +1,18 @@
-import Button from "./Button";
+import Button from "../Button/Button";
 import styles from "./Hero.module.css";
 
 const GROUP_A: Array<[number, number]> = [
-  [320, 170], [345, 135], [365, 165], [385, 130], [405, 155],
-  [425, 145], [445, 185], [360, 205], [390, 190], [430, 115],
-  [460, 170], [405, 195], [470, 140], [340, 180], [415, 175],
+  [160, 190], [200, 170], [240, 150], [280, 135], [320, 120],
+  [360, 110], [400, 100], [440, 85],  [480, 75],  [520, 60],
+  [260, 185], [330, 155], [390, 135],
+  [220, 255], [350, 210],
 ];
 
 const GROUP_B: Array<[number, number]> = [
-  [140, 255], [165, 235], [185, 275], [205, 250], [225, 270],
-  [245, 285], [180, 225], [220, 295], [260, 260], [200, 215],
-  [150, 285], [240, 240], [115, 270], [270, 280], [195, 255],
+  [100, 295], [140, 275], [180, 260], [220, 250], [260, 230],
+  [300, 215], [340, 200], [380, 180], [150, 310], [230, 290],
+  [290, 265], [420, 170], [460, 155],
+  [110, 245], [180, 225],
 ];
 
 export default function Hero() {
@@ -29,7 +31,7 @@ export default function Hero() {
           uncomfortable questions.
         </p>
         <div className={styles.ctaRow}>
-          <Button variant="primary" href="#start" id="start">
+          <Button variant="primary" to="/simulator" id="start">
             Start exploring
           </Button>
           <Button variant="outline" href="#how">

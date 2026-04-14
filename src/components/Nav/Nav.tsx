@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import Button from "./Button";
+import Button from "../Button/Button";
 import styles from "./Nav.module.css";
 
 export default function Nav() {
@@ -23,10 +23,10 @@ export default function Nav() {
         <a href="#audience">Why it matters</a>
       </nav>
       <div className={styles.cta}>
-        <Button variant="ghost-dark" href="#concept">
+        <Button variant="ghost-dark" to="/about">
           Read the brief
         </Button>
-        <Button variant="primary" href="#start">
+        <Button variant="primary" to="/simulator">
           Start exploring
         </Button>
       </div>

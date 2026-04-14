@@ -1,4 +1,4 @@
-import Button from "./Button";
+import Button from "../Button/Button";
 import styles from "./CTASection.module.css";
 
 export default function CTASection() {
@@ -10,7 +10,7 @@ export default function CTASection() {
         No sign-up. No tutorial video. Just open the sandbox and start
         drawing lines.
       </p>
-      <Button variant="primary" size="lg" href="#start">
+      <Button variant="primary" size="lg" to="/simulator">
         Start exploring
       </Button>
     </section>
