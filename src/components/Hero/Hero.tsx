@@ -24,11 +24,9 @@ export default function Hero() {
           Can a line<br />be unfair?
         </h1>
         <p className={styles.lede}>
-          Every machine learning model draws a line somewhere. In this
-          sandbox, <em>you'll</em> draw it yourself — on real-looking CV
-          data — and watch what happens to the people on the other side.
-          No lectures. No pre-reading. Just you, the data, and a few
-          uncomfortable questions.
+          Every model draws a line somewhere. Here, <em>you'll</em> draw
+          it yourself — on real-looking CV data — and see who ends up on
+          the other side.
         </p>
         <div className={styles.ctaRow}>
           <Button variant="primary" to="/simulator" id="start">
@@ -83,9 +81,7 @@ export default function Hero() {
           </g>
         </svg>
         <figcaption className={styles.vizCaption}>
-          Here's the same scatter plot you'll see in phase 1. Can you find
-          a line that's fair to both groups <em>and</em> accurate? That's
-          the whole puzzle.
+          Find a line that's fair to both groups <em>and</em> accurate.
         </figcaption>
       </figure>
     </section>

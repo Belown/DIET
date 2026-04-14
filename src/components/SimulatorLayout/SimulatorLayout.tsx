@@ -47,7 +47,7 @@ export default function SimulatorLayout() {
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <Link to="/" className={styles.brand}>
-          DIET<span className={styles.brandDot}>.</span>
+          Manifold<span className={styles.brandDot}>.</span>
         </Link>
         <p className={styles.sideLabel}>ML Pipeline</p>
         <nav className={styles.nodes}>

@@ -15,7 +15,7 @@ export default function Nav() {
   return (
     <header className={`${styles.nav} ${scrolled ? styles.scrolled : ""}`}>
       <a className={styles.brand} href="#top">
-        DIET<span className={styles.dot}>.</span>
+        Manifold<span className={styles.dot}>.</span>
       </a>
       <nav className={styles.links}>
         <a href="#concept">What's this?</a>

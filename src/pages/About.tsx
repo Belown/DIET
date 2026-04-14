@@ -14,7 +14,7 @@ export default function About() {
             A sandbox for thinking about fairness.
           </h1>
           <p className={styles.lede}>
-            DIET is a teaching prototype built around one idea: an accurate
+            Manifold is a teaching prototype built around one idea: an accurate
             model isn't the same thing as a fair one. You'll train a tiny
             classifier on synthetic CV data, audit it, and watch what happens
             when "good enough" accuracy leaves a whole group behind.
