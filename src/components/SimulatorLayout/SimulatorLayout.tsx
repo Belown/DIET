@@ -35,6 +35,12 @@ const NODES: PipelineNode[] = [
     label: "Evaluation",
     hint: "Audit accuracy and fairness.",
   },
+  {
+    slug: "debrief",
+    step: "05",
+    label: "Debrief",
+    hint: "Bias taxonomy and takeaways.",
+  },
 ];
 
 const SIDEBAR_DEFAULT = 280;

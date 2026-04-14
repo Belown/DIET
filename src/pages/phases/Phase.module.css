@@ -738,6 +738,91 @@
   border: 1.5px dashed currentColor;
 }
 
+/* ═══ STRESS TEST ════════════════════════════════════════════════════════════ */
+
+.stressResult {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.stressBanner {
+  border-radius: var(--radius-card);
+  padding: 28px 32px;
+  border: 2px solid transparent;
+}
+
+.stressBannerPass { background: #f0fdf4; border-color: #86efac; }
+.stressBannerFail { background: #fefce8; border-color: #fde68a; }
+
+.stressVerdict {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+
+.stressBannerPass .stressVerdict { color: #15803d; }
+.stressBannerFail .stressVerdict { color: #92400e; }
+
+.stressVerdictSub {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--rui-slate);
+  margin: 0;
+  max-width: 60ch;
+}
+
+/* Comparison grid */
+.compareGrid {
+  display: grid;
+  grid-template-columns: 80px 1fr 28px 1fr;
+  align-items: center;
+  gap: 10px 12px;
+  padding: 20px 24px;
+  background: var(--rui-surface);
+  border: 1px solid var(--rui-border);
+  border-radius: var(--radius-card);
+}
+
+.compareColHead {
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--rui-gray);
+}
+
+.compareRow {
+  display: contents;
+}
+
+.compareLabel {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rui-slate);
+}
+
+.compareOriginal,
+.compareFresh {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--rui-dark);
+  font-variant-numeric: tabular-nums;
+}
+
+.compareArrow {
+  font-size: 14px;
+  color: var(--rui-gray);
+  text-align: center;
+}
+
+/* ════════════════════════════════════════════════════════════════════════════ */
+
 .placeholder {
   padding: 48px;
   border: 1px dashed var(--rui-border);

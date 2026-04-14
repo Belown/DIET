@@ -1,8 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { defaultDataset, type CVSample } from "../../../data/dataset";
+import { defaultDataset, generateFreshBatch, type CVSample } from "../../../data/dataset";
 import { useSimulator } from "../../../context/SimulatorContext";
-import { predictAll, computeMetrics } from "../../../utils/predict";
+import { predictAll, computeMetrics, type Metrics } from "../../../utils/predict";
 import styles from "../Phase.module.css";
 
 // ─── False-negative scatter (tech × experience) ───────────────────────────────
@@ -139,8 +139,86 @@ function TprBar({ tprA, tprB }: { tprA: number; tprB: number }) {
 
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
+// ─── Stress-test comparison row ───────────────────────────────────────────────
+
+function CompareRow({ label, original, fresh }: {
+  label: string;
+  original: string;
+  fresh: string;
+}) {
+  return (
+    <div className={styles.compareRow}>
+      <span className={styles.compareLabel}>{label}</span>
+      <span className={styles.compareOriginal}>{original}</span>
+      <span className={styles.compareArrow}>&rarr;</span>
+      <span className={styles.compareFresh}>{fresh}</span>
+    </div>
+  );
+}
+
+function StressResult({ original, fresh }: { original: Metrics; fresh: Metrics }) {
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  const freshAccOk = fresh.accuracy >= 0.8;
+  const freshGapOk = fresh.tprGap <= 0.05;
+  const freshPassed = freshAccOk && freshGapOk;
+
+  return (
+    <div className={styles.stressResult}>
+      <div className={`${styles.stressBanner} ${freshPassed ? styles.stressBannerPass : styles.stressBannerFail}`}>
+        <p className={styles.stressVerdict}>
+          {freshPassed ? "Stress test passed" : "Stress test failed"}
+        </p>
+        <p className={styles.stressVerdictSub}>
+          {freshPassed
+            ? "Your boundary generalizes — it held up on an unseen cohort."
+            : "Your boundary was tuned to one cohort. On fresh applicants, the audit breaks."}
+        </p>
+      </div>
+
+      <div className={styles.compareGrid}>
+        <div />
+        <span className={styles.compareColHead}>Training cohort</span>
+        <div />
+        <span className={styles.compareColHead}>Fresh cohort</span>
+
+        <CompareRow label="Accuracy" original={pct(original.accuracy)} fresh={pct(fresh.accuracy)} />
+        <CompareRow label="TPR A" original={pct(original.tprA)} fresh={pct(fresh.tprA)} />
+        <CompareRow label="TPR B" original={pct(original.tprB)} fresh={pct(fresh.tprB)} />
+        <CompareRow label="Gap" original={`${Math.round(original.tprGap * 100)}pp`} fresh={`${Math.round(fresh.tprGap * 100)}pp`} />
+      </div>
+
+      <div className={styles.panel} style={{ marginTop: 0 }}>
+        <p className={styles.panelEyebrow}>What happened?</p>
+        <p className={styles.panelBody}>
+          {freshPassed
+            ? "Your decision boundary is robust — it maintained both accuracy and fairness on a new sample drawn from the same population. That said, real-world distributions shift over time, so ongoing monitoring is still essential."
+            : "The boundary you tuned was fit to the specific noise in your training cohort. A new sample from the same underlying population reshuffles who lands near the decision boundary, and the fairness constraint breaks."}
+        </p>
+        <p className={styles.panelBody} style={{ marginTop: 12 }}>
+          <strong>The misconception:</strong> adding portfolio seemed to "fix" fairness because
+          it happened to be equally distributed across groups <em>in this specific sample</em>.
+          But more features don't inherently mean more fair — they give the boundary more degrees
+          of freedom, which makes it easier to overfit to one cohort's noise.
+          {freshPassed
+            ? " Your boundary survived one reshuffle, but a different population shift could still break it."
+            : " That's exactly what happened here: the extra dimension let you thread a needle that only existed in the original data."}
+        </p>
+        <p className={styles.panelBody} style={{ marginTop: 12 }}>
+          Fairness is not a property of the feature set — it's a property of the
+          process. It requires ongoing monitoring, not a one-time fix.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+
+const STRESS_SEED = 20260415; // different from the default dataset seed
+
 export default function EvaluationPhase() {
   const { b1, b2, phase2Unlocked } = useSimulator();
+  const [stressActive, setStressActive] = useState(false);
 
   const preds = useMemo(
     () => predictAll(defaultDataset, b1, b2, phase2Unlocked),
@@ -151,6 +229,17 @@ export default function EvaluationPhase() {
     [preds],
   );
   const m = useMemo(() => computeMetrics(defaultDataset, preds), [preds]);
+
+  // Fresh batch — only generated once stress test is activated
+  const freshBatch = useMemo(
+    () => stressActive ? generateFreshBatch(240, STRESS_SEED) : [],
+    [stressActive],
+  );
+  const freshMetrics = useMemo(() => {
+    if (!stressActive) return null;
+    const freshPreds = predictAll(freshBatch, b1, b2, phase2Unlocked);
+    return computeMetrics(freshBatch, freshPreds);
+  }, [stressActive, freshBatch, b1, b2, phase2Unlocked]);
 
   const accuracyOk = m.accuracy >= 0.8;
   const gapOk = m.tprGap <= 0.05;
@@ -217,17 +306,6 @@ export default function EvaluationPhase() {
         <TprBar tprA={m.tprA} tprB={m.tprB} />
       </div>
 
-      {/* False negative scatter */}
-      {/* <div className={styles.panel}>
-        <p className={styles.panelEyebrow}>False negatives</p>
-        <h2 className={styles.h2}>Who the model rejected.</h2>
-        <p className={styles.panelBody}>
-          Dashed rings mark qualified candidates your boundary rejected. The story is in which
-          group they belong to — and how many there are.
-        </p>
-        <AuditScatter samples={defaultDataset} hiredSet={hiredSet} />
-      </div> */}
-
       {/* Go back to fix */}
       {!passed && (
         <div className={styles.continueRow}>
@@ -238,10 +316,32 @@ export default function EvaluationPhase() {
         </div>
       )}
 
-      {passed && (
-        <div className={`${styles.continueRow} ${styles.continueRowPass}`}>
-          <p className={styles.continueHint}>You found a fair boundary. That's the whole exercise.</p>
+      {/* Stress test — only shown after passing */}
+      {passed && !stressActive && (
+        <div className={styles.unlockCard}>
+          <div className={styles.unlockText}>
+            <p className={styles.unlockTitle}>But would it hold up next year?</p>
+            <p className={styles.unlockBody}>
+              Your boundary works on this cohort. Run it against 240 fresh applicants drawn from
+              the same population — and see whether fairness survives the reshuffle.
+            </p>
+          </div>
+          <button type="button" className={styles.unlockBtn} onClick={() => setStressActive(true)}>
+            Stress test →
+          </button>
         </div>
+      )}
+
+      {passed && stressActive && freshMetrics && (
+        <>
+          <StressResult original={m} fresh={freshMetrics} />
+          <div className={styles.continueRow}>
+            <p className={styles.continueHint}>See the full bias taxonomy and what you learned.</p>
+            <Link to="/simulator/debrief" className={styles.continueBtn}>
+              Continue to debrief →
+            </Link>
+          </div>
+        </>
       )}
     </div>
   );

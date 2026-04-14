@@ -6,6 +6,7 @@ import BackgroundPhase from "./pages/phases/BackgroundPhase/BackgroundPhase";
 import DatasetPhase from "./pages/phases/DatasetPhase/DatasetPhase";
 import ClassifierPhase from "./pages/phases/ClassifierPhase/ClassifierPhase";
 import EvaluationPhase from "./pages/phases/EvaluationPhase/EvaluationPhase";
+import DebriefPhase from "./pages/phases/DebriefPhase/DebriefPhase";
 import { SimulatorProvider } from "./context/SimulatorContext";
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="dataset" element={<DatasetPhase />} />
         <Route path="classifier" element={<ClassifierPhase />} />
         <Route path="evaluation" element={<EvaluationPhase />} />
+        <Route path="debrief" element={<DebriefPhase />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
