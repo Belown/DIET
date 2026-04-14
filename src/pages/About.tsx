@@ -14,10 +14,7 @@ export default function About() {
             A sandbox for thinking about fairness.
           </h1>
           <p className={styles.lede}>
-            Manifold is a teaching prototype built around one idea: an accurate
-            model isn't the same thing as a fair one. You'll train a tiny
-            classifier on synthetic CV data, audit it, and watch what happens
-            when "good enough" accuracy leaves a whole group behind.
+            Manifold is a teaching prototype built around one idea: an accurate model isn't the same thing as a fair one. You'll train a tiny classifier on synthetic CV data, audit it, and watch what happens when "good enough" accuracy leaves a whole group behind.
           </p>
           <div className={styles.facts}>
             <div className={styles.fact}>
@@ -29,13 +26,19 @@ export default function About() {
             <div className={styles.fact}>
               <span className={styles.factK}>Format</span>
               <span className={styles.factV}>
-                A three-phase interactive sandbox — no lectures, no quizzes.
+                A three-phase interactive sandbox.
               </span>
             </div>
             <div className={styles.fact}>
               <span className={styles.factK}>Status</span>
               <span className={styles.factV}>
-                Prototype, under active development in 2026.
+                Prototype, under development in 2026.
+              </span>
+            </div>
+            <div className={styles.fact}>
+              <span className={styles.factK}>Team</span>
+              <span className={styles.factV}>
+                Wanglei Shen, Zihan Li, Inés Araujo, Sophia Kacem, Rui Wang.
               </span>
             </div>
           </div>

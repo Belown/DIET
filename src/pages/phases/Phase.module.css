@@ -28,11 +28,76 @@
   color: var(--rui-dark);
 }
 
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.panelHead .h2 {
+  margin: 0;
+}
+
+.toggle {
+  display: inline-flex;
+  padding: 4px;
+  background: var(--rui-white);
+  border: 1px solid var(--rui-border);
+  border-radius: 9999px;
+  gap: 2px;
+}
+
+.toggleBtn {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--rui-slate);
+  padding: 8px 18px;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.toggleBtn:hover {
+  color: var(--rui-dark);
+}
+
+.toggleBtnOn {
+  background: var(--rui-dark);
+  color: var(--rui-white);
+}
+
+.toggleBtnOn:hover {
+  color: var(--rui-white);
+}
+
 .tableWrap {
   overflow-x: auto;
   border-radius: var(--radius-sm);
   border: 1px solid var(--rui-border);
   background: var(--rui-white);
+}
+
+.tableScroll {
+  max-height: 460px;
+  overflow-y: auto;
+}
+
+.tableScroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--rui-white);
+  z-index: 1;
 }
 
 .table {
@@ -131,6 +196,88 @@
   font-size: 13px;
   color: var(--rui-slate);
   margin: 0;
+}
+
+.distView {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--rui-slate);
+}
+
+.swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+.histRow {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.histCard {
+  background: var(--rui-white);
+  border: 1px solid var(--rui-border);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px 12px;
+  margin: 0;
+}
+
+.histLabel {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--rui-gray);
+  margin: 0 0 8px;
+}
+
+.histSvg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.histGridLine {
+  stroke: var(--rui-border);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+}
+
+.histTick {
+  font-family: var(--font-display);
+  font-size: 10px;
+  fill: var(--rui-gray);
+}
+
+.histBarA {
+  fill: var(--rui-blue);
+}
+
+.histBarB {
+  fill: #e61e49;
 }
 
 .warn {

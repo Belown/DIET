@@ -4,9 +4,7 @@ export default function ClassifierPhase() {
   return (
     <div className={styles.phase}>
       <p className={styles.lede}>
-        This is where you'll draw the line. In phase one it's a 2D boundary on
-        tech × experience; later phases unlock portfolio and extrude the
-        whole thing into 3D.
+        This is where you'll draw the line. In phase one it's a 2D boundary on tech × experience; later phases unlock portfolio and extrude the whole thing into 3D.
       </p>
       <div className={styles.placeholder}>
         <p className={styles.placeholderK}>Coming next</p>

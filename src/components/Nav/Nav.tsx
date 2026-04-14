@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Button from "../Button/Button";
+import Logo from "../Logo/Logo";
 import styles from "./Nav.module.css";
 
 export default function Nav() {
@@ -14,9 +15,7 @@ export default function Nav() {
 
   return (
     <header className={`${styles.nav} ${scrolled ? styles.scrolled : ""}`}>
-      <a className={styles.brand} href="#top">
-        Manifold<span className={styles.dot}>.</span>
-      </a>
+      <Logo />
       <nav className={styles.links}>
         <a href="#concept">What's this?</a>
         <a href="#how">How it works</a>
@@ -24,7 +23,7 @@ export default function Nav() {
       </nav>
       <div className={styles.cta}>
         <Button variant="ghost-dark" to="/about">
-          Read the brief
+          About us
         </Button>
         <Button variant="primary" to="/simulator">
           Start exploring
