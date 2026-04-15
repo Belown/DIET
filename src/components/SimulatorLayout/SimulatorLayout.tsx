@@ -136,7 +136,7 @@ export default function SimulatorLayout() {
           </p>
           <h1 className={styles.canvasTitle}>{activeNode.hint}</h1>
         </header>
-        <div className={styles.canvasBody}>
+        <div key={activeSlug} className={styles.canvasBody}>
           <Outlet />
         </div>
       </main>

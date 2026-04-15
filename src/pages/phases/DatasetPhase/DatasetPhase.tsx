@@ -88,7 +88,7 @@ export default function DatasetPhase() {
         </div>
 
         {view === "table" ? (
-          <div className={`${styles.tableWrap} ${styles.tableScroll}`}>
+          <div key="table" className={`${styles.tableWrap} ${styles.tableScroll} ${styles.tabPanel}`}>
             <table className={styles.table}>
               <thead>
                 <tr>
@@ -123,7 +123,7 @@ export default function DatasetPhase() {
             </table>
           </div>
         ) : (
-          <div className={styles.distView}>
+          <div key="dist" className={`${styles.distView} ${styles.tabPanel}`}>
             <div className={styles.legend}>
               <span className={styles.legendItem}>
                 <span className={`${styles.swatch} ${styles.chipA}`} />
@@ -235,6 +235,7 @@ function Histogram({
                 width={barW}
                 height={aH}
                 className={styles.histBarA}
+                style={{ animationDelay: `${i * 40}ms` }}
               />
               <rect
                 x={x0 + barW}
@@ -242,6 +243,7 @@ function Histogram({
                 width={barW}
                 height={bH}
                 className={styles.histBarB}
+                style={{ animationDelay: `${i * 40 + 20}ms` }}
               />
               {i % 2 === 0 && (
                 <text
