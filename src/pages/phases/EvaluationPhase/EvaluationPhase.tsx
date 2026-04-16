@@ -217,12 +217,12 @@ function StressResult({ original, fresh }: { original: Metrics; fresh: Metrics }
 const STRESS_SEED = 20260415; // different from the default dataset seed
 
 export default function EvaluationPhase() {
-  const { b1, b2, phase2Unlocked } = useSimulator();
+  const { b1, b2, b3, phase2Unlocked } = useSimulator();
   const [stressActive, setStressActive] = useState(false);
 
   const preds = useMemo(
-    () => predictAll(defaultDataset, b1, b2, phase2Unlocked),
-    [b1, b2, phase2Unlocked],
+    () => predictAll(defaultDataset, b1, b2, phase2Unlocked, b3),
+    [b1, b2, b3, phase2Unlocked],
   );
   const hiredSet = useMemo(
     () => new Set(preds.filter((p) => p.hired).map((p) => p.id)),
@@ -237,9 +237,9 @@ export default function EvaluationPhase() {
   );
   const freshMetrics = useMemo(() => {
     if (!stressActive) return null;
-    const freshPreds = predictAll(freshBatch, b1, b2, phase2Unlocked);
+    const freshPreds = predictAll(freshBatch, b1, b2, phase2Unlocked, b3);
     return computeMetrics(freshBatch, freshPreds);
-  }, [stressActive, freshBatch, b1, b2, phase2Unlocked]);
+  }, [stressActive, freshBatch, b1, b2, b3, phase2Unlocked]);
 
   const accuracyOk = m.accuracy >= 0.8;
   const gapOk = m.tprGap <= 0.05;

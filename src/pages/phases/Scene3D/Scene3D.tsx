@@ -1,5 +1,5 @@
 import { Suspense, useMemo, useRef, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Line, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { defaultDataset } from "../../../data/dataset";
@@ -15,6 +15,8 @@ const DOT3D = { tpRadius: 0.09, fpSide: 0.14, fnRadius: 0.1, fnHeight: 0.1, tnRa
 const BOUNDS = {
   minTech: Math.min(...defaultDataset.map((s) => s.techScore)),
   maxTech: Math.max(...defaultDataset.map((s) => s.techScore)),
+  minExp:  Math.min(...defaultDataset.map((s) => s.experience)),
+  maxExp:  Math.max(...defaultDataset.map((s) => s.experience)),
   minPort: Math.min(...defaultDataset.map((s) => s.softSkill)),
   maxPort: Math.max(...defaultDataset.map((s) => s.softSkill)),
 };
@@ -110,9 +112,11 @@ function DataPoints({ hiredSet }: { hiredSet: Set<number> }) {
 
   return (
     <>
-      {/* TN: small dim spheres, group color */}
+      {/* TN: small dim spheres + billboard ring outlines, group color */}
       <SphereCloud positions={groups.tnA} color="#494fdf" opacity={0.15} radius={DOT3D.tnRadius} />
+      <BillboardRings positions={groups.tnA} color="#494fdf" radius={DOT3D.tnRadius} opacity={0.4} />
       <SphereCloud positions={groups.tnB} color="#e61e49" opacity={0.15} radius={DOT3D.tnRadius} />
+      <BillboardRings positions={groups.tnB} color="#e61e49" radius={DOT3D.tnRadius} opacity={0.4} />
       {/* FP: amber cubes */}
       <FPPoints positions={groups.fpA} color="#e8a308" />
       <FPPoints positions={groups.fpB} color="#e8a308" />
@@ -146,6 +150,43 @@ function SphereCloud({ positions, color, opacity, radius }: {
     }
     meshRef.current.instanceMatrix.needsUpdate = true;
   }, [positions, count]);
+
+  if (count === 0) return null;
+  return <instancedMesh ref={meshRef} args={[geo, mat, count]} />;
+}
+
+/** Thin ring outlines that always face the camera (billboard). */
+function BillboardRings({ positions, color, radius, opacity = 0.4 }: {
+  positions: Float32Array; color: string; radius: number; opacity?: number;
+}) {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const count = positions.length / 3;
+  const geo = useMemo(
+    () => new THREE.RingGeometry(radius * 0.95, radius * 1.2, 24),
+    [radius],
+  );
+  const mat = useMemo(
+    () => new THREE.MeshBasicMaterial({
+      color, transparent: true, opacity, side: THREE.DoubleSide, depthWrite: false,
+    }),
+    [color, opacity],
+  );
+
+  // Billboard: orient every instance to face the camera each frame
+  useFrame(({ camera }) => {
+    if (!meshRef.current || count === 0) return;
+    const quat = new THREE.Quaternion();
+    camera.getWorldQuaternion(quat);
+    const matrix = new THREE.Matrix4();
+    const scale = new THREE.Vector3(1, 1, 1);
+    const pos = new THREE.Vector3();
+    for (let i = 0; i < count; i++) {
+      pos.set(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+      matrix.compose(pos, quat, scale);
+      meshRef.current.setMatrixAt(i, matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  });
 
   if (count === 0) return null;
   return <instancedMesh ref={meshRef} args={[geo, mat, count]} />;
@@ -221,14 +262,14 @@ function FPPoints({ positions, color }: {
 
 // ─── Boundary planes ──────────────────────────────────────────────────────────
 
-function BoundaryPlane({ b1, b2, axis, color }: {
-  b1: BoundaryParams; b2: BoundaryParams;
+function BoundaryPlane({ b1, b2, b3, axis, color }: {
+  b1: BoundaryParams; b2: BoundaryParams; b3: BoundaryParams;
   axis: "tech" | "softSkill"; color: string;
 }) {
   const geo = useMemo(() => {
     const { minTech, maxTech, minPort, maxPort } = BOUNDS;
 
-    // Full XZ quad for this plane, in data space
+    // Full XZ quad for this plane, in data space (p[0]=techScore, p[1]=softSkill)
     const quad: XZ[] = [
       [minTech, minPort],
       [maxTech, minPort],
@@ -236,13 +277,19 @@ function BoundaryPlane({ b1, b2, axis, color }: {
       [minTech, maxPort],
     ];
 
-    // Clip condition: blue (tech) is dominant where s1*x - s2*z >= i2 - i1
-    const rhs = b2.intercept - b1.intercept; // i2 - i1
-    const s1 = b1.slope;  // blue slope on x
-    const s2 = b2.slope;  // red  slope on z
-    const keepPositive = axis !== "tech"; // blue keeps negative side, red keeps positive
+    // Clip 1 — b1 vs b2 (existing): blue dominant where s1*x - s2*z >= i2 - i1
+    const rhs = b2.intercept - b1.intercept;
+    const s1 = b1.slope;
+    const s2 = b2.slope;
+    const keepPositive = axis !== "tech";
 
-    const clipped = clipPolygon(quad, keepPositive, s1, s2, rhs);
+    let clipped = clipPolygon(quad, keepPositive, s1, s2, rhs);
+
+    // Clip 2 — vs b3: this plane is the active decision surface only where
+    // z <= b3.slope * x + b3.intercept (candidate NOT already hired by b3).
+    // signedDist = b3.slope * p[0] - 1 * p[1] - (-b3.intercept), keep positive.
+    clipped = clipPolygon(clipped, true, b3.slope, 1, -b3.intercept);
+
     if (clipped.length < 3) return null;
 
     const b = axis === "tech" ? b1 : b2;
@@ -252,32 +299,123 @@ function BoundaryPlane({ b1, b2, axis, color }: {
     g.setIndex(triangulateFan(clipped.length));
     g.computeVertexNormals();
     return g;
-  }, [b1, b2, axis]);
+  }, [b1, b2, b3, axis]);
 
   if (!geo) return null;
 
   return (
     <mesh geometry={geo}>
-      <meshStandardMaterial color={color} opacity={0.28} transparent side={THREE.DoubleSide} />
+      <meshStandardMaterial color={color} opacity={0.28} transparent side={THREE.DoubleSide} depthWrite={false} />
+    </mesh>
+  );
+}
+
+// ─── B3 plane (Tech × Soft Skill): z = b3.slope * x + b3.intercept ───────
+// Vertical plane in 3D (independent of Y / Experience).
+// Parameterized in XY space: p[0]=techScore, p[1]=experience.
+// Clipped against b1 and b2 so it only shows where it's the active
+// decision surface (where neither b1 nor b2 already hire the candidate).
+
+function B3Plane({ b1, b2, b3, color }: {
+  b1: BoundaryParams; b2: BoundaryParams; b3: BoundaryParams; color: string;
+}) {
+  const geo = useMemo(() => {
+    const { minTech, maxTech, minExp, maxExp } = BOUNDS;
+
+    // Full XY quad (p[0]=techScore, p[1]=experience)
+    let poly: XZ[] = [
+      [minTech, minExp],
+      [maxTech, minExp],
+      [maxTech, maxExp],
+      [minTech, maxExp],
+    ];
+
+    // Clip 1 — vs b1: show only where y <= b1.slope * x + b1.intercept
+    // (candidate NOT already hired by b1, so b3 is relevant).
+    // signedDist = b1.slope * p[0] - 1 * p[1] - (-b1.intercept), keep positive.
+    poly = clipPolygon(poly, true, b1.slope, 1, -b1.intercept);
+
+    // Clip 2 — vs b2: show only where y <= b2.slope * z_b3(x) + b2.intercept
+    // On the b3 surface, z = b3.slope * x + b3.intercept, so:
+    //   y <= b2.slope * (b3.slope * x + b3.intercept) + b2.intercept
+    //     = (b2.slope * b3.slope) * x + (b2.slope * b3.intercept + b2.intercept)
+    const compSlope = b2.slope * b3.slope;
+    const compIntercept = b2.slope * b3.intercept + b2.intercept;
+    poly = clipPolygon(poly, true, compSlope, 1, -compIntercept);
+
+    if (poly.length < 3) return null;
+
+    // Convert XY vertices → 3D: (x, y) → (d(x), d(y), d(b3.slope * x + b3.intercept))
+    const verts = new Float32Array(
+      poly.flatMap(([x, y]) => [d(x), d(y), d(b3.slope * x + b3.intercept)])
+    );
+
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(verts, 3));
+    g.setIndex(triangulateFan(poly.length));
+    g.computeVertexNormals();
+    return g;
+  }, [b1, b2, b3]);
+
+  if (!geo) return null;
+
+  return (
+    <mesh geometry={geo}>
+      <meshStandardMaterial color={color} opacity={0.28} transparent side={THREE.DoubleSide} depthWrite={false} />
     </mesh>
   );
 }
 
 // ─── Axes ─────────────────────────────────────────────────────────────────────
 
+const axisLabelStyle: React.CSSProperties = {
+  fontSize: 13, fontWeight: 700, whiteSpace: "nowrap",
+  background: "rgba(255,255,255,0.82)", borderRadius: 4,
+  padding: "2px 6px", lineHeight: 1,
+};
+
+const tickStyle: React.CSSProperties = {
+  fontSize: 10, fontWeight: 500, whiteSpace: "nowrap",
+  color: "#8d969e",
+  background: "rgba(255,255,255,0.7)", borderRadius: 3,
+  padding: "1px 3px", lineHeight: 1,
+};
+
+const TICKS = [20, 40, 60, 80];
+
 function Axes() {
   const floor = -5;
   return (
     <>
-      <Line points={[[floor, floor, floor], [5, floor, floor]]} color="#c9c9cd" lineWidth={1} />
-      <Html position={[5.4, floor, floor]} style={{ fontSize: 11, color: "#8d969e", whiteSpace: "nowrap" }}>Tech →</Html>
+      {/* Main axes — thicker, darker */}
+      <Line points={[[floor, floor, floor], [5, floor, floor]]} color="#6b7280" lineWidth={2} />
+      <Html position={[5.6, floor, floor]} style={{ ...axisLabelStyle, color: "#494fdf" }}>Tech Score →</Html>
 
-      <Line points={[[floor, floor, floor], [floor, 5, floor]]} color="#c9c9cd" lineWidth={1} />
-      <Html position={[floor, 5.4, floor]} style={{ fontSize: 11, color: "#8d969e", whiteSpace: "nowrap" }}>Exp ↑</Html>
+      <Line points={[[floor, floor, floor], [floor, 5, floor]]} color="#6b7280" lineWidth={2} />
+      <Html position={[floor, 5.6, floor]} style={{ ...axisLabelStyle, color: "#374151" }}>Experience ↑</Html>
 
-      <Line points={[[floor, floor, floor], [floor, floor, 5]]} color="#c9c9cd" lineWidth={1} />
-      <Html position={[floor, floor, 5.4]} style={{ fontSize: 11, color: "#8d969e", whiteSpace: "nowrap" }}>Soft Skill →</Html>
+      <Line points={[[floor, floor, floor], [floor, floor, 5]]} color="#6b7280" lineWidth={2} />
+      <Html position={[floor, floor, 5.6]} style={{ ...axisLabelStyle, color: "#e61e49" }}>Soft Skill →</Html>
 
+      {/* Tick marks + labels along each axis */}
+      {TICKS.map((v) => {
+        const p = d(v);
+        return (
+          <group key={`tick-${v}`}>
+            {/* X-axis (Tech) tick */}
+            <Line points={[[p, floor, floor], [p, floor + 0.2, floor]]} color="#9ca3af" lineWidth={1} />
+            <Html position={[p, floor - 0.35, floor]} style={tickStyle}>{v}</Html>
+            {/* Y-axis (Exp) tick */}
+            <Line points={[[floor, p, floor], [floor + 0.2, p, floor]]} color="#9ca3af" lineWidth={1} />
+            <Html position={[floor - 0.35, p, floor]} style={tickStyle}>{v}</Html>
+            {/* Z-axis (Soft) tick */}
+            <Line points={[[floor, floor, p], [floor, floor + 0.2, p]]} color="#9ca3af" lineWidth={1} />
+            <Html position={[floor, floor - 0.35, p]} style={tickStyle}>{v}</Html>
+          </group>
+        );
+      })}
+
+      {/* Wireframe edges */}
       {[
         [[5, floor, floor], [5, 5, floor]],
         [[floor, 5, floor], [5, 5, floor]],
@@ -289,7 +427,7 @@ function Axes() {
         [[5, floor, 5], [5, 5, 5]],
         [[floor, 5, 5], [5, 5, 5]],
       ].map((pts, i) => (
-        <Line key={i} points={pts as [number, number, number][]} color="#ebebef" lineWidth={0.5} />
+        <Line key={i} points={pts as [number, number, number][]} color="#d1d5db" lineWidth={0.5} />
       ))}
     </>
   );
@@ -297,8 +435,8 @@ function Axes() {
 
 // ─── Scene content ────────────────────────────────────────────────────────────
 
-function SceneContent({ b1, b2, hiredSet }: {
-  b1: BoundaryParams; b2: BoundaryParams; hiredSet: Set<number>;
+function SceneContent({ b1, b2, b3, hiredSet }: {
+  b1: BoundaryParams; b2: BoundaryParams; b3: BoundaryParams; hiredSet: Set<number>;
 }) {
   return (
     <>
@@ -307,8 +445,9 @@ function SceneContent({ b1, b2, hiredSet }: {
       <OrbitControls enablePan screenSpacePanning minDistance={6} maxDistance={22} />
 
       <Axes />
-      <BoundaryPlane b1={b1} b2={b2} axis="tech"      color="#494fdf" />
-      <BoundaryPlane b1={b1} b2={b2} axis="softSkill" color="#e61e49" />
+      <BoundaryPlane b1={b1} b2={b2} b3={b3} axis="tech"      color="#494fdf" />
+      <BoundaryPlane b1={b1} b2={b2} b3={b3} axis="softSkill" color="#e61e49" />
+      <B3Plane b1={b1} b2={b2} b3={b3} color="#18a058" />
       <DataPoints hiredSet={hiredSet} />
     </>
   );
@@ -357,20 +496,22 @@ function LegendIcon({ type }: { type: "tp" | "fp" | "fn" | "tn" }) {
   // tn
   return (
     <svg viewBox="0 0 14 14" style={iconStyle}>
+      <circle cx="7" cy="7" r="4.5" fill="none" stroke={A} strokeWidth="0.7" opacity="0.45" strokeDasharray="4.5 4.5" strokeDashoffset="0" />
+      <circle cx="7" cy="7" r="4.5" fill="none" stroke={B} strokeWidth="0.7" opacity="0.45" strokeDasharray="4.5 4.5" strokeDashoffset="4.5" />
       <path d="M 7,3 A 4,4 0 0,0 7,11 Z" fill={A} opacity="0.2" />
       <path d="M 7,3 A 4,4 0 0,1 7,11 Z" fill={B} opacity="0.2" />
     </svg>
   );
 }
 
-export function Scene3D({ b1, b2, hiredSet }: {
-  b1: BoundaryParams; b2: BoundaryParams; hiredSet: Set<number>;
+export function Scene3D({ b1, b2, b3, hiredSet }: {
+  b1: BoundaryParams; b2: BoundaryParams; b3: BoundaryParams; hiredSet: Set<number>;
 }) {
   return (
     <div style={{ position: "relative", width: "100%", height: 480, borderRadius: 12, overflow: "hidden", background: "#f8f8fb" }}>
       <Canvas camera={{ position: [9, 7, 9], fov: 48 }} gl={{ antialias: true }}>
         <Suspense fallback={null}>
-          <SceneContent b1={b1} b2={b2} hiredSet={hiredSet} />
+          <SceneContent b1={b1} b2={b2} b3={b3} hiredSet={hiredSet} />
         </Suspense>
       </Canvas>
       <div style={legendStyle}>

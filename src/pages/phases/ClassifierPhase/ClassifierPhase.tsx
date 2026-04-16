@@ -5,7 +5,7 @@ import { useSimulator, type BoundaryParams } from "../../../context/SimulatorCon
 import { predictAll, computeMetrics } from "../../../utils/predict";
 import { Scene3D } from "../Scene3D/Scene3D";
 import styles from "../Phase.module.css";
-import { max } from "three/tsl";
+
 
 // ─── Scatter SVG ──────────────────────────────────────────────────────────────
 
@@ -21,6 +21,7 @@ const my = (v: number) => PAD.t + (1 - v / 100) * IH;
 
 function ScatterPlot({
   xKey, xLabel, samples, hiredSet, boundary, clipId,
+  yKey = "experience", yLabel = "Experience", showBoundary = true,
 }: {
   xKey: "techScore" | "softSkill";
   xLabel: string;
@@ -28,11 +29,14 @@ function ScatterPlot({
   hiredSet: Set<number>;
   boundary: BoundaryParams;
   clipId: string;
+  yKey?: "experience" | "softSkill" | "techScore";
+  yLabel?: string;
+  showBoundary?: boolean;
 }) {
   const { slope, intercept } = boundary;
   return (
     <svg viewBox={`0 0 ${SW} ${SH}`} className={styles.scatterSvg}
-      role="img" aria-label={`${xLabel} × Experience scatter with decision boundary`}>
+      role="img" aria-label={`${xLabel} × ${yLabel} scatter${showBoundary ? " with decision boundary" : ""}`}>
       <defs>
         <clipPath id={clipId}>
           <rect x={PAD.l} y={PAD.t} width={IW} height={IH} />
@@ -53,24 +57,30 @@ function ScatterPlot({
 
       <text x={PAD.l + IW / 2} y={SH - 4} textAnchor="middle" fontSize="11" fill="#8d969e">{xLabel} →</text>
       <text x={12} y={PAD.t + IH / 2} textAnchor="middle" fontSize="11" fill="#8d969e"
-        transform={`rotate(-90 12 ${PAD.t + IH / 2})`}>↑ Experience</text>
+        transform={`rotate(-90 12 ${PAD.t + IH / 2})`}>↑ {yLabel}</text>
 
       <g clipPath={`url(#${clipId})`}>
-        {/* Layer 1 — TN (not qualified, not hired): small dim circles, group color */}
+        {/* Layer 1 — TN (not qualified, not hired): small dim circles with ring outline, group color */}
         {samples
           .filter((s) => !hiredSet.has(s.id) && !s.qualified)
-          .map((s) => (
-            <circle key={s.id}
-              cx={mx(s[xKey] as number)} cy={my(s.experience)}
-              r={DOT.tn} fill={s.group === "A" ? "#494fdf" : "#e61e49"} opacity={0.18} />
-          ))}
+          .map((s) => {
+            const c = s.group === "A" ? "#494fdf" : "#e61e49";
+            return (
+              <g key={s.id}>
+                <circle cx={mx(s[xKey] as number)} cy={my(s[yKey] as number)}
+                  r={DOT.tn} fill={c} opacity={0.18} />
+                <circle cx={mx(s[xKey] as number)} cy={my(s[yKey] as number)}
+                  r={DOT.tn + 0.4} fill="none" stroke={c} strokeWidth={0.4} opacity={0.4} />
+              </g>
+            );
+          })}
 
         {/* Layer 2 — FP (not qualified, hired): medium amber squares */}
         {samples
           .filter((s) => hiredSet.has(s.id) && !s.qualified)
           .map((s) => (
             <rect key={s.id}
-              x={mx(s[xKey] as number) - DOT.fp / 2} y={my(s.experience) - DOT.fp / 2}
+              x={mx(s[xKey] as number) - DOT.fp / 2} y={my(s[yKey] as number) - DOT.fp / 2}
               width={DOT.fp} height={DOT.fp} fill="#e8a308" opacity={0.85} />
           ))}
 
@@ -79,7 +89,7 @@ function ScatterPlot({
           .filter((s) => hiredSet.has(s.id) && s.qualified)
           .map((s) => (
             <circle key={s.id}
-              cx={mx(s[xKey] as number)} cy={my(s.experience)}
+              cx={mx(s[xKey] as number)} cy={my(s[yKey] as number)}
               r={DOT.tp} fill={s.group === "A" ? "#494fdf" : "#e61e49"} opacity={0.9} />
           ))}
 
@@ -88,7 +98,7 @@ function ScatterPlot({
           .filter((s) => s.qualified && !hiredSet.has(s.id))
           .map((s) => {
             const cx = mx(s[xKey] as number);
-            const cy = my(s.experience);
+            const cy = my(s[yKey] as number);
             return (
               <polygon key={s.id}
                 points={`${cx},${cy - DOT.fn} ${cx + DOT.fn},${cy} ${cx},${cy + DOT.fn} ${cx - DOT.fn},${cy}`}
@@ -96,8 +106,10 @@ function ScatterPlot({
             );
           })}
 
-        <line x1={mx(0)} y1={my(intercept)} x2={mx(100)} y2={my(slope * 100 + intercept)}
-          stroke="#191c1f" strokeWidth="2.5" strokeDasharray="8 5" strokeLinecap="round" />
+        {showBoundary && (
+          <line x1={mx(0)} y1={my(intercept)} x2={mx(100)} y2={my(slope * 100 + intercept)}
+            stroke="#191c1f" strokeWidth="2.5" strokeDasharray="8 5" strokeLinecap="round" />
+        )}
       </g>
 
       <text x={PAD.l + IW * 0.78} y={PAD.t + 22} textAnchor="middle" fontSize="10" fill="#191c1f" opacity="0.3" fontWeight="500">predicted hire</text>
@@ -117,7 +129,9 @@ function ScatterPlot({
       <polygon points={`${PAD.l+74},${PAD.t+4} ${PAD.l+79},${PAD.t+10} ${PAD.l+74},${PAD.t+16} ${PAD.l+69},${PAD.t+10}`} fill="#e8a308" opacity="0.9" />
       <text x={PAD.l+83} y={PAD.t+14} fontSize="10" fill="#8d969e">FN</text>
 
-      {/* 4. TN: small dim circle, split A/B */}
+      {/* 4. TN: small dim circle with ring outline, split A/B */}
+      <circle cx={PAD.l+102} cy={PAD.t+10} r="4" fill="none" stroke="#494fdf" strokeWidth="0.6" opacity="0.45" strokeDasharray="4 4" strokeDashoffset="0" />
+      <circle cx={PAD.l+102} cy={PAD.t+10} r="4" fill="none" stroke="#e61e49" strokeWidth="0.6" opacity="0.45" strokeDasharray="4 4" strokeDashoffset="4" />
       <path d={`M ${PAD.l+102},${PAD.t+7} A 3,3 0 0,0 ${PAD.l+102},${PAD.t+13} Z`} fill="#494fdf" opacity="0.2" />
       <path d={`M ${PAD.l+102},${PAD.t+7} A 3,3 0 0,1 ${PAD.l+102},${PAD.t+13} Z`} fill="#e61e49" opacity="0.2" />
       <text x={PAD.l+109} y={PAD.t+14} fontSize="10" fill="#8d969e">TN</text>
@@ -127,14 +141,15 @@ function ScatterPlot({
 
 // ─── Sliders ──────────────────────────────────────────────────────────────────
 
-function SliderBlock({ label, boundary, onChange }: {
+function SliderBlock({ label, boundary, onChange, color }: {
   label: string;
   boundary: BoundaryParams;
   onChange: (b: BoundaryParams) => void;
+  color?: string;
 }) {
   return (
     <div className={styles.sliderBlock}>
-      <p className={styles.sliderBlockLabel}>{label}</p>
+      <p className={styles.sliderBlockLabel} style={color ? { color } : undefined}>{label}</p>
       <div className={styles.sliderRow}>
         <span className={styles.sliderLabel}>Slope</span>
         <input type="range" min={-1.5} max={1.5} step={0.01}
@@ -218,12 +233,12 @@ function UnlockCard({ title, body, buttonLabel, onUnlock }: {
 type CStep = 1 | 2 | 3;
 
 export default function ClassifierPhase() {
-  const { b1, setB1, b2, setB2, phase2Unlocked, setPhase2Unlocked, phase3Unlocked, setPhase3Unlocked } = useSimulator();
+  const { b1, setB1, b2, setB2, b3, setB3, phase2Unlocked, setPhase2Unlocked, phase3Unlocked, setPhase3Unlocked } = useSimulator();
   const [step, setStep] = useState<CStep>(phase3Unlocked ? 3 : phase2Unlocked ? 2 : 1);
 
   const preds = useMemo(
-    () => predictAll(defaultDataset, b1, b2, step >= 2 && phase2Unlocked),
-    [b1, b2, step, phase2Unlocked],
+    () => predictAll(defaultDataset, b1, b2, step >= 2 && phase2Unlocked, b3),
+    [b1, b2, b3, step, phase2Unlocked],
   );
   const hiredSet = useMemo(
     () => new Set(preds.filter((p) => p.hired).map((p) => p.id)),
@@ -245,7 +260,7 @@ export default function ClassifierPhase() {
           <button type="button"
             className={`${styles.stepTab} ${step === 2 ? styles.stepTabActive : ""}`}
             onClick={() => setStep(2)}>
-            Phase 2 · Soft Skill
+            Phase 2 · Extended
           </button>
         )}
         {phase3Unlocked && (
@@ -278,12 +293,14 @@ export default function ClassifierPhase() {
 
           <LiveBar {...metrics} showGap={false} />
 
-          <UnlockCard
-            title="Stuck on the audit?"
-            body="A single line on two features can't satisfy both constraints at once. Unlock soft skill — the third axis the model has been ignoring — and see if it changes the shape of fair."
-            buttonLabel="Unlock Soft Skill"
-            onUnlock={() => { setPhase2Unlocked(true); setStep(2); }}
-          />
+          {!phase2Unlocked && (
+            <UnlockCard
+              title="Stuck on the audit?"
+              body="A single line on two features can't satisfy both constraints at once. Unlock soft skill — the third axis the model has been ignoring — and see if it changes the shape of fair."
+              buttonLabel="Unlock Soft Skill"
+              onUnlock={() => { setPhase2Unlocked(true); setStep(2); }}
+            />
+          )}
         </>
       )}
 
@@ -291,7 +308,7 @@ export default function ClassifierPhase() {
       {step === 2 && (
         <>
           <div className={styles.panel}>
-            <p className={styles.panelEyebrow}>Phase 2 · Soft Skill unlocked</p>
+            <p className={styles.panelEyebrow}>Phase 2 · Extended</p>
             <h2 className={styles.h2}>A second boundary on soft skill.</h2>
             <p className={styles.panelBody}>
               Candidates rejected by boundary 1 get a second chance here — if they clear the
@@ -301,30 +318,40 @@ export default function ClassifierPhase() {
           </div>
 
           <div className={styles.plotCard}>
-            <div className={styles.scatterGrid}>
+            <div className={styles.scatterGrid3}>
               <div>
                 <p className={styles.scatterCaption}>Tech × Experience</p>
                 <ScatterPlot xKey="techScore" xLabel="Tech Score"
                   samples={defaultDataset} hiredSet={hiredSet} boundary={b1} clipId="clip-p2a" />
-                <SliderBlock label="Boundary 1" boundary={b1} onChange={setB1} />
+                <SliderBlock label="Boundary 1 · Tech × Exp" boundary={b1} onChange={setB1} color="#494fdf" />
               </div>
               <div>
                 <p className={styles.scatterCaption}>Soft Skill × Experience</p>
                 <ScatterPlot xKey="softSkill" xLabel="Soft Skill"
                   samples={defaultDataset} hiredSet={hiredSet} boundary={b2} clipId="clip-p2b" />
-                <SliderBlock label="Boundary 2" boundary={b2} onChange={setB2} />
+                <SliderBlock label="Boundary 2 · Soft × Exp" boundary={b2} onChange={setB2} color="#e61e49" />
+              </div>
+              <div>
+                <p className={styles.scatterCaption}>Tech × Soft Skill</p>
+                <ScatterPlot xKey="techScore" xLabel="Tech Score"
+                  yKey="softSkill" yLabel="Soft Skill"
+                  samples={defaultDataset} hiredSet={hiredSet}
+                  boundary={b3} clipId="clip-p2c" showBoundary={true} />
+                <SliderBlock label="Boundary 3 · Tech × Soft" boundary={b3} onChange={setB3} color="#18a058" />
               </div>
             </div>
           </div>
 
           <LiveBar {...metrics} />
 
-          <UnlockCard
-            title="See both boundaries in 3D"
-            body="These two 2D lines are actually planes in a 3D space. Unlock the synthesis view to see the manifold they create together — and understand why the shape of fair isn't a line."
-            buttonLabel="View in 3D"
-            onUnlock={() => { setPhase3Unlocked(true); setStep(3); }}
-          />
+          {!phase3Unlocked && (
+            <UnlockCard
+              title="See all boundaries in 3D"
+              body="These 2D lines are actually planes in a 3D space. Unlock the synthesis view to see the manifold they create together — and understand why the shape of fair isn't a line."
+              buttonLabel="View in 3D"
+              onUnlock={() => { setPhase3Unlocked(true); setStep(3); }}
+            />
+          )}
         </>
       )}
 
@@ -335,13 +362,19 @@ export default function ClassifierPhase() {
             <p className={styles.panelEyebrow}>Phase 3 · 3D manifold</p>
             <h2 className={styles.h2}>The decision surface in full.</h2>
             <p className={styles.panelBody}>
-              The blue plane is your tech × experience boundary; the red plane is your soft skill
-              boundary. Candidates above either plane are hired. Drag to rotate, scroll to zoom.
+               The blue plane is your tech × experience boundary; the red plane is your soft skill ×
+               experience boundary; the green plane is your tech × soft skill boundary.
+               Candidates above any plane are hired. Drag to rotate, scroll to zoom.
             </p>
           </div>
 
           <div className={styles.plotCard}>
-            <Scene3D b1={b1} b2={b2} hiredSet={hiredSet} />
+            <Scene3D b1={b1} b2={b2} b3={b3} hiredSet={hiredSet} />
+            <div className={styles.sliderGrid3}>
+              <SliderBlock label="Boundary 1 · Tech × Exp" boundary={b1} onChange={setB1} color="#494fdf" />
+              <SliderBlock label="Boundary 2 · Soft × Exp" boundary={b2} onChange={setB2} color="#e61e49" />
+              <SliderBlock label="Boundary 3 · Tech × Soft" boundary={b3} onChange={setB3} color="#18a058" />
+            </div>
           </div>
 
           <LiveBar {...metrics} />
