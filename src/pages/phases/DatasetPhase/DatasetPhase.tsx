@@ -153,10 +153,20 @@ export default function DatasetPhase() {
                     {Math.round(g.qualifiedRate * 100)}%
                     <span className={styles.statSub}>qualified</span>
                   </p>
-                  <p className={styles.statLine}>
-                    Mean tech {g.mean.techScore} · exp {g.mean.experience} ·
-                    soft skill {g.mean.softSkill}
-                  </p>
+                  <div className={styles.meanRow}>
+                    <div className={styles.meanCol}>
+                      <div className={styles.meanLabel}>Tech</div>
+                      <div className={styles.meanValue}>{g.mean.techScore}</div>
+                    </div>
+                    <div className={styles.meanCol}>
+                      <div className={styles.meanLabel}>Exp</div>
+                      <div className={styles.meanValue}>{g.mean.experience}</div>
+                    </div>
+                    <div className={styles.meanCol}>
+                      <div className={styles.meanLabel}>Soft Skill</div>
+                      <div className={styles.meanValue}>{g.mean.softSkill}</div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
