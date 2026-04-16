@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { defaultDataset, type CVSample } from "../../../data/dataset";
 import { useSimulator, type BoundaryParams } from "../../../context/SimulatorContext";
-import { predictAll, computeMetrics } from "../../../utils/predict";
+import { predictAll, computeMetrics, computeSliderHint, type SliderHint } from "../../../utils/predict";
 import { Scene3D } from "../Scene3D/Scene3D";
 import styles from "../Phase.module.css";
 
@@ -22,6 +22,7 @@ const my = (v: number) => PAD.t + (1 - v / 100) * IH;
 function ScatterPlot({
   xKey, xLabel, samples, hiredSet, boundary, clipId,
   yKey = "experience", yLabel = "Experience", showBoundary = true,
+  gained, lost,
 }: {
   xKey: "techScore" | "softSkill";
   xLabel: string;
@@ -32,6 +33,8 @@ function ScatterPlot({
   yKey?: "experience" | "softSkill" | "techScore";
   yLabel?: string;
   showBoundary?: boolean;
+  gained?: Set<number>;
+  lost?: Set<number>;
 }) {
   const { slope, intercept } = boundary;
   return (
@@ -110,6 +113,22 @@ function ScatterPlot({
           <line x1={mx(0)} y1={my(intercept)} x2={mx(100)} y2={my(slope * 100 + intercept)}
             stroke="#191c1f" strokeWidth="2.5" strokeDasharray="8 5" strokeLinecap="round" />
         )}
+
+        {/* Flip highlights — green pulse = newly hired, red pulse = newly rejected */}
+        {gained && samples.filter((s) => gained.has(s.id)).map((s) => (
+          <circle key={`g-${s.id}`} cx={mx(s[xKey] as number)} cy={my(s[yKey] as number)}
+            r={5} fill="none" stroke="#16a34a" strokeWidth={1.5} opacity={0.85}>
+            <animate attributeName="r" values="4;7;4" dur="1s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.85;0.3;0.85" dur="1s" repeatCount="indefinite" />
+          </circle>
+        ))}
+        {lost && samples.filter((s) => lost.has(s.id)).map((s) => (
+          <circle key={`l-${s.id}`} cx={mx(s[xKey] as number)} cy={my(s[yKey] as number)}
+            r={5} fill="none" stroke="#dc2626" strokeWidth={1.5} opacity={0.85}>
+            <animate attributeName="r" values="4;7;4" dur="1s" repeatCount="indefinite" />
+            <animate attributeName="opacity" values="0.85;0.3;0.85" dur="1s" repeatCount="indefinite" />
+          </circle>
+        ))}
       </g>
 
       <text x={PAD.l + IW * 0.78} y={PAD.t + 22} textAnchor="middle" fontSize="10" fill="#191c1f" opacity="0.3" fontWeight="500">predicted hire</text>
@@ -141,11 +160,26 @@ function ScatterPlot({
 
 // ─── Sliders ──────────────────────────────────────────────────────────────────
 
-function SliderBlock({ label, boundary, onChange, color }: {
+function HintArrow({ hint }: { hint?: SliderHint }) {
+  if (!hint || hint.dir === 0) return null;
+  return (
+    <span
+      className={`${styles.hintArrow} ${hint.target === "accuracy" ? styles.hintAcc : styles.hintGap}`}
+      title={hint.target === "accuracy" ? "Improves accuracy" : "Reduces fairness gap"}
+    >
+      {hint.dir === 1 ? "▸" : "◂"}
+    </span>
+  );
+}
+
+function SliderBlock({ label, boundary, onChange, color, slopeHint, interceptHint, onDragStart }: {
   label: string;
   boundary: BoundaryParams;
   onChange: (b: BoundaryParams) => void;
   color?: string;
+  slopeHint?: SliderHint;
+  interceptHint?: SliderHint;
+  onDragStart?: () => void;
 }) {
   return (
     <div className={styles.sliderBlock}>
@@ -155,16 +189,18 @@ function SliderBlock({ label, boundary, onChange, color }: {
         <input type="range" min={-1.5} max={1.5} step={0.01}
           value={boundary.slope}
           onChange={(e) => onChange({ ...boundary, slope: parseFloat(e.target.value) })}
+          onPointerDown={onDragStart}
           className={styles.sliderInput} />
-        <span className={styles.sliderValue}>{boundary.slope.toFixed(2)}</span>
+        <span className={styles.sliderValue}>{boundary.slope.toFixed(2)}<HintArrow hint={slopeHint} /></span>
       </div>
       <div className={styles.sliderRow}>
         <span className={styles.sliderLabel}>Intercept</span>
         <input type="range" min={-100} max={100} step={1}
           value={boundary.intercept}
           onChange={(e) => onChange({ ...boundary, intercept: parseFloat(e.target.value) })}
+          onPointerDown={onDragStart}
           className={styles.sliderInput} />
-        <span className={styles.sliderValue}>{boundary.intercept}</span>
+        <span className={styles.sliderValue}>{boundary.intercept}<HintArrow hint={interceptHint} /></span>
       </div>
     </div>
   );
@@ -246,6 +282,46 @@ export default function ClassifierPhase() {
   );
   const metrics = useMemo(() => computeMetrics(defaultDataset, preds), [preds]);
 
+  // ── Gradient hints: pulsing arrow shows which direction improves the failing metric ──
+  const hints = useMemo(() => {
+    const useP2 = step >= 2 && phase2Unlocked;
+    const accOk = metrics.accuracy >= 0.8;
+    const gapOk = !useP2 || metrics.tprGap <= 0.05;
+    if (accOk && gapOk) return null;
+
+    const h = (bk: "b1" | "b2" | "b3", pk: "slope" | "intercept") =>
+      computeSliderHint(defaultDataset, b1, b2, b3, useP2, bk, pk, metrics);
+
+    return {
+      b1s: h("b1", "slope"),  b1i: h("b1", "intercept"),
+      b2s: h("b2", "slope"),  b2i: h("b2", "intercept"),
+      b3s: h("b3", "slope"),  b3i: h("b3", "intercept"),
+    };
+  }, [b1, b2, b3, step, phase2Unlocked, metrics]);
+
+  // ── Drag-to-see-flips: highlight points that change classification during a drag ──
+  const [dragStartHired, setDragStartHired] = useState<Set<number> | null>(null);
+
+  const handleDragStart = useCallback(() => {
+    setDragStartHired(new Set(hiredSet));
+  }, [hiredSet]);
+
+  useEffect(() => {
+    const up = () => setDragStartHired(null);
+    window.addEventListener("pointerup", up);
+    return () => window.removeEventListener("pointerup", up);
+  }, []);
+
+  const flipped = useMemo(() => {
+    if (!dragStartHired) return { gained: undefined as Set<number> | undefined, lost: undefined as Set<number> | undefined };
+    const gained = new Set<number>();
+    const lost = new Set<number>();
+    for (const id of hiredSet) if (!dragStartHired.has(id)) gained.add(id);
+    for (const id of dragStartHired) if (!hiredSet.has(id)) lost.add(id);
+    if (gained.size === 0 && lost.size === 0) return { gained: undefined, lost: undefined };
+    return { gained, lost };
+  }, [dragStartHired, hiredSet]);
+
   return (
     <div className={styles.phase}>
 
@@ -287,8 +363,10 @@ export default function ClassifierPhase() {
 
           <div className={styles.plotCard} style={{ maxWidth: 620, marginInline: "auto" }}>
             <ScatterPlot xKey="techScore" xLabel="Tech Score"
-              samples={defaultDataset} hiredSet={hiredSet} boundary={b1} clipId="clip-p1" />
-            <SliderBlock label="Boundary · Tech × Experience" boundary={b1} onChange={setB1} />
+              samples={defaultDataset} hiredSet={hiredSet} boundary={b1} clipId="clip-p1"
+              gained={flipped.gained} lost={flipped.lost} />
+            <SliderBlock label="Boundary · Tech × Experience" boundary={b1} onChange={setB1}
+              slopeHint={hints?.b1s} interceptHint={hints?.b1i} onDragStart={handleDragStart} />
           </div>
 
           <LiveBar {...metrics} showGap={false} />
@@ -322,22 +400,28 @@ export default function ClassifierPhase() {
               <div>
                 <p className={styles.scatterCaption}>Tech × Experience</p>
                 <ScatterPlot xKey="techScore" xLabel="Tech Score"
-                  samples={defaultDataset} hiredSet={hiredSet} boundary={b1} clipId="clip-p2a" />
-                <SliderBlock label="Boundary 1 · Tech × Exp" boundary={b1} onChange={setB1} color="#494fdf" />
+                  samples={defaultDataset} hiredSet={hiredSet} boundary={b1} clipId="clip-p2a"
+                  gained={flipped.gained} lost={flipped.lost} />
+                <SliderBlock label="Boundary 1 · Tech × Exp" boundary={b1} onChange={setB1} color="#494fdf"
+                  slopeHint={hints?.b1s} interceptHint={hints?.b1i} onDragStart={handleDragStart} />
               </div>
               <div>
                 <p className={styles.scatterCaption}>Soft Skill × Experience</p>
                 <ScatterPlot xKey="softSkill" xLabel="Soft Skill"
-                  samples={defaultDataset} hiredSet={hiredSet} boundary={b2} clipId="clip-p2b" />
-                <SliderBlock label="Boundary 2 · Soft × Exp" boundary={b2} onChange={setB2} color="#e61e49" />
+                  samples={defaultDataset} hiredSet={hiredSet} boundary={b2} clipId="clip-p2b"
+                  gained={flipped.gained} lost={flipped.lost} />
+                <SliderBlock label="Boundary 2 · Soft × Exp" boundary={b2} onChange={setB2} color="#e61e49"
+                  slopeHint={hints?.b2s} interceptHint={hints?.b2i} onDragStart={handleDragStart} />
               </div>
               <div>
                 <p className={styles.scatterCaption}>Tech × Soft Skill</p>
                 <ScatterPlot xKey="techScore" xLabel="Tech Score"
                   yKey="softSkill" yLabel="Soft Skill"
                   samples={defaultDataset} hiredSet={hiredSet}
-                  boundary={b3} clipId="clip-p2c" showBoundary={true} />
-                <SliderBlock label="Boundary 3 · Tech × Soft" boundary={b3} onChange={setB3} color="#18a058" />
+                  boundary={b3} clipId="clip-p2c" showBoundary={true}
+                  gained={flipped.gained} lost={flipped.lost} />
+                <SliderBlock label="Boundary 3 · Tech × Soft" boundary={b3} onChange={setB3} color="#18a058"
+                  slopeHint={hints?.b3s} interceptHint={hints?.b3i} onDragStart={handleDragStart} />
               </div>
             </div>
           </div>
@@ -371,9 +455,12 @@ export default function ClassifierPhase() {
           <div className={styles.plotCard}>
             <Scene3D b1={b1} b2={b2} b3={b3} hiredSet={hiredSet} />
             <div className={styles.sliderGrid3}>
-              <SliderBlock label="Boundary 1 · Tech × Exp" boundary={b1} onChange={setB1} color="#494fdf" />
-              <SliderBlock label="Boundary 2 · Soft × Exp" boundary={b2} onChange={setB2} color="#e61e49" />
-              <SliderBlock label="Boundary 3 · Tech × Soft" boundary={b3} onChange={setB3} color="#18a058" />
+              <SliderBlock label="Boundary 1 · Tech × Exp" boundary={b1} onChange={setB1} color="#494fdf"
+                slopeHint={hints?.b1s} interceptHint={hints?.b1i} onDragStart={handleDragStart} />
+              <SliderBlock label="Boundary 2 · Soft × Exp" boundary={b2} onChange={setB2} color="#e61e49"
+                slopeHint={hints?.b2s} interceptHint={hints?.b2i} onDragStart={handleDragStart} />
+              <SliderBlock label="Boundary 3 · Tech × Soft" boundary={b3} onChange={setB3} color="#18a058"
+                slopeHint={hints?.b3s} interceptHint={hints?.b3i} onDragStart={handleDragStart} />
             </div>
           </div>
 

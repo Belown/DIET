@@ -35,6 +35,57 @@ export type Metrics = {
   hired: number;
 };
 
+/* ── Slider gradient hint ─────────────────────────────────────────────────── */
+
+export type SliderHint = { dir: -1 | 0 | 1; target: "accuracy" | "gap" };
+
+/**
+ * For a single slider (boundary + param), compute which direction of movement
+ * improves the currently-failing metric.  Returns dir=0 when both metrics pass
+ * or when the slider has no measurable effect.
+ */
+export function computeSliderHint(
+  dataset: CVSample[],
+  b1: BoundaryParams,
+  b2: BoundaryParams,
+  b3: BoundaryParams,
+  usePhase2: boolean,
+  boundaryKey: "b1" | "b2" | "b3",
+  paramKey: "slope" | "intercept",
+  current: Metrics,
+): SliderHint {
+  const accFail = current.accuracy < 0.8;
+  const gapFail = usePhase2 && current.tprGap > 0.05;
+  if (!accFail && !gapFail) return { dir: 0, target: "accuracy" };
+
+  const target: "accuracy" | "gap" = accFail ? "accuracy" : "gap";
+  const delta = paramKey === "slope" ? 0.05 : 3;
+
+  const tweak = (b: BoundaryParams, sign: number): BoundaryParams => ({
+    slope: b.slope + (paramKey === "slope" ? sign * delta : 0),
+    intercept: b.intercept + (paramKey === "intercept" ? sign * delta : 0),
+  });
+
+  const pick = (key: string, b: BoundaryParams, sign: number) =>
+    key === boundaryKey ? tweak(b, sign) : b;
+
+  const mPlus = computeMetrics(
+    dataset,
+    predictAll(dataset, pick("b1", b1, 1), pick("b2", b2, 1), usePhase2, pick("b3", b3, 1)),
+  );
+  const mMinus = computeMetrics(
+    dataset,
+    predictAll(dataset, pick("b1", b1, -1), pick("b2", b2, -1), usePhase2, pick("b3", b3, -1)),
+  );
+
+  if (target === "accuracy") {
+    const d = mPlus.accuracy - mMinus.accuracy;
+    return { dir: Math.abs(d) < 0.001 ? 0 : d > 0 ? 1 : -1, target };
+  }
+  const d = mPlus.tprGap - mMinus.tprGap;
+  return { dir: Math.abs(d) < 0.001 ? 0 : d < 0 ? 1 : -1, target };
+}
+
 export function computeMetrics(
   samples: CVSample[],
   preds: PredResult[],
