@@ -195,7 +195,7 @@ function StressResult({ original, fresh }: { original: Metrics; fresh: Metrics }
             : "The boundary you tuned was fit to the specific noise in your training cohort. A new sample from the same underlying population reshuffles who lands near the decision boundary, and the fairness constraint breaks."}
         </p>
         <p className={styles.panelBody} style={{ marginTop: 12 }}>
-          <strong>The misconception:</strong> adding portfolio seemed to "fix" fairness because
+          <strong>The misconception:</strong> adding soft skill seemed to "fix" fairness because
           it happened to be equally distributed across groups <em>in this specific sample</em>.
           But more features don't inherently mean more fair — they give the boundary more degrees
           of freedom, which makes it easier to overfit to one cohort's noise.

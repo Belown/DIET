@@ -4,7 +4,7 @@ export type CVSample = {
   id: number;
   techScore: number;
   experience: number;
-  portfolio: number;
+  softSkill: number;
   group: Group;
   qualified: boolean;
 };
@@ -57,13 +57,13 @@ const GROUP_B_PARAMS = {
   expStd: 14,
 };
 
-const PORTFOLIO_MEAN = 70;
-const PORTFOLIO_STD = 16;
+const SOFT_SKILL_MEAN = 70;
+const SOFT_SKILL_STD = 16;
 
 const QUALIFIED_THRESHOLD = 62;
 
 function scoreSample(s: Omit<CVSample, "qualified" | "id">): number {
-  return 0.3 * s.techScore + 0.3 * s.experience + 0.4 * s.portfolio;
+  return 0.3 * s.techScore + 0.3 * s.experience + 0.4 * s.softSkill;
 }
 
 export function generateDataset(
@@ -87,21 +87,21 @@ export function generateDataset(
       0,
       100,
     );
-    const portfolio = clamp(
-      gaussian(rand, PORTFOLIO_MEAN, PORTFOLIO_STD),
+    const softSkill = clamp(
+      gaussian(rand, SOFT_SKILL_MEAN, SOFT_SKILL_STD),
       0,
       100,
     );
 
     const qualified =
-      scoreSample({ techScore, experience, portfolio, group }) >=
+      scoreSample({ techScore, experience, softSkill, group }) >=
       QUALIFIED_THRESHOLD;
 
     samples.push({
       id: i,
       techScore: round1(techScore),
       experience: round1(experience),
-      portfolio: round1(portfolio),
+      softSkill: round1(softSkill),
       group,
       qualified,
     });
@@ -128,7 +128,7 @@ export type GroupStats = {
   count: number;
   qualifiedCount: number;
   qualifiedRate: number;
-  mean: { techScore: number; experience: number; portfolio: number };
+  mean: { techScore: number; experience: number; softSkill: number };
 };
 
 export function summarizeByGroup(samples: CVSample[]): GroupStats[] {
@@ -141,7 +141,7 @@ export function summarizeByGroup(samples: CVSample[]): GroupStats[] {
       (acc, s) => {
         acc.tech += s.techScore;
         acc.exp += s.experience;
-        acc.port += s.portfolio;
+        acc.port += s.softSkill;
         return acc;
       },
       { tech: 0, exp: 0, port: 0 },
@@ -154,7 +154,7 @@ export function summarizeByGroup(samples: CVSample[]): GroupStats[] {
       mean: {
         techScore: count ? round1(sum.tech / count) : 0,
         experience: count ? round1(sum.exp / count) : 0,
-        portfolio: count ? round1(sum.port / count) : 0,
+        softSkill: count ? round1(sum.port / count) : 0,
       },
     };
   });

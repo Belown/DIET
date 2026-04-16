@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   defaultDataset,
   summarizeByGroup,
@@ -7,12 +8,12 @@ import {
 import styles from "../Phase.module.css";
 
 type View = "table" | "distribution";
-type Feature = "techScore" | "experience" | "portfolio";
+type Feature = "techScore" | "experience" | "softSkill";
 
 const FEATURES: { key: Feature; label: string }[] = [
   { key: "techScore", label: "Tech score" },
   { key: "experience", label: "Experience" },
-  { key: "portfolio", label: "Portfolio" },
+  { key: "softSkill", label: "Soft Skill" },
 ];
 
 const BIN_COUNT = 10;
@@ -95,7 +96,7 @@ export default function DatasetPhase() {
                   <th>#</th>
                   <th>Tech</th>
                   <th>Experience</th>
-                  <th>Portfolio</th>
+                  <th>Soft Skill</th>
                   <th>Group</th>
                   <th>Qualified</th>
                 </tr>
@@ -106,7 +107,7 @@ export default function DatasetPhase() {
                     <td>{s.id}</td>
                     <td>{s.techScore}</td>
                     <td>{s.experience}</td>
-                    <td>{s.portfolio}</td>
+                    <td>{s.softSkill}</td>
                     <td>
                       <span
                         className={`${styles.chip} ${
@@ -154,7 +155,7 @@ export default function DatasetPhase() {
                   </p>
                   <p className={styles.statLine}>
                     Mean tech {g.mean.techScore} · exp {g.mean.experience} ·
-                    portfolio {g.mean.portfolio}
+                    soft skill {g.mean.softSkill}
                   </p>
                 </div>
               ))}
@@ -163,8 +164,15 @@ export default function DatasetPhase() {
         )}
 
         <p className={styles.warn}>
-          Group B sits lower on tech and experience — but the portfolio distributions are roughly equal. That gap is the story you're about to uncover.
+          Group B sits lower on tech and experience — but the soft skill distributions are roughly equal. That gap is the story you're about to uncover.
         </p>
+      </div>
+
+      <div className={styles.continueRow}>
+        <p className={styles.continueHint}>Ready to draw the decision boundary?</p>
+        <Link to="/simulator/classifier" className={styles.continueBtn}>
+          Continue to classifier →
+        </Link>
       </div>
     </div>
   );

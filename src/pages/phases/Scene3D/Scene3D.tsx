@@ -8,12 +8,15 @@ import type { BoundaryParams } from "../../../context/SimulatorContext";
 // Map data (0-100) → Three.js (-5 to 5)
 const d = (v: number) => (v - 50) / 10;
 
+// Data-point sizes (3D) — tweak these to resize all markers at once
+const DOT3D = { tpRadius: 0.09, fpSide: 0.14, fnRadius: 0.1, fnHeight: 0.1, tnRadius: 0.06 };
+
 // Bounding box of ALL data points — planes span the full data range
 const BOUNDS = {
   minTech: Math.min(...defaultDataset.map((s) => s.techScore)),
   maxTech: Math.max(...defaultDataset.map((s) => s.techScore)),
-  minPort: Math.min(...defaultDataset.map((s) => s.portfolio)),
-  maxPort: Math.max(...defaultDataset.map((s) => s.portfolio)),
+  minPort: Math.min(...defaultDataset.map((s) => s.softSkill)),
+  maxPort: Math.max(...defaultDataset.map((s) => s.softSkill)),
 };
 
 // ─── Plane clipping ───────────────────────────────────────────────────────────
@@ -23,10 +26,10 @@ const BOUNDS = {
 // We clip each plane's XZ quad to only the half where it is dominant.
 //
 // Sutherland-Hodgman against the single clip edge:
-//   blue clip: keep points where  s1*x - s2*z >= (i2 - i1)   (data-space x,z = techScore, portfolio)
+//   blue clip: keep points where  s1*x - s2*z >= (i2 - i1)   (data-space x,z = techScore, softSkill)
 //   red  clip: keep points where  s1*x - s2*z <= (i2 - i1)
 
-type XZ = [number, number]; // data-space (techScore, portfolio)
+type XZ = [number, number]; // data-space (techScore, softSkill)
 
 function signedDist(p: XZ, s1: number, s2: number, rhs: number): number {
   return s1 * p[0] - s2 * p[1] - rhs; // positive = blue side
@@ -56,7 +59,7 @@ function clipPolygon(poly: XZ[], keepPositive: boolean, s1: number, s2: number, 
 }
 
 // Convert an XZ polygon on a plane into 3D vertices
-function xzToVertices(poly: XZ[], b: BoundaryParams, axis: "tech" | "portfolio"): number[] {
+function xzToVertices(poly: XZ[], b: BoundaryParams, axis: "tech" | "softSkill"): number[] {
   return poly.flatMap(([x, z]) => {
     const yData = axis === "tech"
       ? b.slope * x + b.intercept
@@ -76,58 +79,76 @@ function triangulateFan(n: number): number[] {
 
 function DataPoints({ hiredSet }: { hiredSet: Set<number> }) {
   const groups = useMemo(() => {
-    const Ah: number[] = [], Bh: number[] = [];
-    const Atn: number[] = [], Btn: number[] = [];
+    const tpA: number[] = [], tpB: number[] = [];
+    const fpA: [number, number, number][] = [], fpB: [number, number, number][] = [];
+    const tnA: number[] = [], tnB: number[] = [];
     const fnA: [number, number, number][] = [];
     const fnB: [number, number, number][] = [];
 
     for (const s of defaultDataset) {
-      const pos: [number, number, number] = [d(s.techScore), d(s.experience), d(s.portfolio)];
+      const pos: [number, number, number] = [d(s.techScore), d(s.experience), d(s.softSkill)];
       const hired = hiredSet.has(s.id);
-      const isFN = s.qualified && !hired;
 
-      if (isFN) {
+      if (hired && s.qualified) {
+        (s.group === "A" ? tpA : tpB).push(...pos);
+      } else if (hired && !s.qualified) {
+        (s.group === "A" ? fpA : fpB).push(pos);
+      } else if (!hired && s.qualified) {
         (s.group === "A" ? fnA : fnB).push(pos);
-      } else if (hired) {
-        (s.group === "A" ? Ah : Bh).push(...pos);
       } else {
-        (s.group === "A" ? Atn : Btn).push(...pos);
+        (s.group === "A" ? tnA : tnB).push(...pos);
       }
     }
 
     return {
-      Ah: new Float32Array(Ah), Bh: new Float32Array(Bh),
-      Atn: new Float32Array(Atn), Btn: new Float32Array(Btn),
+      tpA: new Float32Array(tpA), tpB: new Float32Array(tpB),
+      fpA, fpB,
+      tnA: new Float32Array(tnA), tnB: new Float32Array(tnB),
       fnA, fnB,
     };
   }, [hiredSet]);
 
   return (
     <>
-      <PointCloud positions={groups.Atn} color="#494fdf" opacity={0.5} size={0.12} />
-      <PointCloud positions={groups.Btn} color="#e61e49" opacity={0.5} size={0.12} />
-      <PointCloud positions={groups.Ah}  color="#494fdf" opacity={1}  size={0.18} />
-      <PointCloud positions={groups.Bh}  color="#e61e49" opacity={1}  size={0.18} />
-      <FNPoints positions={groups.fnA} color="#494fdf" />
-      <FNPoints positions={groups.fnB} color="#e61e49" />
+      {/* TN: small dim spheres, group color */}
+      <SphereCloud positions={groups.tnA} color="#494fdf" opacity={0.15} radius={DOT3D.tnRadius} />
+      <SphereCloud positions={groups.tnB} color="#e61e49" opacity={0.15} radius={DOT3D.tnRadius} />
+      {/* FP: amber cubes */}
+      <FPPoints positions={groups.fpA} color="#e8a308" />
+      <FPPoints positions={groups.fpB} color="#e8a308" />
+      {/* TP: large solid spheres, group color */}
+      <SphereCloud positions={groups.tpA} color="#494fdf" opacity={1} radius={DOT3D.tpRadius} />
+      <SphereCloud positions={groups.tpB} color="#e61e49" opacity={1} radius={DOT3D.tpRadius} />
+      {/* FN: amber diamonds */}
+      <FNPoints positions={groups.fnA} color="#e8a308" />
+      <FNPoints positions={groups.fnB} color="#e8a308" />
     </>
   );
 }
 
-function PointCloud({ positions, color, opacity, size }: {
-  positions: Float32Array; color: string; opacity: number; size: number;
+function SphereCloud({ positions, color, opacity, radius }: {
+  positions: Float32Array; color: string; opacity: number; radius: number;
 }) {
-  const geo = useMemo(() => {
-    const g = new THREE.BufferGeometry();
-    g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    return g;
-  }, [positions]);
-
-  return (
-    <points geometry={geo}>
-      <pointsMaterial color={color} size={size} sizeAttenuation opacity={opacity} transparent />
-    </points>
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const count = positions.length / 3;
+  const geo = useMemo(() => new THREE.SphereGeometry(radius, 8, 6), [radius]);
+  const mat = useMemo(
+    () => new THREE.MeshStandardMaterial({ color, transparent: true, opacity }),
+    [color, opacity],
   );
+
+  useEffect(() => {
+    if (!meshRef.current || count === 0) return;
+    const matrix = new THREE.Matrix4();
+    for (let i = 0; i < count; i++) {
+      matrix.setPosition(positions[i * 3], positions[i * 3 + 1], positions[i * 3 + 2]);
+      meshRef.current.setMatrixAt(i, matrix);
+    }
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  }, [positions, count]);
+
+  if (count === 0) return null;
+  return <instancedMesh ref={meshRef} args={[geo, mat, count]} />;
 }
 
 // Elongated diamond (bipyramid): tall in Y, narrow in XZ — unmistakably ◆-shaped
@@ -154,7 +175,31 @@ function FNPoints({ positions, color }: {
   positions: [number, number, number][]; color: string;
 }) {
   const meshRef = useRef<THREE.InstancedMesh>(null);
-  const geo = useMemo(() => makeDiamondGeo(0.1, 0.1), []);
+  const geo = useMemo(() => makeDiamondGeo(DOT3D.fnRadius, DOT3D.fnHeight), []);
+  const mat = useMemo(
+    () => new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.9 }),
+    [color],
+  );
+
+  useEffect(() => {
+    if (!meshRef.current || positions.length === 0) return;
+    const matrix = new THREE.Matrix4();
+    positions.forEach(([x, y, z], i) => {
+      matrix.setPosition(x, y, z);
+      meshRef.current!.setMatrixAt(i, matrix);
+    });
+    meshRef.current.instanceMatrix.needsUpdate = true;
+  }, [positions]);
+
+  if (positions.length === 0) return null;
+  return <instancedMesh ref={meshRef} args={[geo, mat, positions.length]} />;
+}
+
+function FPPoints({ positions, color }: {
+  positions: [number, number, number][]; color: string;
+}) {
+  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const geo = useMemo(() => new THREE.BoxGeometry(DOT3D.fpSide, DOT3D.fpSide, DOT3D.fpSide), []);
   const mat = useMemo(
     () => new THREE.MeshStandardMaterial({ color, transparent: true, opacity: 0.9 }),
     [color],
@@ -178,7 +223,7 @@ function FNPoints({ positions, color }: {
 
 function BoundaryPlane({ b1, b2, axis, color }: {
   b1: BoundaryParams; b2: BoundaryParams;
-  axis: "tech" | "portfolio"; color: string;
+  axis: "tech" | "softSkill"; color: string;
 }) {
   const geo = useMemo(() => {
     const { minTech, maxTech, minPort, maxPort } = BOUNDS;
@@ -231,7 +276,7 @@ function Axes() {
       <Html position={[floor, 5.4, floor]} style={{ fontSize: 11, color: "#8d969e", whiteSpace: "nowrap" }}>Exp ↑</Html>
 
       <Line points={[[floor, floor, floor], [floor, floor, 5]]} color="#c9c9cd" lineWidth={1} />
-      <Html position={[floor, floor, 5.4]} style={{ fontSize: 11, color: "#8d969e", whiteSpace: "nowrap" }}>Portfolio →</Html>
+      <Html position={[floor, floor, 5.4]} style={{ fontSize: 11, color: "#8d969e", whiteSpace: "nowrap" }}>Soft Skill →</Html>
 
       {[
         [[5, floor, floor], [5, 5, floor]],
@@ -259,11 +304,11 @@ function SceneContent({ b1, b2, hiredSet }: {
     <>
       <ambientLight intensity={0.7} />
       <directionalLight position={[8, 10, 6]} intensity={0.6} />
-      <OrbitControls enablePan={false} minDistance={6} maxDistance={22} />
+      <OrbitControls enablePan screenSpacePanning minDistance={6} maxDistance={22} />
 
       <Axes />
       <BoundaryPlane b1={b1} b2={b2} axis="tech"      color="#494fdf" />
-      <BoundaryPlane b1={b1} b2={b2} axis="portfolio" color="#e61e49" />
+      <BoundaryPlane b1={b1} b2={b2} axis="softSkill" color="#e61e49" />
       <DataPoints hiredSet={hiredSet} />
     </>
   );
@@ -271,16 +316,69 @@ function SceneContent({ b1, b2, hiredSet }: {
 
 // ─── Public export ────────────────────────────────────────────────────────────
 
+const legendStyle: React.CSSProperties = {
+  position: "absolute", bottom: 12, left: 12,
+  display: "flex", gap: 16, alignItems: "center",
+  background: "rgba(255,255,255,0.85)", backdropFilter: "blur(4px)",
+  borderRadius: 8, padding: "6px 14px",
+  fontSize: 11, color: "#8d969e", pointerEvents: "none",
+};
+
+const iconStyle: React.CSSProperties = {
+  display: "inline-block", width: 12, height: 12, verticalAlign: "middle", marginRight: 4,
+};
+
+function LegendIcon({ type }: { type: "tp" | "fp" | "fn" | "tn" }) {
+  const A = "#494fdf";
+  const B = "#e61e49";
+  const amber = "#e8a308";
+  if (type === "tp") {
+    return (
+      <svg viewBox="0 0 14 14" style={iconStyle}>
+        <path d="M 7,1 A 6,6 0 0,0 7,13 Z" fill={A} opacity="0.9" />
+        <path d="M 7,1 A 6,6 0 0,1 7,13 Z" fill={B} opacity="0.9" />
+      </svg>
+    );
+  }
+  if (type === "fp") {
+    return (
+      <svg viewBox="0 0 14 14" style={iconStyle}>
+        <rect x="2" y="2" width="10" height="10" fill={amber} opacity="0.85" />
+      </svg>
+    );
+  }
+  if (type === "fn") {
+    return (
+      <svg viewBox="0 0 14 14" style={iconStyle}>
+        <polygon points="7,0 14,7 7,14 0,7" fill={amber} opacity="0.9" />
+      </svg>
+    );
+  }
+  // tn
+  return (
+    <svg viewBox="0 0 14 14" style={iconStyle}>
+      <path d="M 7,3 A 4,4 0 0,0 7,11 Z" fill={A} opacity="0.2" />
+      <path d="M 7,3 A 4,4 0 0,1 7,11 Z" fill={B} opacity="0.2" />
+    </svg>
+  );
+}
+
 export function Scene3D({ b1, b2, hiredSet }: {
   b1: BoundaryParams; b2: BoundaryParams; hiredSet: Set<number>;
 }) {
   return (
-    <div style={{ width: "100%", height: 480, borderRadius: 12, overflow: "hidden", background: "#f8f8fb" }}>
+    <div style={{ position: "relative", width: "100%", height: 480, borderRadius: 12, overflow: "hidden", background: "#f8f8fb" }}>
       <Canvas camera={{ position: [9, 7, 9], fov: 48 }} gl={{ antialias: true }}>
         <Suspense fallback={null}>
           <SceneContent b1={b1} b2={b2} hiredSet={hiredSet} />
         </Suspense>
       </Canvas>
+      <div style={legendStyle}>
+        <span><LegendIcon type="tp" />TP</span>
+        <span><LegendIcon type="fp" />FP</span>
+        <span><LegendIcon type="fn" />FN</span>
+        <span><LegendIcon type="tn" />TN</span>
+      </div>
     </div>
   );
 }

@@ -2,7 +2,8 @@
   display: flex;
   flex-direction: column;
   gap: 40px;
-  max-width: 880px;
+  max-width: min(100%, 1200px);
+  width: 100%;
 }
 
 .lede {
@@ -43,8 +44,7 @@
   border-radius: var(--radius-card);
   padding: 24px 28px;
 
-  width: 95%;
-  margin-inline: auto;
+  width: 100%;
 }
 
 .h2 {

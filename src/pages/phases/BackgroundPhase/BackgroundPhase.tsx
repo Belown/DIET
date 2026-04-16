@@ -37,7 +37,7 @@ export default function BackgroundPhase() {
               The blanks aren't blank by accident.
             </h3>
             <p className={styles.conceptB}>
-              When a "portfolio score" is empty, it's rarely random. It might mean a candidate worked a second job through university and had no time for side projects. Strictly enforcing optional fields doesn't just filter for talent, it filters for privilege.
+              When a "soft skill score" is empty, it's rarely random. It might mean a candidate worked a second job through university and had no time for side projects. Strictly enforcing optional fields doesn't just filter for talent, it filters for privilege.
             </p>
           </article>
 
@@ -91,14 +91,14 @@ export default function BackgroundPhase() {
 
           <article className={styles.axis}>
             <span className={`${styles.axisTag} ${styles.axisZ}`}>
-              Z · Portfolio
+              Z · Soft Skill
             </span>
             <div>
               <h3 className={styles.axisT}>
                 An extra dimension — unlocked later.
               </h3>
               <p className={styles.axisB}>
-                Portfolio score captures independent work outside of formal employment — side projects, open-source contributions, self-directed builds. It's a real signal of initiative, but it requires time and resources that not everyone has equally. 
+                Soft skill score captures interpersonal and communication abilities — teamwork, leadership, adaptability, problem-solving in social contexts. It's a real signal of workplace readiness, but how it's measured can vary widely and may reflect cultural norms rather than true capability.
               </p>
             </div>
           </article>

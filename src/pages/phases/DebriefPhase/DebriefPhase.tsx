@@ -30,7 +30,7 @@ const BIAS_TYPES: BiasRow[] = [
     description:
       "Data collection or measurement systematically over- or under-represents certain groups.",
     inDiet:
-      "Tech score and experience systematically under-represent Group B's true ability. Portfolio is the equally-distributed feature that compensates \u2014 illustrating how measurement choices shape outcomes.",
+      "Tech score and experience systematically under-represent Group B's true ability. Soft skill is the equally-distributed feature that compensates \u2014 illustrating how measurement choices shape outcomes.",
   },
   {
     type: "Representation Bias",
@@ -114,7 +114,7 @@ const MITIGATION_METHODS: MitigationRow[] = [
     description:
       "Identifying and addressing biases in the data before training. Techniques include oversampling, undersampling, synthetic data generation, and adversarial debiasing.",
     inDiet:
-      "Phase 2 unlocks the portfolio feature \u2014 an equally-distributed axis that compensates for the skewed tech/experience distributions. This is analogous to dataset augmentation: enriching the feature space to reduce reliance on biased signals.",
+      "Phase 2 unlocks the soft skill feature \u2014 an equally-distributed axis that compensates for the skewed tech/experience distributions. This is analogous to dataset augmentation: enriching the feature space to reduce reliance on biased signals.",
   },
   {
     approach: "Model Selection",

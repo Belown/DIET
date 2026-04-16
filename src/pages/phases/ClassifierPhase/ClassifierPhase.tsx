@@ -11,6 +11,9 @@ import { max } from "three/tsl";
 
 const SW = 420, SH = 300;
 const PAD = { l: 44, r: 16, t: 16, b: 40 };
+
+// Data-point sizes (2D scatter) — tweak these to resize all markers at once
+const DOT = { tp: 3, fp: 6, fn: 3.5, tn: 3 };
 const IW = SW - PAD.l - PAD.r;
 const IH = SH - PAD.t - PAD.b;
 const mx = (v: number) => PAD.l + (v / 100) * IW;
@@ -19,7 +22,7 @@ const my = (v: number) => PAD.t + (1 - v / 100) * IH;
 function ScatterPlot({
   xKey, xLabel, samples, hiredSet, boundary, clipId,
 }: {
-  xKey: "techScore" | "portfolio";
+  xKey: "techScore" | "softSkill";
   xLabel: string;
   samples: CVSample[];
   hiredSet: Set<number>;
@@ -53,35 +56,43 @@ function ScatterPlot({
         transform={`rotate(-90 12 ${PAD.t + IH / 2})`}>↑ Experience</text>
 
       <g clipPath={`url(#${clipId})`}>
-        {/* Layer 1 — rejected non-qualified (TN): tiny dim dots, background noise */}
+        {/* Layer 1 — TN (not qualified, not hired): small dim circles, group color */}
         {samples
           .filter((s) => !hiredSet.has(s.id) && !s.qualified)
           .map((s) => (
             <circle key={s.id}
               cx={mx(s[xKey] as number)} cy={my(s.experience)}
-              r={2.5} fill={s.group === "A" ? "#494fdf" : "#e61e49"} opacity={0.15} />
+              r={DOT.tn} fill={s.group === "A" ? "#494fdf" : "#e61e49"} opacity={0.18} />
           ))}
 
-        {/* Layer 2 — hired (TP + FP): solid filled circles */}
+        {/* Layer 2 — FP (not qualified, hired): medium amber squares */}
         {samples
-          .filter((s) => hiredSet.has(s.id))
+          .filter((s) => hiredSet.has(s.id) && !s.qualified)
+          .map((s) => (
+            <rect key={s.id}
+              x={mx(s[xKey] as number) - DOT.fp / 2} y={my(s.experience) - DOT.fp / 2}
+              width={DOT.fp} height={DOT.fp} fill="#e8a308" opacity={0.85} />
+          ))}
+
+        {/* Layer 3 — TP (qualified, hired): large solid circles, group color */}
+        {samples
+          .filter((s) => hiredSet.has(s.id) && s.qualified)
           .map((s) => (
             <circle key={s.id}
               cx={mx(s[xKey] as number)} cy={my(s.experience)}
-              r={4} fill={s.group === "A" ? "#494fdf" : "#e61e49"} opacity={0.9} />
+              r={DOT.tp} fill={s.group === "A" ? "#494fdf" : "#e61e49"} opacity={0.9} />
           ))}
 
-        {/* Layer 3 — false negatives (FN): diamonds on top, most prominent */}
+        {/* Layer 4 — FN (qualified, not hired): large amber diamonds */}
         {samples
           .filter((s) => s.qualified && !hiredSet.has(s.id))
           .map((s) => {
             const cx = mx(s[xKey] as number);
             const cy = my(s.experience);
-            const r = 5.5;
             return (
               <polygon key={s.id}
-                points={`${cx},${cy - r} ${cx + r},${cy} ${cx},${cy + r} ${cx - r},${cy}`}
-                fill={s.group === "A" ? "#494fdf" : "#e61e49"} opacity={0.9} />
+                points={`${cx},${cy - DOT.fn} ${cx + DOT.fn},${cy} ${cx},${cy + DOT.fn} ${cx - DOT.fn},${cy}`}
+                fill="#e8a308" opacity={0.9} />
             );
           })}
 
@@ -92,21 +103,24 @@ function ScatterPlot({
       <text x={PAD.l + IW * 0.78} y={PAD.t + 22} textAnchor="middle" fontSize="10" fill="#191c1f" opacity="0.3" fontWeight="500">predicted hire</text>
       <text x={PAD.l + IW * 0.22} y={PAD.t + IH - 10} textAnchor="middle" fontSize="10" fill="#191c1f" opacity="0.3" fontWeight="500">predicted reject</text>
 
-      {/* Legend — three entries, left-aligned along the top */}
-      {/* 1. Hired: split circle left=A / right=B */}
-      <path d={`M ${PAD.l+8},${PAD.t+6} A 4,4 0 0,0 ${PAD.l+8},${PAD.t+14} Z`} fill="#494fdf" opacity="0.85" />
-      <path d={`M ${PAD.l+8},${PAD.t+6} A 4,4 0 0,1 ${PAD.l+8},${PAD.t+14} Z`} fill="#e61e49" opacity="0.85" />
-      <text x={PAD.l+15} y={PAD.t+14} fontSize="10" fill="#8d969e">hired</text>
+      {/* Legend — four entries: TP, FP, FN, TN */}
+      {/* 1. TP: large circle, split A/B */}
+      <path d={`M ${PAD.l+9},${PAD.t+5} A 5,5 0 0,0 ${PAD.l+9},${PAD.t+15} Z`} fill="#494fdf" opacity="0.9" />
+      <path d={`M ${PAD.l+9},${PAD.t+5} A 5,5 0 0,1 ${PAD.l+9},${PAD.t+15} Z`} fill="#e61e49" opacity="0.9" />
+      <text x={PAD.l+17} y={PAD.t+14} fontSize="10" fill="#8d969e">TP</text>
 
-      {/* 2. False neg.: split diamond left=A / right=B */}
-      <polygon points={`${PAD.l+56},${PAD.t+6} ${PAD.l+52},${PAD.t+10} ${PAD.l+56},${PAD.t+14}`} fill="#494fdf" opacity="0.9" />
-      <polygon points={`${PAD.l+56},${PAD.t+6} ${PAD.l+60},${PAD.t+10} ${PAD.l+56},${PAD.t+14}`} fill="#e61e49" opacity="0.9" />
-      <text x={PAD.l+64} y={PAD.t+14} fontSize="10" fill="#8d969e">false neg.</text>
+      {/* 2. FP: amber square */}
+      <rect x={PAD.l+36} y={PAD.t+6} width="8" height="8" fill="#e8a308" opacity="0.85" />
+      <text x={PAD.l+48} y={PAD.t+14} fontSize="10" fill="#8d969e">FP</text>
 
-      {/* 3. Rejected (TN): split circle, dim — left=A / right=B */}
-      <path d={`M ${PAD.l+122},${PAD.t+6} A 4,4 0 0,0 ${PAD.l+122},${PAD.t+14} Z`} fill="#494fdf" opacity="0.2" />
-      <path d={`M ${PAD.l+122},${PAD.t+6} A 4,4 0 0,1 ${PAD.l+122},${PAD.t+14} Z`} fill="#e61e49" opacity="0.2" />
-      <text x={PAD.l+129} y={PAD.t+14} fontSize="10" fill="#8d969e">rejected</text>
+      {/* 3. FN: amber diamond */}
+      <polygon points={`${PAD.l+74},${PAD.t+4} ${PAD.l+79},${PAD.t+10} ${PAD.l+74},${PAD.t+16} ${PAD.l+69},${PAD.t+10}`} fill="#e8a308" opacity="0.9" />
+      <text x={PAD.l+83} y={PAD.t+14} fontSize="10" fill="#8d969e">FN</text>
+
+      {/* 4. TN: small dim circle, split A/B */}
+      <path d={`M ${PAD.l+102},${PAD.t+7} A 3,3 0 0,0 ${PAD.l+102},${PAD.t+13} Z`} fill="#494fdf" opacity="0.2" />
+      <path d={`M ${PAD.l+102},${PAD.t+7} A 3,3 0 0,1 ${PAD.l+102},${PAD.t+13} Z`} fill="#e61e49" opacity="0.2" />
+      <text x={PAD.l+109} y={PAD.t+14} fontSize="10" fill="#8d969e">TN</text>
     </svg>
   );
 }
@@ -231,7 +245,7 @@ export default function ClassifierPhase() {
           <button type="button"
             className={`${styles.stepTab} ${step === 2 ? styles.stepTabActive : ""}`}
             onClick={() => setStep(2)}>
-            Phase 2 · Portfolio
+            Phase 2 · Soft Skill
           </button>
         )}
         {phase3Unlocked && (
@@ -256,7 +270,7 @@ export default function ClassifierPhase() {
             </p>
           </div>
 
-          <div className={styles.plotCard} style={{ maxWidth: "80%" }}>
+          <div className={styles.plotCard} style={{ maxWidth: 620, marginInline: "auto" }}>
             <ScatterPlot xKey="techScore" xLabel="Tech Score"
               samples={defaultDataset} hiredSet={hiredSet} boundary={b1} clipId="clip-p1" />
             <SliderBlock label="Boundary · Tech × Experience" boundary={b1} onChange={setB1} />
@@ -266,8 +280,8 @@ export default function ClassifierPhase() {
 
           <UnlockCard
             title="Stuck on the audit?"
-            body="A single line on two features can't satisfy both constraints at once. Unlock portfolio — the third axis the model has been ignoring — and see if it changes the shape of fair."
-            buttonLabel="Unlock Portfolio"
+            body="A single line on two features can't satisfy both constraints at once. Unlock soft skill — the third axis the model has been ignoring — and see if it changes the shape of fair."
+            buttonLabel="Unlock Soft Skill"
             onUnlock={() => { setPhase2Unlocked(true); setStep(2); }}
           />
         </>
@@ -277,11 +291,11 @@ export default function ClassifierPhase() {
       {step === 2 && (
         <>
           <div className={styles.panel}>
-            <p className={styles.panelEyebrow}>Phase 2 · Portfolio unlocked</p>
-            <h2 className={styles.h2}>A second boundary on portfolio.</h2>
+            <p className={styles.panelEyebrow}>Phase 2 · Soft Skill unlocked</p>
+            <h2 className={styles.h2}>A second boundary on soft skill.</h2>
             <p className={styles.panelBody}>
               Candidates rejected by boundary 1 get a second chance here — if they clear the
-              portfolio × experience line, they're hired. Adjust both boundaries and watch the
+              soft skill × experience line, they're hired. Adjust both boundaries and watch the
               fairness gap respond.
             </p>
           </div>
@@ -295,8 +309,8 @@ export default function ClassifierPhase() {
                 <SliderBlock label="Boundary 1" boundary={b1} onChange={setB1} />
               </div>
               <div>
-                <p className={styles.scatterCaption}>Portfolio × Experience</p>
-                <ScatterPlot xKey="portfolio" xLabel="Portfolio"
+                <p className={styles.scatterCaption}>Soft Skill × Experience</p>
+                <ScatterPlot xKey="softSkill" xLabel="Soft Skill"
                   samples={defaultDataset} hiredSet={hiredSet} boundary={b2} clipId="clip-p2b" />
                 <SliderBlock label="Boundary 2" boundary={b2} onChange={setB2} />
               </div>
@@ -321,7 +335,7 @@ export default function ClassifierPhase() {
             <p className={styles.panelEyebrow}>Phase 3 · 3D manifold</p>
             <h2 className={styles.h2}>The decision surface in full.</h2>
             <p className={styles.panelBody}>
-              The blue plane is your tech × experience boundary; the red plane is your portfolio
+              The blue plane is your tech × experience boundary; the red plane is your soft skill
               boundary. Candidates above either plane are hired. Drag to rotate, scroll to zoom.
             </p>
           </div>

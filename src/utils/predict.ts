@@ -5,7 +5,7 @@ export type PredResult = { id: number; hired: boolean };
 
 /**
  * Phase 1: hire if experience >= slope1 * techScore + intercept1
- * Phase 2: hire if experience >= slope2 * portfolio + intercept2  (OR logic — second chance)
+ * Phase 2: hire if experience >= slope2 * softSkill + intercept2  (OR logic — second chance)
  */
 export function predictAll(
   samples: CVSample[],
@@ -16,7 +16,7 @@ export function predictAll(
   return samples.map((s) => {
     const p1 = s.experience >= b1.slope * s.techScore + b1.intercept;
     const p2 =
-      usePhase2 && s.experience >= b2.slope * s.portfolio + b2.intercept;
+      usePhase2 && s.experience >= b2.slope * s.softSkill + b2.intercept;
     return { id: s.id, hired: p1 || p2 };
   });
 }
