@@ -1,7 +1,7 @@
 import { NavLink, Outlet, useLocation, Link } from "react-router-dom";
 import { useState } from "react";
-import Logo from "../Logo/Logo";
-import styles from "./SimulatorLayout.module.css";
+import Logo from "../../components/Logo/Logo";
+import styles from "./Simulator.module.css";
 
 type PipelineNode = {
   slug: string;
@@ -47,7 +47,7 @@ const SIDEBAR_DEFAULT = 280;
 const SIDEBAR_MIN = 235;
 const SIDEBAR_MAX = 480;
 
-export default function SimulatorLayout() {
+export default function Simulator() {
   const location = useLocation();
   const activeSlug = location.pathname.split("/")[2] ?? "background";
   const activeNode = NODES.find((n) => n.slug === activeSlug) ?? NODES[0];

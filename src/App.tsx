@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import Landing from "./pages/Landing/Landing";
-import About from "./pages/About";
-import SimulatorLayout from "./components/SimulatorLayout/SimulatorLayout";
+import About from "./pages/About/About";
+import Simulator from "./pages/Simulator/Simulator";
 import BackgroundPhase from "./pages/phases/BackgroundPhase/BackgroundPhase";
 import DatasetPhase from "./pages/phases/DatasetPhase/DatasetPhase";
 import ClassifierPhase from "./pages/phases/ClassifierPhase/ClassifierPhase";
@@ -14,7 +14,7 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/about" element={<About />} />
-      <Route path="/simulator" element={<SimulatorProvider><SimulatorLayout /></SimulatorProvider>}>
+      <Route path="/simulator" element={<SimulatorProvider><Simulator /></SimulatorProvider>}>
         <Route index element={<Navigate to="background" replace />} />
         <Route path="background" element={<BackgroundPhase />} />
         <Route path="dataset" element={<DatasetPhase />} />

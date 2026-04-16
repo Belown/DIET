@@ -312,7 +312,7 @@ function BoundaryDiagram() {
           className={styles.axisLabel}
           transform={`rotate(-90 16 ${padT + innerH / 2})`}
         >
-          ↑ Experience
+          Experience →
         </text>
       </svg>
       <figcaption className={styles.diagramCap}>

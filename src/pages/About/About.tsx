@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import Nav from "../components/Nav/Nav";
-import Footer from "../components/Footer/Footer";
+import Nav from "../../components/Nav/Nav";
+import Footer from "../../components/Footer/Footer";
 import styles from "./About.module.css";
 
 export default function About() {

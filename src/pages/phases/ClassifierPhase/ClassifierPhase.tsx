@@ -57,7 +57,7 @@ function ScatterPlot({
 
       <text x={PAD.l + IW / 2} y={SH - 4} textAnchor="middle" fontSize="11" fill="#8d969e">{xLabel} →</text>
       <text x={12} y={PAD.t + IH / 2} textAnchor="middle" fontSize="11" fill="#8d969e"
-        transform={`rotate(-90 12 ${PAD.t + IH / 2})`}>↑ {yLabel}</text>
+        transform={`rotate(-90 12 ${PAD.t + IH / 2})`}>{yLabel} →</text>
 
       <g clipPath={`url(#${clipId})`}>
         {/* Layer 1 — TN (not qualified, not hired): small dim circles with ring outline, group color */}
