@@ -1,19 +1,56 @@
 /* ─── Chapter shell ──────────────────────────────────────────────────────── */
 
 .phase {
-  display: flex;
-  flex-direction: column;
-  gap: 40px;
-  max-width: min(100%, 1200px);
+  position: relative;
   width: 100%;
+  min-height: 100%;
+  padding-top: 12px;
 }
 
-.lede {
-  font-size: clamp(17px, 1.3vw, 20px);
-  line-height: 1.6;
-  color: var(--rui-slate);
-  margin: 0;
-  max-width: 64ch;
+.scene {
+  padding: 20px clamp(20px, 4vw, 48px) 232px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sceneInner {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  animation: sceneIn 0.4s ease-out both;
+}
+
+@keyframes sceneIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.overlayChoices {
+  position: fixed;
+  bottom: 224px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: choicesUp 0.3s ease-out both;
+  padding: 12px;
+}
+
+.overlayChoices > * {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(25, 28, 31, 0.16);
+  border-radius: 8px;
+  padding: 10px;
+  box-shadow: 0 16px 34px rgba(25, 28, 31, 0.16);
+  backdrop-filter: blur(10px);
+}
+
+@keyframes choicesUp {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .panel {
@@ -56,43 +93,6 @@
   margin: 0 0 20px;
   color: var(--rui-dark);
 }
-
-/* ─── Step tabs ──────────────────────────────────────────────────────────── */
-
-.stepTabs {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--rui-surface);
-  border: 1px solid var(--rui-border);
-  border-radius: 9999px;
-  width: fit-content;
-}
-
-.stepTab {
-  appearance: none;
-  border: 0;
-  background: transparent;
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--rui-slate);
-  padding: 8px 20px;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-}
-
-.stepTab:hover { color: var(--rui-dark); }
-
-.stepTabActive {
-  background: var(--rui-dark);
-  color: var(--rui-white);
-}
-
-.stepTabActive:hover { color: var(--rui-white); }
 
 /* ─── Sliders ────────────────────────────────────────────────────────────── */
 
@@ -304,126 +304,6 @@
   font-style: italic;
 }
 
-/* ─── Story chat (intro) ─────────────────────────────────────────────────── */
-
-.storyHeader {
-  text-align: center;
-  margin-bottom: 8px;
-}
-
-.storyChat {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-  background: var(--rui-surface);
-  border: 1px solid var(--rui-border);
-  border-radius: var(--radius-card);
-  padding: 32px clamp(20px, 4vw, 36px);
-  min-height: 320px;
-}
-
-.storyMessage {
-  display: flex;
-  align-items: flex-end;
-  gap: 14px;
-  max-width: 80%;
-  animation: bubbleIn 0.35s cubic-bezier(0.34, 1.4, 0.64, 1) both;
-}
-
-.storyAvatar {
-  width: 48px;
-  height: 48px;
-  object-fit: contain;
-  flex-shrink: 0;
-  background: var(--rui-white);
-  border: 1px solid var(--rui-border);
-  border-radius: 50%;
-  padding: 4px;
-}
-
-.storyBubble {
-  background: var(--rui-white);
-  border: 1px solid var(--rui-border);
-  border-radius: 16px 16px 16px 4px;
-  padding: 12px 18px;
-  box-shadow: 0 1px 3px rgba(25, 28, 31, 0.04);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.storySpeaker {
-  font-family: var(--font-display);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
-  text-transform: uppercase;
-  color: var(--rui-blue);
-}
-
-.storyText {
-  margin: 0;
-  font-size: 15px;
-  line-height: 1.55;
-  color: var(--rui-dark);
-}
-
-.storyTyping {
-  display: inline-flex;
-  gap: 5px;
-  padding: 14px 18px;
-  background: var(--rui-white);
-  border: 1px solid var(--rui-border);
-  border-radius: 16px;
-  width: fit-content;
-  margin-left: 62px;
-}
-
-.storyTyping span {
-  width: 7px;
-  height: 7px;
-  background: var(--rui-gray);
-  border-radius: 50%;
-  animation: typingDot 1.2s ease-in-out infinite;
-}
-
-.storyTyping span:nth-child(2) { animation-delay: 0.2s; }
-.storyTyping span:nth-child(3) { animation-delay: 0.4s; }
-
-.storyAdvance {
-  align-self: center;
-  appearance: none;
-  border: 1px solid var(--rui-border);
-  background: var(--rui-white);
-  color: var(--rui-dark);
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.4px;
-  padding: 10px 24px;
-  border-radius: 9999px;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.15s ease, border-color 0.15s ease;
-  margin-top: 4px;
-}
-
-.storyAdvance:hover {
-  background: var(--rui-dark);
-  color: var(--rui-white);
-  border-color: var(--rui-dark);
-  transform: translateY(-1px);
-}
-
-@keyframes bubbleIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes typingDot {
-  0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
-  30% { opacity: 1; transform: translateY(-3px); }
-}
-
 /* ─── Concept cards ──────────────────────────────────────────────────────── */
 
 .conceptGrid {
@@ -443,7 +323,7 @@
 .conceptLabel {
   font-family: var(--font-display);
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--rui-blue);
@@ -454,7 +334,7 @@
 .conceptTitle {
   font-family: var(--font-display);
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   margin: 0 0 8px;
   color: var(--rui-dark);
   line-height: 1.3;
@@ -516,7 +396,7 @@
 .regionName {
   font-family: var(--font-display);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--rui-dark);
   line-height: 1.2;
 }
@@ -540,7 +420,7 @@
 .sampleLbl {
   font-family: var(--font-display);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 500;
   min-width: 140px;
   color: var(--rui-dark);
   font-variant-numeric: tabular-nums;
@@ -612,7 +492,7 @@
   margin: 0 0 6px;
   font-family: var(--font-display);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--rui-dark);
 }
 
@@ -640,67 +520,246 @@
   color: var(--rui-gray);
 }
 
-/* ─── Detective intro row ───────────────────────────────────────────────── */
-
-.detectiveIntro {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+.caseSheet {
+  position: relative;
+  width: min(760px, 100%);
+  margin: 4px auto 0;
+  padding: clamp(26px, 4vw, 42px);
+  background:
+    linear-gradient(90deg, rgba(25, 28, 31, 0.035) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(25, 28, 31, 0.035) 1px, transparent 1px),
+    #fffef9;
+  background-size: 28px 28px;
+  border: 1px solid #d8d0bc;
+  border-radius: 6px;
+  box-shadow:
+    0 22px 42px rgba(25, 28, 31, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.75);
+  animation: sheetIn 0.35s ease-out both;
 }
 
-.detectiveImage {
-  width: 100px;
-  height: auto;
-  object-fit: contain;
-  flex-shrink: 0;
-  animation: detectivePatrol 4.6s ease-in-out infinite;
-  transform-origin: center bottom;
+.caseSheetWide {
+  width: min(1120px, 100%);
 }
 
-@keyframes detectivePatrol {
-  0% {
-    transform: translateX(-110px) rotate(-2deg) scaleX(-1);
-  }
-  10% {
-    transform: translateX(-78px) rotate(4deg) scaleX(-1);
-  }
-  20% {
-    transform: translateX(-46px) rotate(-4deg) scaleX(-1);
-  }
-  30% {
-    transform: translateX(-14px) rotate(4deg) scaleX(-1);
-  }
-  45% {
-    transform: translateX(22px) rotate(-1deg) scaleX(-1);
-  }
-  50% {
-    transform: translateX(22px) rotate(0deg) scaleX(1);
-  }
-  60% {
-    transform: translateX(-10px) rotate(-4deg) scaleX(1);
-  }
-  70% {
-    transform: translateX(-42px) rotate(4deg) scaleX(1);
-  }
-  80% {
-    transform: translateX(-74px) rotate(-4deg) scaleX(1);
-  }
-  90% {
-    transform: translateX(-102px) rotate(3deg) scaleX(1);
-  }
-  100% {
-    transform: translateX(-110px) rotate(-2deg) scaleX(-1);
-  }
+.caseSheet::before {
+  content: "";
+  position: absolute;
+  inset: 12px;
+  border: 1px solid rgba(25, 28, 31, 0.14);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.caseSheetClip {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 92px;
+  height: 28px;
+  transform: translateX(-50%);
+  border: 2px solid rgba(25, 28, 31, 0.32);
+  border-bottom: 0;
+  border-radius: 18px 18px 0 0;
+  background: #d9dadd;
+  box-shadow: inset 0 5px 0 rgba(255, 255, 255, 0.45);
+}
+
+.caseSheetHeader,
+.caseSheetBody,
+.caseSheetDivider,
+.caseSheetNotes,
+.caseSheetLandscape {
+  position: relative;
+  z-index: 1;
+}
+
+.caseSheetLandscape {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(540px, 1.18fr);
+  align-items: start;
+  gap: clamp(24px, 3vw, 40px);
+}
+
+.caseSheetBrief {
+  min-width: 0;
+}
+
+.caseSheetKicker {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--rui-gray);
+}
+
+.caseSheetTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4.2vw, 46px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.05;
+  color: var(--rui-dark);
+}
+
+.caseSheetBody {
+  max-width: 48ch;
+  margin: 22px 0 0;
+  font-size: clamp(16px, 1.6vw, 19px);
+  line-height: 1.7;
+  color: var(--rui-slate);
+}
+
+.caseSheetDivider {
+  height: 1px;
+  margin: 26px 0 20px;
+  background: linear-gradient(90deg, rgba(25, 28, 31, 0.42), rgba(25, 28, 31, 0.06));
+}
+
+.caseSheetNotes {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.caseSheetNotes li {
+  position: relative;
+  padding-left: 22px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--rui-dark);
+}
+
+.caseSheetNotes li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.72em;
+  width: 8px;
+  height: 8px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: var(--rui-dark);
+}
+
+.caseSheetExercise {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: 20px;
+  margin-top: 0;
+}
+
+.caseSheetExercise .panel {
+  height: 100%;
+  background: rgba(244, 244, 244, 0.76);
+  border: 1px solid rgba(25, 28, 31, 0.12);
+  border-radius: 6px;
+  padding: 22px;
+}
+
+.caseSheetExercise .plotCard {
+  max-width: none;
+  margin-inline: 0;
+  border-radius: 6px;
+  padding: 20px 22px;
+}
+
+@keyframes sheetIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.chapterTitle {
+  position: absolute;
+  top: 0;
+  left: clamp(20px, 4vw, 48px);
+  z-index: 3;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  max-width: calc(100% - 40px);
+  padding: 10px 16px 11px;
+  background: var(--rui-white);
+  border: 1px solid var(--rui-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 24px rgba(25, 28, 31, 0.08);
+}
+
+.chapterKicker {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  color: var(--rui-blue);
+  white-space: nowrap;
+}
+
+.chapterName {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 2vw, 24px);
+  font-weight: 500;
+  letter-spacing: 0;
+  line-height: 1.1;
+  color: var(--rui-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 640px) {
-  .detectiveIntro {
-    align-items: flex-start;
+  .phase {
+    padding-top: 16px;
   }
 
-  .detectiveImage {
-    width: 92px;
+  .scene {
+    padding-inline: 12px;
+    padding-bottom: 248px;
+  }
+
+  .overlayChoices {
+    bottom: 232px;
+    width: calc(100vw - 24px);
+    padding-inline: 0;
+  }
+
+  .chapterTitle {
+    left: 12px;
+    right: 12px;
+    max-width: none;
+    justify-content: flex-start;
+    gap: 10px;
+    padding-inline: 12px;
+  }
+
+  .caseSheet {
+    padding: 24px 20px;
+    margin-top: 0;
+  }
+
+  .caseSheetTitle {
+    font-size: 27px;
+  }
+
+  .caseSheetExercise {
+    grid-template-columns: 1fr;
+  }
+
+  .caseSheetLandscape {
+    grid-template-columns: 1fr;
+  }
+
+  .caseSheetExercise .panel,
+  .caseSheetExercise .plotCard {
+    padding: 18px;
   }
 }
 
@@ -723,7 +782,7 @@
 .accLabel {
   font-family: var(--font-display);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -753,7 +812,7 @@
 .accValue {
   font-family: var(--font-display);
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   text-align: right;
   color: var(--rui-dark);
   font-variant-numeric: tabular-nums;

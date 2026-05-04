@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import Logo from "../../components/Logo/Logo";
 import Chapter1Placeholder from "./Chapter1-Placeholder/Chapter1Placeholder";
@@ -24,59 +24,105 @@ const CHAPTERS: ChapterMeta[] = [
 
 export default function Chapters() {
   const [active, setActive] = useState<ChapterId>("ch2");
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  const chromeRef = useRef<HTMLDivElement>(null);
 
   const activeIndex = CHAPTERS.findIndex((c) => c.id === active);
   const progress = ((activeIndex + 0.5) / CHAPTERS.length) * 100;
 
+  useEffect(() => {
+    if (!timelineOpen) return;
+
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      if (!chromeRef.current?.contains(event.target as Node)) {
+        setTimelineOpen(false);
+      }
+    };
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setTimelineOpen(false);
+      }
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [timelineOpen]);
+
   return (
     <div className={styles.shell}>
-      <header className={styles.topbar}>
-        <Logo />
-        <Link to="/" className={styles.backLink}>
-          ← Back to landing
-        </Link>
-      </header>
+      <div className={styles.chrome} ref={chromeRef}>
+        <header className={styles.topbar}>
+          <div className={styles.topbarLeft}>
+            <Logo />
+            <button
+              type="button"
+              className={styles.timelineToggle}
+              onClick={() => setTimelineOpen((o) => !o)}
+              aria-expanded={timelineOpen}
+              aria-controls="chapters-timeline"
+              aria-label="Toggle chapters timeline"
+            >
+              <span className={`${styles.timelineToggleIcon} ${timelineOpen ? styles.timelineToggleIconOpen : ""}`} aria-hidden />
+              Chapters
+            </button>
+          </div>
+          <Link to="/" className={styles.backLink}>
+            ← Back to landing
+          </Link>
+        </header>
 
-      <nav className={styles.timeline} aria-label="Chapters">
-        <div className={styles.timelineTrack} aria-hidden>
-          <div
-            className={styles.timelineTrackFill}
-            style={{ ["--progress" as string]: `${progress}%` }}
-          />
+        <div
+          id="chapters-timeline"
+          className={`${styles.timelineWrapper} ${timelineOpen ? styles.timelineWrapperOpen : ""}`}
+        >
+          <nav className={styles.timeline} aria-label="Chapters">
+            <div className={styles.timelineTrack} aria-hidden>
+              <div
+                className={styles.timelineTrackFill}
+                style={{ ["--progress" as string]: `${progress}%` }}
+              />
+            </div>
+            <ol className={styles.timelineList}>
+              {CHAPTERS.map((c, i) => {
+                const isActive = c.id === active;
+                const isPast = i < activeIndex;
+                return (
+                  <li key={c.id} className={styles.timelineItem}>
+                    <button
+                      type="button"
+                      className={[
+                        styles.timelineNode,
+                        isPast ? styles.timelineNodePast : "",
+                        isActive ? styles.timelineNodeActive : "",
+                      ]
+                        .filter(Boolean)
+                        .join(" ")}
+                      onClick={() => setActive(c.id)}
+                      aria-current={isActive ? "step" : undefined}
+                    >
+                      <span className={styles.timelineDot} aria-hidden />
+                      <span className={styles.timelineMeta}>
+                        <span className={styles.timelineNum}>Chapter {c.num}</span>
+                        <span className={styles.timelineTitle}>{c.title}</span>
+                        <span className={styles.timelineHint}>{c.hint}</span>
+                      </span>
+                      {c.status === "draft" && (
+                        <span className={styles.timelineBadge}>Soon</span>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          </nav>
         </div>
-        <ol className={styles.timelineList}>
-          {CHAPTERS.map((c, i) => {
-            const isActive = c.id === active;
-            const isPast = i < activeIndex;
-            return (
-              <li key={c.id} className={styles.timelineItem}>
-                <button
-                  type="button"
-                  className={[
-                    styles.timelineNode,
-                    isPast ? styles.timelineNodePast : "",
-                    isActive ? styles.timelineNodeActive : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  onClick={() => setActive(c.id)}
-                  aria-current={isActive ? "step" : undefined}
-                >
-                  <span className={styles.timelineDot} aria-hidden />
-                  <span className={styles.timelineMeta}>
-                    <span className={styles.timelineNum}>Chapter {c.num}</span>
-                    <span className={styles.timelineTitle}>{c.title}</span>
-                    <span className={styles.timelineHint}>{c.hint}</span>
-                  </span>
-                  {c.status === "draft" && (
-                    <span className={styles.timelineBadge}>Soon</span>
-                  )}
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
+      </div>
 
       <main className={styles.canvas}>
         <div key={active} className={styles.canvasBody}>
