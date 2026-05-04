@@ -41,6 +41,12 @@ const NODES: PipelineNode[] = [
     label: "Debrief",
     hint: "Bias taxonomy and takeaways.",
   },
+  {
+    slug: "sampling-bias",
+    step: "06",
+    label: "Sampling Bias",
+    hint: "Chapter 2: how data collection shapes outcomes.",
+  },
 ];
 
 const SIDEBAR_DEFAULT = 280;
