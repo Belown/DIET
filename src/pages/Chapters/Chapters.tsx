@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Logo from "../../components/Logo/Logo";
 import Chapter1Placeholder from "./Chapter1-Placeholder/Chapter1Placeholder";
 import Chapter2SamplingBias from "./Chapter2-SamplingBias/Chapter2SamplingBias";
@@ -22,13 +22,31 @@ const CHAPTERS: ChapterMeta[] = [
   { id: "ch3", num: "03", title: "TBD",      hint: "TBD", status: "draft" },
 ];
 
+const isChapterId = (value: string | null): value is ChapterId =>
+  value === "ch1" || value === "ch2" || value === "ch3";
+
 export default function Chapters() {
-  const [active, setActive] = useState<ChapterId>("ch2");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const chapterParam = searchParams.get("chapter");
+  const initialChapter = isChapterId(chapterParam) ? chapterParam : "ch1";
+  const [active, setActive] = useState<ChapterId>(initialChapter);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const chromeRef = useRef<HTMLDivElement>(null);
 
   const activeIndex = CHAPTERS.findIndex((c) => c.id === active);
   const progress = ((activeIndex + 0.5) / CHAPTERS.length) * 100;
+
+  useEffect(() => {
+    const chapter = searchParams.get("chapter");
+    if (isChapterId(chapter) && chapter !== active) {
+      setActive(chapter);
+    }
+  }, [active, searchParams]);
+
+  const selectChapter = (chapter: ChapterId) => {
+    setActive(chapter);
+    setSearchParams({ chapter });
+  };
 
   useEffect(() => {
     if (!timelineOpen) return;
@@ -103,7 +121,7 @@ export default function Chapters() {
                       ]
                         .filter(Boolean)
                         .join(" ")}
-                      onClick={() => setActive(c.id)}
+                      onClick={() => selectChapter(c.id)}
                       aria-current={isActive ? "step" : undefined}
                     >
                       <span className={styles.timelineDot} aria-hidden />

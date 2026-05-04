@@ -1,50 +1,45 @@
 ﻿import { useState, useMemo, useEffect } from "react";
 import styles from "./Chapter2SamplingBias.module.css";
-import portraitAlarmed from "./detective/Portrait/alarmed.png";
-import portraitConfident from "./detective/Portrait/confident.png";
-import portraitConfused from "./detective/Portrait/confused.png";
-import portraitEncouraging from "./detective/Portrait/encouraging.png";
-import portraitHappy from "./detective/Portrait/happy.png";
-import portraitNeutral from "./detective/Portrait/neutral.png";
-import portraitSad from "./detective/Portrait/sad.png";
-import portraitSerious from "./detective/Portrait/serious.png";
-import portraitShocked from "./detective/Portrait/shocked.png";
-import portraitSuspicious from "./detective/Portrait/suspecious.png";
-import portraitThoughtful from "./detective/Portrait/thoughtful.png";
-import portraitWorried from "./detective/Portrait/worried.png";
-import NarrativeBox from "./components/NarrativeBox/NarrativeBox";
-import ChoiceList from "./components/ChoiceList/ChoiceList";
-import BoundaryExercise from "./components/BoundaryExercise";
-import BoundaryReveal from "./components/BoundaryReveal";
-import MissionPlanner from "./components/MissionPlanner";
-import VerdictPanel from "./components/VerdictPanel";
+import { BoundaryExercise, BoundaryReveal, ChoiceList, MissionPlanner, NarrativeBox, VerdictPanel } from "./components";
 import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
+import { portraits } from "./detective/portraits";
 import type { PassageId, Choice } from "./passages";
 import { PASSAGES } from "./passages";
 import { accOf, calcMissionCost, DEMO_BOUNDARY_START, DEMO_FULL, DEMO_INIT, summarizeStrategy } from "./simulation";
 import type { DemoBoundary, MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "./types";
 
+type NarrativeLocation = {
+  passage: PassageId;
+  chunkIndex: number;
+  text: string;
+  current?: boolean;
+};
+
+const isSameNarrativeLocation = (a: NarrativeLocation, b: NarrativeLocation) =>
+  a.passage === b.passage && a.chunkIndex === b.chunkIndex;
+
 const getPortraitForText = (text: string) => {
   const lower = text.toLowerCase();
 
-  if (lower.includes("prison") || lower.includes("convicts") || lower.includes("flags us")) return portraitAlarmed;
-  if (lower.includes("collapsed") || lower.includes("wrong") || lower.includes("coin flip")) return portraitShocked;
-  if (lower.includes("blind spots") || lower.includes("gaps remain") || lower.includes("no going back")) return portraitWorried;
-  if (lower.includes("did you") || lower.includes("why?") || lower.includes("what to ask")) return portraitConfused;
-  if (lower.includes("suspect") || lower.includes("threat") || lower.includes("police")) return portraitSuspicious;
-  if (lower.includes("stands down") || lower.includes("little better")) return portraitSad;
-  if (lower.includes("getting smarter") || lower.includes("sharpening") || lower.includes("made a difference")) return portraitHappy;
-  if (lower.includes("pick where") || lower.includes("add more") || lower.includes("adjust") || lower.includes("plan")) return portraitEncouraging;
-  if (lower.includes("build the dataset") || lower.includes("final mission") || lower.includes("close the gaps")) return portraitConfident;
-  if (lower.includes("sampling bias") || lower.includes("accuracy") || lower.includes("data")) return portraitThoughtful;
-  if (lower.includes("listen carefully") || lower.includes("read the sheet") || lower.includes("you have three days")) return portraitSerious;
+  if (lower.includes("prison") || lower.includes("convicts") || lower.includes("flags us")) return portraits.alarmed;
+  if (lower.includes("collapsed") || lower.includes("wrong") || lower.includes("coin flip")) return portraits.shocked;
+  if (lower.includes("blind spots") || lower.includes("gaps remain") || lower.includes("no going back")) return portraits.worried;
+  if (lower.includes("did you") || lower.includes("why?") || lower.includes("what to ask")) return portraits.confused;
+  if (lower.includes("suspect") || lower.includes("threat") || lower.includes("police")) return portraits.suspicious;
+  if (lower.includes("stands down") || lower.includes("little better")) return portraits.sad;
+  if (lower.includes("getting smarter") || lower.includes("sharpening") || lower.includes("made a difference")) return portraits.happy;
+  if (lower.includes("pick where") || lower.includes("add more") || lower.includes("adjust") || lower.includes("plan")) return portraits.encouraging;
+  if (lower.includes("build the dataset") || lower.includes("final mission") || lower.includes("close the gaps")) return portraits.confident;
+  if (lower.includes("sampling bias") || lower.includes("accuracy") || lower.includes("data")) return portraits.thoughtful;
+  if (lower.includes("listen carefully") || lower.includes("read the sheet") || lower.includes("you have three days")) return portraits.serious;
 
-  return portraitNeutral;
+  return portraits.neutral;
 };
 
 export default function Chapter2SamplingBias() {
   const [passage, setPassage] = useState<PassageId>("intro");
   const [chunkIndex, setChunkIndex] = useState(0);
+  const [narrativeHistory, setNarrativeHistory] = useState<NarrativeLocation[]>([]);
   const [demoBoundary, setDemoBoundary] = useState<DemoBoundary>(DEMO_BOUNDARY_START);
   const [currentDay, setCurrentDay] = useState(0);
   const [dayPlans, setDayPlans] = useState<MissionPlan[][]>([[], [], []]);
@@ -264,8 +259,40 @@ export default function Chapter2SamplingBias() {
     return Boolean(chunks && chunkIndex < chunks.length - 1);
   }, [passage, chunkIndex]);
 
+  const rememberCurrentChat = () => {
+    const currentLocation = { passage, chunkIndex, text: passageText };
+    setNarrativeHistory((prev) => {
+      if (prev.some((item) => isSameNarrativeLocation(item, currentLocation))) return prev;
+      return [...prev, currentLocation];
+    });
+  };
+
+  const dialogueHistory = useMemo(() => {
+    const currentLocation: NarrativeLocation = { passage, chunkIndex, text: passageText };
+    const hasCurrent = narrativeHistory.some((item) => isSameNarrativeLocation(item, currentLocation));
+    const history = hasCurrent ? narrativeHistory : [...narrativeHistory, currentLocation];
+
+    return history.map((item) => ({
+      ...item,
+      current: isSameNarrativeLocation(item, currentLocation),
+    }));
+  }, [chunkIndex, narrativeHistory, passage, passageText]);
+
+  const handleHistorySelect = (index: number) => {
+    const selected = dialogueHistory[index];
+    if (!selected || selected.current) return;
+    setPassage(selected.passage);
+    setChunkIndex(selected.chunkIndex);
+    setShowChoices(false);
+  };
+
   const handleAdvance = () => {
+    if (passage === "demo-intro") {
+      return;
+    }
+
     if (hasMoreChunks) {
+      rememberCurrentChat();
       setChunkIndex((idx) => idx + 1);
       return;
     }
@@ -273,6 +300,7 @@ export default function Chapter2SamplingBias() {
     if (passageChoices.length === 1) {
       const c = passageChoices[0];
       c.action?.();
+      rememberCurrentChat();
       setPassage(c.nextPassage);
       setChunkIndex(0);
     } else if (passageChoices.length > 1) {
@@ -280,8 +308,16 @@ export default function Chapter2SamplingBias() {
     }
   };
 
+  const submitBoundaryExercise = () => {
+    if (passage !== "demo-intro") return;
+    rememberCurrentChat();
+    setPassage("demo-reveal");
+    setChunkIndex(0);
+  };
+
   const handleChoice = (nextPassage: PassageId, action?: () => void) => {
     action?.();
+    rememberCurrentChat();
     setPassage(nextPassage);
     setChunkIndex(0);
   };
@@ -292,6 +328,7 @@ export default function Chapter2SamplingBias() {
     const nextId: PassageId =
       passage === "day1-plan" ? "day1-debrief" :
       passage === "day2-plan" ? "day2-debrief" : "day3-debrief";
+    rememberCurrentChat();
     setPassage(nextId);
   };
 
@@ -303,6 +340,8 @@ export default function Chapter2SamplingBias() {
             boundary={demoBoundary}
             setBoundary={setDemoBoundary}
             trainingAccuracy={pct(demoTrainAcc)}
+            trainingAccuracyValue={demoTrainAcc}
+            onSubmit={submitBoundaryExercise}
           />
         );
       }
@@ -380,6 +419,8 @@ export default function Chapter2SamplingBias() {
       <NarrativeBox
         text={passageText}
         portraitSrc={portraitSrc}
+        history={dialogueHistory}
+        onHistorySelect={handleHistorySelect}
         onAdvance={handleAdvance}
       />
 

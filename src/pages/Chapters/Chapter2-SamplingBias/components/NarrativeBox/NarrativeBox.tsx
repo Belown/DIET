@@ -1,18 +1,34 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import historyIcon from "../../assets/history-icon.svg";
 import styles from "./NarrativeBox.module.css";
 
 interface NarrativeBoxProps {
   text: string;
   portraitSrc: string;
+  history?: DialogueHistoryItem[];
+  onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
+}
+
+export interface DialogueHistoryItem {
+  text: string;
+  current?: boolean;
 }
 
 const CHAR_SPEED = 25;
 
-export default function NarrativeBox({ text, portraitSrc, onAdvance }: NarrativeBoxProps) {
+export default function NarrativeBox({
+  text,
+  portraitSrc,
+  history = [],
+  onHistorySelect,
+  onAdvance,
+}: NarrativeBoxProps) {
   const [displayedLength, setDisplayedLength] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hasPastDialogue = history.some((item) => !item.current);
 
   const complete = useCallback(() => {
     if (timerRef.current) {
@@ -26,6 +42,7 @@ export default function NarrativeBox({ text, portraitSrc, onAdvance }: Narrative
   useEffect(() => {
     setDisplayedLength(0);
     setIsComplete(false);
+    setIsHistoryOpen(false);
 
     if (!text.length) {
       setIsComplete(true);
@@ -68,28 +85,91 @@ export default function NarrativeBox({ text, portraitSrc, onAdvance }: Narrative
     onAdvance?.();
   };
 
+  const handleHistoryClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsHistoryOpen((prev) => !prev);
+  };
+
+  const handleHistorySelect = (index: number) => {
+    setIsHistoryOpen(false);
+    if (!history[index]?.current) {
+      onHistorySelect?.(index);
+    }
+  };
+
   return (
-    <div className={styles.chatbox} onClick={handleClick} role="region" aria-label="Narrative">
-      <div className={styles.namePlate}>Detective</div>
-      <div className={styles.chatboxInner}>
-        <div className={styles.portraitFrame} aria-hidden="true">
-          <img src={portraitSrc} alt="" className={styles.portrait} />
-        </div>
-        <p className={styles.chatboxText}>
-          {text.slice(0, displayedLength)}
-          {!isComplete && <span className={styles.cursor} aria-hidden="true" />}
-        </p>
-        {isComplete && (
-          <button
-            type="button"
-            className={styles.advanceBtn}
-            onClick={handleAdvanceClick}
-            aria-label="Advance"
+    <>
+      {isHistoryOpen && (
+        <div className={styles.historyOverlay} onClick={() => setIsHistoryOpen(false)}>
+          <div
+            className={styles.historyDialog}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dialogue-history-title"
+            onClick={(e) => e.stopPropagation()}
           >
-            ▼
-          </button>
-        )}
+            <div className={styles.historyHeader}>
+              <h2 id="dialogue-history-title" className={styles.historyTitle}>
+                Dialogue History
+              </h2>
+              <button
+                type="button"
+                className={styles.closeBtn}
+                onClick={() => setIsHistoryOpen(false)}
+                aria-label="Close dialogue history"
+              >
+                x
+              </button>
+            </div>
+            <div className={styles.historyTranscript}>
+              {history.map((item, index) => (
+                <button
+                  type="button"
+                  className={styles.historyLine}
+                  key={`${index}-${item.text.slice(0, 24)}`}
+                  onClick={() => handleHistorySelect(index)}
+                  disabled={item.current}
+                >
+                  <span className={styles.speaker}>Detective</span>
+                  <span className={styles.historyText}>{item.text}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+      <div className={styles.chatbox} onClick={handleClick} role="region" aria-label="Narrative">
+        <div className={styles.namePlate}>Detective</div>
+        <div className={styles.chatboxInner}>
+          <div className={styles.portraitFrame} aria-hidden="true">
+            <img src={portraitSrc} alt="" className={styles.portrait} />
+          </div>
+          <p className={styles.chatboxText}>
+            {text.slice(0, displayedLength)}
+            {!isComplete && <span className={styles.cursor} aria-hidden="true" />}
+          </p>
+          {(hasPastDialogue || isComplete) && (
+            <div className={styles.navControls}>
+              {hasPastDialogue && (
+                <button
+                  type="button"
+                  className={styles.historyBtn}
+                  onClick={handleHistoryClick}
+                  aria-label="Show dialogue history"
+                  aria-expanded={isHistoryOpen}
+                >
+                  <img src={historyIcon} alt="" className={styles.historyIcon} aria-hidden="true" />
+                </button>
+              )}
+              {isComplete && (
+                <button type="button" className={styles.navBtn} onClick={handleAdvanceClick} aria-label="Advance">
+                  {">"}
+                </button>
+              )}
+            </div>
+            )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
