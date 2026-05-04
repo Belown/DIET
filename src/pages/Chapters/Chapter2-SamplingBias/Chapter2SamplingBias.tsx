@@ -1,6 +1,5 @@
 ﻿import { useState, useMemo } from "react";
-import styles from "../Phase.module.css";
-import own from "./SamplingBiasPhase.module.css";
+import styles from "./Chapter2SamplingBias.module.css";
 import detectiveImg from "./Detective.png";
 
 // ─── Seeded PRNG ──────────────────────────────────────────────────────────────
@@ -217,7 +216,7 @@ const py = (v: number) => PT + (1 - v / 100) * IH;
 
 function Scatter({ pts, ariaLabel, boundary }: { pts: DPt[]; ariaLabel: string; boundary: DemoBoundary }) {
   return (
-    <svg viewBox={`0 0 ${SW} ${SH}`} className={own.scatter} role="img" aria-label={ariaLabel}>
+    <svg viewBox={`0 0 ${SW} ${SH}`} className={styles.scatter} role="img" aria-label={ariaLabel}>
       <line x1={PL} y1={PT + IH} x2={PL + IW} y2={PT + IH} stroke="#c9c9cd" strokeWidth="1.5" />
       <line x1={PL} y1={PT}      x2={PL}       y2={PT + IH} stroke="#c9c9cd" strokeWidth="1.5" />
 
@@ -267,8 +266,21 @@ function Scatter({ pts, ariaLabel, boundary }: { pts: DPt[]; ariaLabel: string; 
 // ─── Main ────────────────────────────────────────────────────────────────────
 type Step = "story" | "demo" | "investigate" | "results";
 
-export default function SamplingBiasPhase() {
+const STORY_LINES: string[] = [
+  "Listen carefully. We don't have much time.",
+  "Ten years from now, a machine convicts us.",
+  "An AI risk-scoring system. It flags us as a suspect based on our daily patterns — night activity, group size, where we walk.",
+  "The score was wrong. But it sent us to prison anyway.",
+  "I traveled back to find out why. The answer wasn't in the algorithm — it was in the data it learned from.",
+  "Three things destroyed it. Too few samples. Whole districts ignored. Features that didn't matter.",
+  "You have three days. Three chances to fix what they got wrong.",
+  "Pick where to investigate. Who to question. What to ask them.",
+  "Build the dataset that should have been collected. Maybe this time, the model gets us right.",
+];
+
+export default function Chapter2SamplingBias() {
   const [step,     setStep]     = useState<Step>("story");
+  const [storyRevealed, setStoryRevealed] = useState<number>(1);
   const [revealed, setRevealed] = useState(false);
   const [demoBoundary, setDemoBoundary] = useState<DemoBoundary>(DEMO_BOUNDARY_START);
   const [currentDay, setCurrentDay] = useState(0);
@@ -472,46 +484,51 @@ export default function SamplingBiasPhase() {
         ))}
       </div>
 
-      {/* ═══ 01 · BACKGROUND ════════════════════════════════════════════════ */}
+      {/* ═══ 01 · STORY TALK ════════════════════════════════════════════════ */}
       {step === "story" && (
         <>
-          <div className={styles.panel}>
+          <div className={styles.storyHeader}>
             <p className={styles.panelEyebrow}>Chapter 2 · Sampling Bias</p>
-            <h2 className={styles.h2}>The machine that convicted you.</h2>
-            <p className={styles.panelBody}>
-              Ten years ago, an AI risk-scoring system flagged you as a suspect based on your daily patterns.
-              That score sent you to prison. With a time machine, you travel back to before the model was trained —
-              to see what data was collected, and what was left out.
-            </p>
+            <h2 className={styles.h2}>A message from your future self.</h2>
           </div>
 
-          <div className={styles.panel}>
-            <p className={styles.panelEyebrow}>Three dimensions of sampling bias</p>
-            <div className={own.conceptGrid}>
-              <div className={own.concept}>
-                <span className={own.conceptLabel}>Amount</span>
-                <p className={own.conceptTitle}>Too few data points.</p>
-                <p className={own.conceptBody}>A model trained on 20 cases doesn't know the world — it knows those 20 cases.</p>
+          <div className={styles.storyChat}>
+            {STORY_LINES.slice(0, storyRevealed).map((line, i) => (
+              <div
+                key={i}
+                className={styles.storyMessage}
+                style={{ animationDelay: `${i === storyRevealed - 1 ? 0 : 0}s` }}
+              >
+                <img src={detectiveImg} alt="" className={styles.storyAvatar} />
+                <div className={styles.storyBubble}>
+                  <span className={styles.storySpeaker}>Future You</span>
+                  <p className={styles.storyText}>{line}</p>
+                </div>
               </div>
-              <div className={own.concept}>
-                <span className={own.conceptLabel}>Completeness</span>
-                <p className={own.conceptTitle}>Missing whole communities.</p>
-                <p className={own.conceptBody}>If a district was never investigated, every prediction about its residents is guesswork.</p>
+            ))}
+            {storyRevealed < STORY_LINES.length && (
+              <div className={styles.storyTyping} aria-hidden>
+                <span /><span /><span />
               </div>
-              <div className={own.concept}>
-                <span className={own.conceptLabel}>Variety</span>
-                <p className={own.conceptTitle}>Narrow features miss context.</p>
-                <p className={own.conceptBody}>Movement data alone can't tell the difference between a night-shift worker and a burglar.</p>
-              </div>
-            </div>
+            )}
           </div>
 
-          <div className={styles.continueRow}>
-            <p className={styles.continueHint}>See the original training data.</p>
-            <button type="button" className={styles.continueBtn} onClick={() => setStep("demo")}>
-              Continue →
+          {storyRevealed < STORY_LINES.length ? (
+            <button
+              type="button"
+              className={styles.storyAdvance}
+              onClick={() => setStoryRevealed((n) => Math.min(STORY_LINES.length, n + 1))}
+            >
+              ▾ Continue
             </button>
-          </div>
+          ) : (
+            <div className={styles.continueRow}>
+              <p className={styles.continueHint}>Begin the investigation.</p>
+              <button type="button" className={styles.continueBtn} onClick={() => setStep("demo")}>
+                Continue →
+              </button>
+            </div>
+          )}
         </>
       )}
 
@@ -528,8 +545,8 @@ export default function SamplingBiasPhase() {
           </div>
 
           <div className={styles.plotCard} style={{ maxWidth: 560, marginInline: "auto" }}>
-            <div className={own.scatterHeader}>
-              <span className={own.scatterStat}>
+            <div className={styles.scatterHeader}>
+              <span className={styles.scatterStat}>
                 Training accuracy: <strong>{pct(demoTrainAcc)}</strong>
               </span>
             </div>
@@ -560,17 +577,17 @@ export default function SamplingBiasPhase() {
               />
               <span className={styles.sliderValue}>{demoBoundary.intercept.toFixed(0)}</span>
             </div>
-            <div className={own.scatterLegend}>
-              <span className={own.scatterLegendItem}>
-                <span className={own.scatterSwatch} style={{ background: "#16a34a" }} />
+            <div className={styles.scatterLegend}>
+              <span className={styles.scatterLegendItem}>
+                <span className={styles.scatterSwatch} style={{ background: "#16a34a" }} />
                 Safe
               </span>
-              <span className={own.scatterLegendItem}>
-                <span className={own.scatterSwatch} style={{ background: "#dc2626" }} />
+              <span className={styles.scatterLegendItem}>
+                <span className={styles.scatterSwatch} style={{ background: "#dc2626" }} />
                 Threat
               </span>
-              <span className={own.scatterLegendItem}>
-                <span className={own.scatterSwatchOutline} />
+              <span className={styles.scatterLegendItem}>
+                <span className={styles.scatterSwatchOutline} />
                 Misclassified
               </span>
             </div>
@@ -600,24 +617,24 @@ export default function SamplingBiasPhase() {
               </div>
 
               <div className={styles.plotCard} style={{ maxWidth: 560, marginInline: "auto" }}>
-                <div className={own.scatterHeader}>
-                  <span className={own.scatterStat}>
-                    Real-world accuracy: <strong className={own.scatterStatBad}>{pct(demoFullAcc)}</strong>
-                    <span className={own.scatterStatDrop}>&nbsp;↓ from {pct(demoTrainAcc)}</span>
+                <div className={styles.scatterHeader}>
+                  <span className={styles.scatterStat}>
+                    Real-world accuracy: <strong className={styles.scatterStatBad}>{pct(demoFullAcc)}</strong>
+                    <span className={styles.scatterStatDrop}>&nbsp;↓ from {pct(demoTrainAcc)}</span>
                   </span>
                 </div>
                 <Scatter pts={DEMO_FULL} ariaLabel={`${DEMO_FULL.length} points from all 4 regions`} boundary={demoBoundary} />
-                <div className={own.scatterLegend}>
-                  <span className={own.scatterLegendItem}>
-                    <span className={own.scatterSwatch} style={{ background: "#16a34a" }} />
+                <div className={styles.scatterLegend}>
+                  <span className={styles.scatterLegendItem}>
+                    <span className={styles.scatterSwatch} style={{ background: "#16a34a" }} />
                     Safe
                   </span>
-                  <span className={own.scatterLegendItem}>
-                    <span className={own.scatterSwatch} style={{ background: "#dc2626" }} />
+                  <span className={styles.scatterLegendItem}>
+                    <span className={styles.scatterSwatch} style={{ background: "#dc2626" }} />
                     Threat
                   </span>
-                  <span className={own.scatterLegendItem}>
-                    <span className={own.scatterSwatchOutline} />
+                  <span className={styles.scatterLegendItem}>
+                    <span className={styles.scatterSwatchOutline} />
                     Misclassified
                   </span>
                 </div>
@@ -637,12 +654,12 @@ export default function SamplingBiasPhase() {
       {/* ═══ 03 · INVESTIGATE ═══════════════════════════════════════════════ */}
       {step === "investigate" && (
         <>
-          <div className={own.detectiveIntro}>
+          <div className={styles.detectiveIntro}>
             <p className={styles.lede}>
               You have 3 investigation days. Each day has a budget of {DAILY_BUDGET}. Plan missions, send the detective,
               and adjust tomorrow based on model feedback.
             </p>
-            <img src={detectiveImg} alt="Detective" className={own.detectiveImage} />
+            <img src={detectiveImg} alt="Detective" className={styles.detectiveImage} />
           </div>
 
           <div className={styles.panel}>
@@ -660,16 +677,16 @@ export default function SamplingBiasPhase() {
           {/* Choice 1 */}
           <div className={styles.panel}>
             <p className={styles.panelEyebrow}>Choice 1 · Which zones to search?</p>
-            <div className={own.regionGrid}>
+            <div className={styles.regionGrid}>
               {REGIONS.map((r, i) => (
                 <label key={r.id}
-                  className={`${own.regionCard} ${planZones[i] ? own.regionCardOn : ""}`}>
+                  className={`${styles.regionCard} ${planZones[i] ? styles.regionCardOn : ""}`}>
                   <input type="checkbox" checked={planZones[i]}
                     onChange={(e) => togglePlanZone(i, e.target.checked)}
                     disabled={dayLocked[currentDay]} />
-                  <span className={own.regionDot} style={{ background: r.color }} />
-                  <span className={own.regionName}>{r.label}</span>
-                  <span className={own.regionDesc}>{r.desc}</span>
+                  <span className={styles.regionDot} style={{ background: r.color }} />
+                  <span className={styles.regionName}>{r.label}</span>
+                  <span className={styles.regionDesc}>{r.desc}</span>
                 </label>
               ))}
             </div>
@@ -678,8 +695,8 @@ export default function SamplingBiasPhase() {
           {/* Choice 2 */}
           <div className={styles.panel}>
             <p className={styles.panelEyebrow}>Choice 2 · Amount — how many per district?</p>
-            <div className={own.sampleRow}>
-              <span className={own.sampleLbl}>{planPopulation} residents</span>
+            <div className={styles.sampleRow}>
+              <span className={styles.sampleLbl}>{planPopulation} residents</span>
               <input type="range" min={0} max={2} step={1}
                 value={POP_OPTIONS.indexOf(planPopulation)}
                 onChange={(e) => {
@@ -688,7 +705,7 @@ export default function SamplingBiasPhase() {
                 }}
                 className={styles.sliderInput}
                 disabled={dayLocked[currentDay]} />
-              <span className={own.sampleHint}>
+              <span className={styles.sampleHint}>
                 {planPopulation === 100 ? "Small sweep" : planPopulation === 500 ? "Focused campaign" : "Mass operation"}
               </span>
             </div>
@@ -716,10 +733,10 @@ export default function SamplingBiasPhase() {
           <div className={styles.panel}>
             <p className={styles.panelEyebrow}>Choice 3 · Additional question to ask</p>
             <p className={styles.panelBody}>You can select multiple extra questions. Each one adds cost and affects signal quality.</p>
-            <div className={own.featureGrid}>
+            <div className={styles.featureGrid}>
               {QUESTION_OPTIONS.map((f) => (
                 <label key={f.key}
-                  className={`${own.featureChip} ${planQuestions.includes(f.key) ? own.featureChipOn : ""}`}>
+                  className={`${styles.featureChip} ${planQuestions.includes(f.key) ? styles.featureChipOn : ""}`}>
                   <input type="checkbox" checked={planQuestions.includes(f.key)}
                     onChange={(e) => toggleQuestion(f.key, e.target.checked)}
                     disabled={dayLocked[currentDay]} />
@@ -728,16 +745,16 @@ export default function SamplingBiasPhase() {
               ))}
             </div>
 
-            <div className={own.featureIntelPanel}>
+            <div className={styles.featureIntelPanel}>
               {selectedQuestionInfos.length === 0 ? (
-                <p className={own.featureIntelEmpty}>No extra question selected. Mission uses only fixed government records.</p>
+                <p className={styles.featureIntelEmpty}>No extra question selected. Mission uses only fixed government records.</p>
               ) : (
                 selectedQuestionInfos.map((q) => (
-                  <div className={own.featureIntelCard} key={q.key}>
-                    <p className={own.featureIntelTitle}>{q.label}</p>
-                    <p className={own.featureIntelLine}><strong>The Tactic:</strong> {q.tactic}</p>
-                    <p className={own.featureIntelLine}><strong>Why it works:</strong> {q.why}</p>
-                    <p className={own.featureIntelFlavor}>"{q.line}"</p>
+                  <div className={styles.featureIntelCard} key={q.key}>
+                    <p className={styles.featureIntelTitle}>{q.label}</p>
+                    <p className={styles.featureIntelLine}><strong>The Tactic:</strong> {q.tactic}</p>
+                    <p className={styles.featureIntelLine}><strong>Why it works:</strong> {q.why}</p>
+                    <p className={styles.featureIntelFlavor}>"{q.line}"</p>
                   </div>
                 ))
               )}
@@ -758,27 +775,27 @@ export default function SamplingBiasPhase() {
 
             <div style={{ display: "grid", gap: 8, marginTop: 10 }}>
               {currentPlans.length === 0 ? (
-                <p className={own.featureIntelEmpty}>No plans yet for Day {currentDay + 1}.</p>
+                <p className={styles.featureIntelEmpty}>No plans yet for Day {currentDay + 1}.</p>
               ) : (
                 currentPlans.map((p) => (
-                  <div key={p.id} className={own.featureIntelCard}>
-                    <p className={own.featureIntelTitle}>
+                  <div key={p.id} className={styles.featureIntelCard}>
+                    <p className={styles.featureIntelTitle}>
                       {p.population} pop · {p.zones.filter(Boolean).length} zone(s) · cost {p.cost}
                     </p>
-                    <p className={own.featureIntelLine}>
+                    <p className={styles.featureIntelLine}>
                       Zones: {REGIONS.filter((_, i) => p.zones[i]).map((z) => z.label).join(", ")}
                     </p>
-                    <p className={own.featureIntelLine}>
+                    <p className={styles.featureIntelLine}>
                       Distribution: {REGIONS.filter((_, i) => p.zones[i]).map((z) => {
                         const i = REGIONS.findIndex((r) => r.id === z.id);
                         return `${z.label} ${Math.round(p.zoneDistribution[i] * 100)}%`;
                       }).join(" · ")}
                     </p>
-                    <p className={own.featureIntelLine}>
+                    <p className={styles.featureIntelLine}>
                       Extra questions: {p.questions.length ? p.questions.map((k) => QUESTION_OPTIONS.find((q) => q.key === k)?.label).join("; ") : "None"}
                     </p>
                     {p.questions.map((k) => (
-                      <p key={`${p.id}-${k}`} className={own.featureIntelFlavor}>
+                      <p key={`${p.id}-${k}`} className={styles.featureIntelFlavor}>
                         "{p.flavorLines[k]}"
                       </p>
                     ))}
@@ -820,7 +837,7 @@ export default function SamplingBiasPhase() {
                 </div>
               ))}
             </div>
-            <p className={own.deployNote}>Committed detective missions: {strategy.committedCount}</p>
+            <p className={styles.deployNote}>Committed detective missions: {strategy.committedCount}</p>
           </div>
 
           <div className={styles.panel}>
@@ -833,7 +850,7 @@ export default function SamplingBiasPhase() {
                 </div>
               ))}
             </div>
-            <p className={own.deployNote}>
+            <p className={styles.deployNote}>
               {otherCityOvr >= 0.70
                 ? "Transfers reasonably — but ongoing monitoring is still essential."
                 : "Breaks in the new city. A model tuned on one city needs retraining before deployment elsewhere."}

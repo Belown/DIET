@@ -68,7 +68,7 @@ export default function Landing() {
               Every model draws a line somewhere. Here, <em>you'll</em> draw it yourself — on real-looking CV data — and see who ends up on the other side.
             </p>
             <div className={styles.ctaRow}>
-              <Button variant="primary" to="/simulator" id="start">
+              <Button variant="primary" to="/chapters" id="start">
                 Start exploring
               </Button>
               <Button variant="outline" href="#how">
@@ -191,7 +191,7 @@ export default function Landing() {
           <p className={styles.cta_sub}>
             Try out the sandbox, see why a line can tell 2 different stories.
           </p>
-          <Button variant="primary" size="lg" to="/simulator">
+          <Button variant="primary" size="lg" to="/chapters">
             Start exploring
           </Button>
         </section>
