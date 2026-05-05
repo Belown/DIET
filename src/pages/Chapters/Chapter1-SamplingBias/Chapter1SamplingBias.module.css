@@ -114,3 +114,92 @@
     padding-inline: 12px;
   }
 }
+
+/* ── Daily accuracy snapshot card ── */
+.snapshotCard {
+  background: var(--rui-surface);
+  border: 1px solid var(--rui-border);
+  border-radius: var(--radius-card);
+  padding: 28px 32px 32px;
+  animation: sceneIn 0.35s ease-out both;
+}
+
+.snapshotEyebrow {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.7px;
+  text-transform: uppercase;
+  color: var(--rui-gray);
+  margin: 0 0 8px;
+}
+
+.snapshotTitle {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  color: var(--rui-dark);
+  margin: 0 0 10px;
+}
+
+.snapshotOverall {
+  font-size: 14px;
+  color: var(--rui-slate);
+  margin: 0 0 20px;
+}
+
+.snapshotOverall strong {
+  color: var(--rui-dark);
+  font-weight: 600;
+}
+
+.snapshotBars {
+  display: grid;
+  gap: 14px;
+}
+
+.snapshotRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.snapshotMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.snapshotLabel {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+
+.snapshotValue {
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-mono, monospace);
+  color: var(--rui-slate);
+}
+
+.snapshotTrack {
+  height: 8px;
+  background: var(--rui-border, #e8eaed);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.snapshotFill {
+  height: 100%;
+  border-radius: 99px;
+  width: var(--bar-w, 0%);
+  transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.snapshotUnseen {
+  font-size: 11px;
+  color: var(--rui-gray, #888);
+  font-style: italic;
+}

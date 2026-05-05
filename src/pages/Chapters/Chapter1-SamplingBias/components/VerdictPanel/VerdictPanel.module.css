@@ -1,7 +1,8 @@
 .panel {
   background: var(--rui-surface);
+  border: 1px solid var(--rui-border);
   border-radius: var(--radius-card);
-  padding: 32px;
+  padding: 28px;
 }
 
 .panelEyebrow {
@@ -11,7 +12,7 @@
   letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--rui-gray);
-  margin: 0 0 12px;
+  margin: 0 0 10px;
 }
 
 .h2 {
@@ -19,7 +20,7 @@
   font-size: 22px;
   font-weight: 500;
   letter-spacing: -0.01em;
-  margin: 0 0 20px;
+  margin: 0 0 12px;
   color: var(--rui-dark);
 }
 
@@ -36,6 +37,49 @@
   font-size: 13px;
   color: var(--rui-slate);
   font-style: italic;
+}
+
+.summaryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 10px 0 0;
+}
+
+.scorePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(73, 79, 223, 0.1);
+  color: var(--rui-blue);
+}
+
+.scorePill strong {
+  color: var(--rui-dark);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.list {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--rui-slate);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.list li + li {
+  margin-top: 6px;
 }
 
 .continueRow {
@@ -72,4 +116,65 @@
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.continueBtn:hover { background: var(--rui-blue); transform: translateY(-1px); }
+.continueBtn:hover {
+  background: var(--rui-blue);
+  transform: translateY(-1px);
+}
+
+.accGrid {
+  display: grid;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.accRow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.accMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.accLabel {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-display);
+}
+
+.accValue {
+  font-size: 13px;
+  font-weight: 500;
+  font-family: var(--font-mono, monospace);
+  color: var(--rui-slate);
+}
+
+.accTrack {
+  height: 8px;
+  background: var(--rui-border, #e8eaed);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.accFill {
+  height: 100%;
+  border-radius: 99px;
+  width: var(--bar-width, 0%);
+  transition: width 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.accNote {
+  font-size: 11px;
+  color: var(--rui-gray, #888);
+  font-style: italic;
+}
+
+@media (max-width: 980px) {
+  .grid2 {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,6 +1,6 @@
 ﻿import { useState, useMemo, useEffect } from "react";
 import styles from "./Chapter1SamplingBias.module.css";
-import { BoundaryExercise, BoundaryReveal, ChoiceList, MissionPlanner, NarrativeBox, VerdictPanel } from "./components";
+import { BoundaryExercise, BoundaryReveal, ChoiceList, DayReportPanel, MissionPlanner, NarrativeBox, VerdictPanel } from "./components";
 import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
 import { portraits } from "../../../assets/detective/portraits";
 import type { PassageId, Choice } from "./passages";
@@ -400,6 +400,15 @@ export default function Chapter1SamplingBias() {
             sendDetectiveAndAdvance={sendDetectiveAndAdvance}
           />
         );
+
+      case "day1-debrief":
+        return <DayReportPanel dayNumber={1} overallAcc={overallAcc} regionAccs={regionAccs} sampledFlags={strategy.sampledFlags} />;
+
+      case "day2-debrief":
+        return <DayReportPanel dayNumber={2} overallAcc={overallAcc} regionAccs={regionAccs} sampledFlags={strategy.sampledFlags} />;
+
+      case "day3-debrief":
+        return <DayReportPanel dayNumber={3} overallAcc={overallAcc} regionAccs={regionAccs} sampledFlags={strategy.sampledFlags} />;
 
       case "verdict":
         return (
