@@ -25,7 +25,7 @@ export default function Nav() {
         <Button variant="ghost-dark" to="/about">
           About us
         </Button>
-        <Button variant="primary" to="/chapters">
+        <Button variant="primary" to="/chapters?chapter=ch1">
           Start exploring
         </Button>
       </div>
