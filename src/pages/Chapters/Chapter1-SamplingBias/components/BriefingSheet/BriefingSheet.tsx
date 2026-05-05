@@ -1,7 +1,7 @@
 import { useEffect, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import styles from "../Chapter2SamplingBias.module.css";
-import type { BriefingSheet as BriefingSheetData } from "../types";
+import styles from "./BriefingSheet.module.css";
+import type { BriefingSheet as BriefingSheetData } from "../../types";
 
 type BriefingSheetProps = {
   sheet: BriefingSheetData;

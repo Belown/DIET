@@ -1,4 +1,4 @@
-import styles from "./Chapter1Placeholder.module.css";
+import styles from "./Chapter2Placeholder.module.css";
 
 export default function Chapter1Placeholder() {
   return (

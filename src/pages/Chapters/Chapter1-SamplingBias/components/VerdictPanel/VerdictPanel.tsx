@@ -1,5 +1,5 @@
-import styles from "../Chapter2SamplingBias.module.css";
-import { REGIONS } from "../chapterData";
+import styles from "./VerdictPanel.module.css";
+import { REGIONS } from "../../chapterData";
 
 type VerdictPanelProps = {
   overallAcc: number;

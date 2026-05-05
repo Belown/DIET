@@ -1,13 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import historyIcon from "../../assets/history-icon.svg";
-import styles from "./NarrativeBox.module.css";
+import historyIcon from "../../assets/svgs/history-icon.svg";
+import styles from "./Chatbox.module.css";
 
-interface NarrativeBoxProps {
+export interface ChatboxProps {
   text: string;
   portraitSrc: string;
   history?: DialogueHistoryItem[];
   onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
+  speakerName?: string;
 }
 
 export interface DialogueHistoryItem {
@@ -17,13 +18,14 @@ export interface DialogueHistoryItem {
 
 const CHAR_SPEED = 25;
 
-export default function NarrativeBox({
+export default function Chatbox({
   text,
   portraitSrc,
   history = [],
   onHistorySelect,
   onAdvance,
-}: NarrativeBoxProps) {
+  speakerName = "Detective",
+}: ChatboxProps) {
   const [displayedLength, setDisplayedLength] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -151,7 +153,7 @@ export default function NarrativeBox({
                   onClick={() => handleHistorySelect(index)}
                   disabled={item.current}
                 >
-                  <span className={styles.speaker}>Detective</span>
+                  <span className={styles.speaker}>{speakerName}</span>
                   <span className={styles.historyText}>{item.text}</span>
                 </button>
               ))}
@@ -160,7 +162,7 @@ export default function NarrativeBox({
         </div>
       )}
       <div className={styles.chatbox} onClick={handleClick} role="region" aria-label="Narrative">
-        <div className={styles.namePlate}>Detective</div>
+        <div className={styles.namePlate}>{speakerName}</div>
         <div className={styles.chatboxInner}>
           <div className={styles.portraitFrame} aria-hidden="true">
             <img src={portraitSrc} alt="" className={styles.portrait} />
@@ -188,7 +190,7 @@ export default function NarrativeBox({
                 </button>
               )}
             </div>
-            )}
+          )}
         </div>
       </div>
     </>

@@ -1,6 +1,6 @@
-import styles from "../Chapter2SamplingBias.module.css";
-import { DAILY_BUDGET, POP_OPTIONS, QUESTION_OPTIONS, REGIONS } from "../chapterData";
-import type { MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "../types";
+import styles from "./MissionPlanner.module.css";
+import { DAILY_BUDGET, POP_OPTIONS, QUESTION_OPTIONS, REGIONS } from "../../chapterData";
+import type { MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "../../types";
 
 type SelectedQuestionInfo = QuestionOption & { line: string };
 

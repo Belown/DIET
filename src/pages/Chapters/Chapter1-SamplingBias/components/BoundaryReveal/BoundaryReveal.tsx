@@ -1,9 +1,9 @@
-import styles from "../Chapter2SamplingBias.module.css";
-import { BRIEFING_SHEETS } from "../chapterData";
-import { DEMO_FULL } from "../simulation";
-import type { DemoBoundary } from "../types";
-import BriefingSheet from "./BriefingSheet";
-import ScatterPlot from "./ScatterPlot";
+import styles from "./BoundaryReveal.module.css";
+import { BRIEFING_SHEETS } from "../../chapterData";
+import { DEMO_FULL } from "../../simulation";
+import type { DemoBoundary } from "../../types";
+import BriefingSheet from "../BriefingSheet/BriefingSheet";
+import ScatterPlot from "../ScatterPlot/ScatterPlot";
 
 type BoundaryRevealProps = {
   boundary: DemoBoundary;

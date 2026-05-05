@@ -1,6 +1,6 @@
-import styles from "../Chapter2SamplingBias.module.css";
-import { isFlagged } from "../simulation";
-import type { DemoBoundary, DPt } from "../types";
+import styles from "./ScatterPlot.module.css";
+import { isFlagged } from "../../simulation";
+import type { DemoBoundary, DPt } from "../../types";
 
 const SW = 460;
 const SH = 300;

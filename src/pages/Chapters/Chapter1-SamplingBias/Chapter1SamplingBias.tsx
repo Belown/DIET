@@ -1,8 +1,8 @@
 ﻿import { useState, useMemo, useEffect } from "react";
-import styles from "./Chapter2SamplingBias.module.css";
+import styles from "./Chapter1SamplingBias.module.css";
 import { BoundaryExercise, BoundaryReveal, ChoiceList, MissionPlanner, NarrativeBox, VerdictPanel } from "./components";
 import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
-import { portraits } from "./detective/portraits";
+import { portraits } from "../../../assets/detective/portraits";
 import type { PassageId, Choice } from "./passages";
 import { PASSAGES } from "./passages";
 import { accOf, calcMissionCost, DEMO_BOUNDARY_START, DEMO_FULL, DEMO_INIT, summarizeStrategy } from "./simulation";
@@ -36,7 +36,7 @@ const getPortraitForText = (text: string) => {
   return portraits.neutral;
 };
 
-export default function Chapter2SamplingBias() {
+export default function Chapter1SamplingBias() {
   const [passage, setPassage] = useState<PassageId>("intro");
   const [chunkIndex, setChunkIndex] = useState(0);
   const [narrativeHistory, setNarrativeHistory] = useState<NarrativeLocation[]>([]);

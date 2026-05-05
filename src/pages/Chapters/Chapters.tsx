@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Logo from "../../components/Logo/Logo";
-import Chapter1Placeholder from "./Chapter1-Placeholder/Chapter1Placeholder";
-import Chapter2SamplingBias from "./Chapter2-SamplingBias/Chapter2SamplingBias";
+import Chapter1SamplingBias from "./Chapter1-SamplingBias/Chapter1SamplingBias";
+import Chapter2Placeholder from "./Chapter2-Placeholder/Chapter2Placeholder";
 import Chapter3Placeholder from "./Chapter3-Placeholder/Chapter3Placeholder";
 import styles from "./Chapters.module.css";
 
@@ -17,9 +17,9 @@ type ChapterMeta = {
 };
 
 const CHAPTERS: ChapterMeta[] = [
-  { id: "ch1", num: "01", title: "TBD", hint: "TBD", status: "draft" },
-  { id: "ch2", num: "02", title: "Sampling Bias",          hint: "Data collection shapes outcomes", status: "ready" },
-  { id: "ch3", num: "03", title: "TBD",      hint: "TBD", status: "draft" },
+  { id: "ch1", num: "01", title: "Sampling Bias", hint: "Data collection shapes outcomes", status: "ready" },
+  { id: "ch2", num: "02", title: "TBD", hint: "TBD", status: "draft" },
+  { id: "ch3", num: "03", title: "TBD", hint: "TBD", status: "draft" },
 ];
 
 const isChapterId = (value: string | null): value is ChapterId =>
@@ -144,8 +144,8 @@ export default function Chapters() {
 
       <main className={styles.canvas}>
         <div key={active} className={styles.canvasBody}>
-          {active === "ch1" && <Chapter1Placeholder />}
-          {active === "ch2" && <Chapter2SamplingBias />}
+          {active === "ch1" && <Chapter1SamplingBias />}
+          {active === "ch2" && <Chapter2Placeholder />}
           {active === "ch3" && <Chapter3Placeholder />}
         </div>
       </main>

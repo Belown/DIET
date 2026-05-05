@@ -1,0 +1,108 @@
+.panel {
+  background: var(--rui-surface);
+  border-radius: var(--radius-card);
+  padding: 32px;
+}
+
+.panelEyebrow {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--rui-gray);
+  margin: 0 0 12px;
+}
+
+.h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0 0 20px;
+  color: var(--rui-dark);
+}
+
+.panelBody {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--rui-slate);
+  margin: 0;
+  max-width: 68ch;
+}
+
+.plotCard {
+  background: var(--rui-white);
+  border: 1px solid var(--rui-border);
+  border-radius: var(--radius-card);
+  padding: 24px 28px;
+  width: 100%;
+}
+
+.scatterHeader {
+  margin-bottom: 8px;
+}
+
+.scatterStat {
+  font-size: 13px;
+  color: var(--rui-slate);
+}
+
+.scatterStatBad {
+  color: #e61e49;
+}
+
+.scatterStatDrop {
+  color: #8d969e;
+}
+
+.revealReturnBtn {
+  justify-self: end;
+  appearance: none;
+  border: 0;
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.revealReturnBtn:hover {
+  background: var(--rui-blue);
+  transform: translateY(-1px);
+}
+
+.scatterLegend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.scatterLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--rui-slate);
+}
+
+.scatterSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.scatterSwatchOutline {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid #191c1f;
+  background: transparent;
+}
