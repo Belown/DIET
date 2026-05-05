@@ -42,8 +42,8 @@ export default function About() {
               </span>
             </div>
           </div>
-          <Link to="/simulator" className={styles.back}>
-            → Open the simulator
+          <Link to="/chapters" className={styles.back}>
+            → Open the chapters
           </Link>
         </section>
       </main>

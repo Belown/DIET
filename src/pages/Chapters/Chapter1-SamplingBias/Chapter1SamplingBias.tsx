@@ -1,0 +1,450 @@
+﻿import { useState, useMemo, useEffect } from "react";
+import styles from "./Chapter1SamplingBias.module.css";
+import { BoundaryExercise, BoundaryReveal, ChoiceList, MissionPlanner, NarrativeBox, VerdictPanel } from "./components";
+import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
+import { portraits } from "../../../assets/detective/portraits";
+import type { PassageId, Choice } from "./passages";
+import { PASSAGES } from "./passages";
+import { accOf, calcMissionCost, DEMO_BOUNDARY_START, DEMO_FULL, DEMO_INIT, summarizeStrategy } from "./simulation";
+import type { DemoBoundary, MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "./types";
+
+type NarrativeLocation = {
+  passage: PassageId;
+  chunkIndex: number;
+  text: string;
+  current?: boolean;
+};
+
+const isSameNarrativeLocation = (a: NarrativeLocation, b: NarrativeLocation) =>
+  a.passage === b.passage && a.chunkIndex === b.chunkIndex;
+
+const getPortraitForText = (text: string) => {
+  const lower = text.toLowerCase();
+
+  if (lower.includes("prison") || lower.includes("convicts") || lower.includes("flags us")) return portraits.alarmed;
+  if (lower.includes("collapsed") || lower.includes("wrong") || lower.includes("coin flip")) return portraits.shocked;
+  if (lower.includes("blind spots") || lower.includes("gaps remain") || lower.includes("no going back")) return portraits.worried;
+  if (lower.includes("did you") || lower.includes("why?") || lower.includes("what to ask")) return portraits.confused;
+  if (lower.includes("suspect") || lower.includes("threat") || lower.includes("police")) return portraits.suspicious;
+  if (lower.includes("stands down") || lower.includes("little better")) return portraits.sad;
+  if (lower.includes("getting smarter") || lower.includes("sharpening") || lower.includes("made a difference")) return portraits.happy;
+  if (lower.includes("pick where") || lower.includes("add more") || lower.includes("adjust") || lower.includes("plan")) return portraits.encouraging;
+  if (lower.includes("build the dataset") || lower.includes("final mission") || lower.includes("close the gaps")) return portraits.confident;
+  if (lower.includes("sampling bias") || lower.includes("accuracy") || lower.includes("data")) return portraits.thoughtful;
+  if (lower.includes("listen carefully") || lower.includes("read the sheet") || lower.includes("you have three days")) return portraits.serious;
+
+  return portraits.neutral;
+};
+
+export default function Chapter1SamplingBias() {
+  const [passage, setPassage] = useState<PassageId>("intro");
+  const [chunkIndex, setChunkIndex] = useState(0);
+  const [narrativeHistory, setNarrativeHistory] = useState<NarrativeLocation[]>([]);
+  const [demoBoundary, setDemoBoundary] = useState<DemoBoundary>(DEMO_BOUNDARY_START);
+  const [currentDay, setCurrentDay] = useState(0);
+  const [dayPlans, setDayPlans] = useState<MissionPlan[][]>([[], [], []]);
+  const [dayLocked, setDayLocked] = useState<boolean[]>([false, false, false]);
+  const [planPopulation, setPlanPopulation] = useState<PopulationOption>(100);
+  const [planZones, setPlanZones] = useState<boolean[]>([true, false, false, false]);
+  const [planDistribution, setPlanDistribution] = useState<number[]>([1, 0, 0, 0]);
+  const [planQuestions, setPlanQuestions] = useState<QuestionKey[]>([]);
+  const [flavorRolls, setFlavorRolls] = useState<Record<QuestionKey, number>>({
+    "daily-routine": 0,
+    "phone-model": 0,
+    "past-police-stops": 0,
+  });
+  const [isBoundarySheetOpen, setIsBoundarySheetOpen] = useState(false);
+  const [revealSheetMode, setRevealSheetMode] = useState<"hidden" | "spotlight" | "inline">("hidden");
+
+  const strategy = useMemo(() => summarizeStrategy(dayPlans, dayLocked), [dayPlans, dayLocked]);
+  const regionAccs = strategy.regionAccs;
+  const otherCityAccs = strategy.otherCityAccs;
+  const overallAcc = useMemo(() => regionAccs.reduce((s, a) => s + a, 0) / 4, [regionAccs]);
+  const otherCityOvr = useMemo(() => otherCityAccs.reduce((s, a) => s + a, 0) / 4, [otherCityAccs]);
+  const currentPlans = dayPlans[currentDay];
+  const spentToday = currentPlans.reduce((s, p) => s + p.cost, 0);
+  const remainToday = DAILY_BUDGET - spentToday;
+  const zoneCount = planZones.filter(Boolean).length;
+  const draftCost = zoneCount ? calcMissionCost(planPopulation, zoneCount, planQuestions) : 0;
+  const canAddPlan = !dayLocked[currentDay] && zoneCount > 0 && draftCost <= remainToday;
+
+  const pct = (v: number) => `${Math.round(v * 100)}%`;
+  const demoTrainAcc = useMemo(() => accOf(DEMO_INIT, demoBoundary), [demoBoundary]);
+  const demoFullAcc = useMemo(() => accOf(DEMO_FULL, demoBoundary), [demoBoundary]);
+
+  const togglePlanZone = (i: number, v: boolean) =>
+    setPlanZones((prev) => {
+      const next = [...prev];
+      next[i] = v;
+      setPlanDistribution(() => buildEqualDistribution(next));
+      return next;
+    });
+
+  const toPoints = (fraction: number) => Math.max(0, Math.min(10, Math.round(fraction * 10)));
+
+  const buildEqualDistribution = (zones: boolean[]) => {
+    const next = [0, 0, 0, 0];
+    const active = zones.map((on, i) => (on ? i : -1)).filter((idx) => idx >= 0);
+    if (!active.length) return next;
+    const base = Math.floor(10 / active.length);
+    let remainder = 10 - base * active.length;
+    active.forEach((idx) => {
+      next[idx] = (base + (remainder > 0 ? 1 : 0)) / 10;
+      if (remainder > 0) remainder -= 1;
+    });
+    return next;
+  };
+
+  const rebalanceWithTarget = (zones: boolean[], current: number[], targetIdx: number, targetPct: number) => {
+    const next = [0, 0, 0, 0];
+    const active = zones.map((on, i) => (on ? i : -1)).filter((idx) => idx >= 0);
+    if (!active.length) return next;
+    if (!active.includes(targetIdx)) return buildEqualDistribution(zones);
+    if (active.length === 1) {
+      next[targetIdx] = 1;
+      return next;
+    }
+
+    const targetPoints = Math.max(0, Math.min(10, Math.round(targetPct / 10)));
+    const remainingPoints = 10 - targetPoints;
+    const points = [0, 0, 0, 0];
+    active.forEach((idx) => { points[idx] = toPoints(current[idx]); });
+    points[targetIdx] = targetPoints;
+
+    const others = active.filter((idx) => idx !== targetIdx);
+    if (remainingPoints <= 0) {
+      others.forEach((idx) => { points[idx] = 0; });
+    } else {
+      const otherSum = others.reduce((s, idx) => s + points[idx], 0);
+      if (otherSum <= 0) {
+        const base = Math.floor(remainingPoints / others.length);
+        let rem = remainingPoints - base * others.length;
+        others.forEach((idx) => {
+          points[idx] = base + (rem > 0 ? 1 : 0);
+          if (rem > 0) rem -= 1;
+        });
+      } else {
+        const scaled = others.map((idx) => {
+          const value = (points[idx] / otherSum) * remainingPoints;
+          return { idx, floor: Math.floor(value), frac: value - Math.floor(value) };
+        });
+        let assigned = 0;
+        scaled.forEach((s) => {
+          points[s.idx] = s.floor;
+          assigned += s.floor;
+        });
+        let rem = remainingPoints - assigned;
+        scaled.sort((a, b) => b.frac - a.frac);
+        for (let i = 0; i < scaled.length && rem > 0; i += 1) {
+          points[scaled[i].idx] += 1;
+          rem -= 1;
+        }
+      }
+    }
+
+    active.forEach((idx) => {
+      next[idx] = points[idx] / 10;
+    });
+    return next;
+  };
+
+  const setDistributionForZone = (zoneIdx: number, value: number) => {
+    const snapped = Math.max(0, Math.min(100, Math.round(value / 10) * 10));
+    setPlanDistribution((prev) => rebalanceWithTarget(planZones, prev, zoneIdx, snapped));
+  };
+
+  const toggleQuestion = (key: QuestionKey, checked: boolean) => {
+    setPlanQuestions((prev) => {
+      if (checked) {
+        if (prev.includes(key)) return prev;
+        return [...prev, key];
+      }
+      return prev.filter((k) => k !== key);
+    });
+    if (checked) cycleFlavor(key);
+  };
+
+  const cycleFlavor = (key: QuestionKey) =>
+    setFlavorRolls((prev) => ({
+      ...prev,
+      [key]: prev[key] + 1,
+    }));
+
+  const addPlan = () => {
+    if (!canAddPlan) return;
+    const flavorLines = planQuestions.reduce((acc, key) => {
+      const q = QUESTION_OPTIONS.find((x) => x.key === key);
+      if (q) acc[key] = q.flavor[flavorRolls[q.key] % q.flavor.length];
+      return acc;
+    }, {} as Record<QuestionKey, string>);
+    const newPlan: MissionPlan = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      population: planPopulation,
+      zones: [...planZones],
+      zoneDistribution: [...planDistribution],
+      questions: [...planQuestions],
+      weight: 1,
+      cost: draftCost,
+      flavorLines,
+    };
+    setDayPlans((prev) => {
+      const next = [...prev];
+      next[currentDay] = [...next[currentDay], newPlan];
+      return next;
+    });
+  };
+
+  const removePlan = (id: string) => {
+    if (dayLocked[currentDay]) return;
+    setDayPlans((prev) => {
+      const next = [...prev];
+      next[currentDay] = next[currentDay].filter((p) => p.id !== id);
+      return next;
+    });
+  };
+
+  const sendDetective = () => {
+    if (!currentPlans.length || dayLocked[currentDay]) return;
+    setDayLocked((prev) => {
+      const next = [...prev];
+      next[currentDay] = true;
+      return next;
+    });
+    if (currentDay < 2) {
+      setCurrentDay((d) => d + 1);
+      setPlanZones([true, false, false, false]);
+      setPlanDistribution([1, 0, 0, 0]);
+      setPlanPopulation(100);
+      setPlanQuestions([]);
+    }
+  };
+
+  const resetInvestigation = () => {
+    setCurrentDay(0);
+    setDayPlans([[], [], []]);
+    setDayLocked([false, false, false]);
+    setPlanZones([true, false, false, false]);
+    setPlanDistribution([1, 0, 0, 0]);
+    setPlanPopulation(100);
+    setPlanQuestions([]);
+  };
+
+  const selectedQuestionInfos = useMemo(() => {
+    return planQuestions.map((key) => {
+      const q = QUESTION_OPTIONS.find((x) => x.key === key);
+      if (!q) return null;
+      return {
+        ...q,
+        line: q.flavor[flavorRolls[q.key] % q.flavor.length],
+      };
+    }).filter(Boolean) as Array<QuestionOption & { line: string }>;
+  }, [planQuestions, flavorRolls]);
+
+  const [showChoices, setShowChoices] = useState(false);
+
+  useEffect(() => {
+    setShowChoices(false);
+    setIsBoundarySheetOpen(false);
+    setRevealSheetMode("hidden");
+  }, [passage]);
+
+  const passageChoices = useMemo((): Choice[] => {
+    return PASSAGES[passage].choices ?? [];
+  }, [passage]);
+
+  const passageText = useMemo(() => {
+    const currentPassage = PASSAGES[passage];
+    return currentPassage.chunks?.[chunkIndex] ?? currentPassage.text ?? "";
+  }, [passage, chunkIndex]);
+  const portraitSrc = useMemo(() => getPortraitForText(passageText), [passageText]);
+
+  const hasMoreChunks = useMemo(() => {
+    const chunks = PASSAGES[passage].chunks;
+    return Boolean(chunks && chunkIndex < chunks.length - 1);
+  }, [passage, chunkIndex]);
+
+  const rememberCurrentChat = () => {
+    const currentLocation = { passage, chunkIndex, text: passageText };
+    setNarrativeHistory((prev) => {
+      if (prev.some((item) => isSameNarrativeLocation(item, currentLocation))) return prev;
+      return [...prev, currentLocation];
+    });
+  };
+
+  const dialogueHistory = useMemo(() => {
+    const currentLocation: NarrativeLocation = { passage, chunkIndex, text: passageText };
+    const hasCurrent = narrativeHistory.some((item) => isSameNarrativeLocation(item, currentLocation));
+    const history = hasCurrent ? narrativeHistory : [...narrativeHistory, currentLocation];
+
+    return history.map((item) => ({
+      ...item,
+      current: isSameNarrativeLocation(item, currentLocation),
+    }));
+  }, [chunkIndex, narrativeHistory, passage, passageText]);
+
+  const handleHistorySelect = (index: number) => {
+    const selected = dialogueHistory[index];
+    if (!selected || selected.current) return;
+    setPassage(selected.passage);
+    setChunkIndex(selected.chunkIndex);
+    setShowChoices(false);
+  };
+
+  const handleAdvance = () => {
+    if (passage === "demo-intro") {
+      setIsBoundarySheetOpen(true);
+      return;
+    }
+
+    if (passage === "demo-reveal" && revealSheetMode === "hidden") {
+      setRevealSheetMode("spotlight");
+      return;
+    }
+
+    if (hasMoreChunks) {
+      rememberCurrentChat();
+      setChunkIndex((idx) => idx + 1);
+      return;
+    }
+
+    if (passageChoices.length === 1) {
+      const c = passageChoices[0];
+      c.action?.();
+      rememberCurrentChat();
+      setPassage(c.nextPassage);
+      setChunkIndex(0);
+    } else if (passageChoices.length > 1) {
+      setShowChoices(true);
+    }
+  };
+
+  const submitBoundaryExercise = () => {
+    if (passage !== "demo-intro") return;
+    rememberCurrentChat();
+    setPassage("demo-reveal");
+    setChunkIndex(0);
+  };
+
+  const handleChoice = (nextPassage: PassageId, action?: () => void) => {
+    action?.();
+    rememberCurrentChat();
+    setPassage(nextPassage);
+    setChunkIndex(0);
+  };
+
+  const sendDetectiveAndAdvance = () => {
+    if (!currentPlans.length || dayLocked[currentDay]) return;
+    sendDetective();
+    const nextId: PassageId =
+      passage === "day1-plan" ? "day1-debrief" :
+      passage === "day2-plan" ? "day2-debrief" : "day3-debrief";
+    rememberCurrentChat();
+    setPassage(nextId);
+  };
+
+  const characterContent = (() => {
+    switch (passage) {
+      case "demo-intro": {
+        if (!isBoundarySheetOpen) return null;
+
+        return (
+          <BoundaryExercise
+            boundary={demoBoundary}
+            setBoundary={setDemoBoundary}
+            trainingAccuracy={pct(demoTrainAcc)}
+            trainingAccuracyValue={demoTrainAcc}
+            onSubmit={submitBoundaryExercise}
+          />
+        );
+      }
+
+      case "demo-reveal":
+      {
+        if (revealSheetMode === "hidden") return null;
+
+        return (
+          <BoundaryReveal
+            boundary={demoBoundary}
+            spotlight={revealSheetMode === "spotlight"}
+            onReturnToPage={() => setRevealSheetMode("inline")}
+            realWorldAccuracy={pct(demoFullAcc)}
+            trainingAccuracy={pct(demoTrainAcc)}
+          />
+        );
+      }
+
+      case "day1-plan":
+      case "day2-plan":
+      case "day3-plan":
+        return (
+          <MissionPlanner
+            currentDay={currentDay}
+            currentPlans={currentPlans}
+            dayLocked={dayLocked}
+            spentToday={spentToday}
+            remainToday={remainToday}
+            planPopulation={planPopulation}
+            planZones={planZones}
+            planDistribution={planDistribution}
+            planQuestions={planQuestions}
+            selectedQuestionInfos={selectedQuestionInfos}
+            zoneCount={zoneCount}
+            draftCost={draftCost}
+            canAddPlan={canAddPlan}
+            togglePlanZone={togglePlanZone}
+            setPlanPopulation={setPlanPopulation}
+            setDistributionForZone={setDistributionForZone}
+            toggleQuestion={toggleQuestion}
+            addPlan={addPlan}
+            removePlan={removePlan}
+            sendDetectiveAndAdvance={sendDetectiveAndAdvance}
+          />
+        );
+
+      case "verdict":
+        return (
+          <VerdictPanel
+            overallAcc={overallAcc}
+            otherCityOvr={otherCityOvr}
+            regionAccs={regionAccs}
+            otherCityAccs={otherCityAccs}
+            sampledFlags={strategy.sampledFlags}
+            committedCount={strategy.committedCount}
+            pct={pct}
+            onRestart={() => {
+              resetInvestigation();
+              setPassage("day1-brief");
+            }}
+          />
+        );
+
+      default:
+        return null;
+    }
+  })();
+
+  return (
+    <div className={styles.phase}>
+
+      <div className={styles.scene}>
+        <div className={styles.sceneInner}>
+          {characterContent}
+        </div>
+      </div>
+
+      <NarrativeBox
+        text={passageText}
+        portraitSrc={portraitSrc}
+        history={dialogueHistory}
+        onHistorySelect={handleHistorySelect}
+        onAdvance={handleAdvance}
+      />
+
+      {showChoices && passageChoices.length > 1 && (
+        <div className={styles.overlayChoices}>
+          <ChoiceList choices={passageChoices} onSelect={handleChoice} />
+        </div>
+      )}
+    </div>
+  );
+}

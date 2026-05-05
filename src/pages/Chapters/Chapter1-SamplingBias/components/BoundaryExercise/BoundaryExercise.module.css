@@ -1,0 +1,278 @@
+.boundaryWorkbench {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  min-width: 0;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(25, 28, 31, 0.14);
+  border-radius: 6px;
+}
+
+.boundaryHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.boundaryHeader .h2 {
+  margin-bottom: 0;
+}
+
+.boundaryAccuracy {
+  flex: 0 0 auto;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 132px;
+  padding: 10px 12px;
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  border-radius: 6px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.boundaryAccuracy strong {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.boundaryBody {
+  margin: -4px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--rui-slate);
+}
+
+.boundaryInteractive {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+  align-items: stretch;
+  gap: 18px;
+}
+
+.boundaryPlot {
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background:
+    linear-gradient(90deg, rgba(25, 28, 31, 0.04) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(25, 28, 31, 0.04) 1px, transparent 1px),
+    rgba(245, 247, 250, 0.86);
+  background-size: 24px 24px;
+  border: 1px solid rgba(25, 28, 31, 0.12);
+  border-radius: 6px;
+}
+
+.boundarySidePanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.boundaryPlot .scatter {
+  width: min(100%, 620px);
+  max-width: none;
+  margin-bottom: 0;
+}
+
+.boundaryControls {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+  background: rgba(244, 244, 244, 0.72);
+  border: 1px solid rgba(25, 28, 31, 0.1);
+  border-radius: 6px;
+}
+
+.boundaryFooter {
+  display: grid;
+  gap: 16px;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(25, 28, 31, 0.1);
+  border-radius: 6px;
+}
+
+.panelEyebrow {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--rui-gray);
+  margin: 0 0 12px;
+}
+
+.h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0 0 20px;
+  color: var(--rui-dark);
+}
+
+.sliderRow {
+  display: grid;
+  grid-template-columns: 80px 1fr 44px;
+  align-items: center;
+  gap: 12px;
+}
+
+.sliderLabel {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rui-slate);
+}
+
+.sliderInput {
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: var(--rui-border);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.sliderInput::-webkit-slider-thumb {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: var(--rui-dark);
+  border-radius: 50%;
+  cursor: grab;
+  transition: background 0.15s ease;
+}
+
+.sliderInput::-webkit-slider-thumb:active { cursor: grabbing; background: var(--rui-blue); }
+
+.sliderValue {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--rui-dark);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.scatterLegend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.scatterLegendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--rui-slate);
+}
+
+.scatterSwatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.scatterSwatchOutline {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid #191c1f;
+  background: transparent;
+}
+
+.sheetSubmitRow {
+  display: grid;
+  align-items: start;
+  gap: 16px;
+  margin-top: 0;
+  padding-top: 18px;
+  border-top: 1px solid rgba(25, 28, 31, 0.12);
+}
+
+.sheetSubmitHint {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--rui-slate);
+}
+
+.sheetSubmitError {
+  margin: 6px 0 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #dc2626;
+}
+
+.sheetSubmitBtn {
+  appearance: none;
+  border: 0;
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 12px 20px;
+  border-radius: 9999px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s ease, transform 0.2s ease;
+  width: 100%;
+}
+
+.sheetSubmitBtn:hover {
+  background: var(--rui-blue);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+  .boundaryWorkbench {
+    padding: 18px;
+  }
+
+  .boundaryHeader {
+    flex-direction: column;
+  }
+
+  .boundaryAccuracy {
+    width: 100%;
+  }
+
+  .boundaryPlot {
+    padding: 12px;
+  }
+
+  .boundaryInteractive {
+    grid-template-columns: 1fr;
+  }
+
+  .boundaryControls {
+    padding: 14px;
+  }
+
+  .boundaryFooter {
+    padding: 14px;
+  }
+
+  .sheetSubmitRow {
+    align-items: stretch;
+  }
+
+  .sheetSubmitBtn {
+    width: 100%;
+  }
+}
