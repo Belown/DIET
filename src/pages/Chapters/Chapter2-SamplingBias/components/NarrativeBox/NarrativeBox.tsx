@@ -97,6 +97,27 @@ export default function NarrativeBox({
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.code !== "Space" || isHistoryOpen) return;
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+
+      const target = event.target;
+      if (target instanceof HTMLElement) {
+        const tagName = target.tagName.toLowerCase();
+        if (target.isContentEditable || ["button", "input", "select", "textarea"].includes(tagName)) {
+          return;
+        }
+      }
+
+      event.preventDefault();
+      handleClick();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [complete, isComplete, isHistoryOpen, onAdvance]);
+
   return (
     <>
       {isHistoryOpen && (

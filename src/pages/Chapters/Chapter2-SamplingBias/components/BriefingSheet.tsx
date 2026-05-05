@@ -1,15 +1,33 @@
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import styles from "../Chapter2SamplingBias.module.css";
 import type { BriefingSheet as BriefingSheetData } from "../types";
 
 type BriefingSheetProps = {
   sheet: BriefingSheetData;
   children: ReactNode;
+  spotlight?: boolean;
 };
 
-export default function BriefingSheet({ sheet, children }: BriefingSheetProps) {
-  return (
-    <section className={`${styles.caseSheet} ${styles.caseSheetWide}`} aria-label="Detective case sheet">
+export default function BriefingSheet({ sheet, children, spotlight = false }: BriefingSheetProps) {
+  const sheetRef = useRef<HTMLElement>(null);
+  const className = `${styles.caseSheet} ${styles.caseSheetWide}${spotlight ? ` ${styles.caseSheetSpotlight}` : ""}`;
+
+  useEffect(() => {
+    if (!spotlight) return;
+
+    sheetRef.current?.focus({ preventScroll: true });
+  }, [spotlight]);
+
+  const sheetContent = (
+    <section
+      ref={sheetRef}
+      className={className}
+      tabIndex={spotlight ? -1 : undefined}
+      role={spotlight ? "dialog" : undefined}
+      aria-modal={spotlight ? true : undefined}
+      aria-label="Detective case sheet"
+    >
       <div className={styles.caseSheetClip} aria-hidden />
       <div className={styles.caseSheetLandscape}>
         <div className={styles.caseSheetBrief}>
@@ -32,4 +50,15 @@ export default function BriefingSheet({ sheet, children }: BriefingSheetProps) {
       </div>
     </section>
   );
+
+  if (spotlight) {
+    return createPortal(
+      <div className={styles.sheetPopupLayer}>
+        {sheetContent}
+      </div>,
+      document.body
+    );
+  }
+
+  return sheetContent;
 }

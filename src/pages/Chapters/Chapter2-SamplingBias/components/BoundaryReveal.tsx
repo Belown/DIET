@@ -7,16 +7,24 @@ import ScatterPlot from "./ScatterPlot";
 
 type BoundaryRevealProps = {
   boundary: DemoBoundary;
+  spotlight?: boolean;
+  onReturnToPage?: () => void;
   realWorldAccuracy: string;
   trainingAccuracy: string;
 };
 
-export default function BoundaryReveal({ boundary, realWorldAccuracy, trainingAccuracy }: BoundaryRevealProps) {
+export default function BoundaryReveal({
+  boundary,
+  spotlight = false,
+  onReturnToPage,
+  realWorldAccuracy,
+  trainingAccuracy,
+}: BoundaryRevealProps) {
   const sheet = BRIEFING_SHEETS["demo-reveal"];
   if (!sheet) return null;
 
   return (
-    <BriefingSheet sheet={sheet}>
+    <BriefingSheet sheet={sheet} spotlight={spotlight}>
       <div className={styles.panel}>
         <p className={styles.panelEyebrow}>The reveal · {DEMO_FULL.length} points across 4 regions</p>
         <h2 className={styles.h2}>Same line. Real-world failure.</h2>
@@ -48,6 +56,12 @@ export default function BoundaryReveal({ boundary, realWorldAccuracy, trainingAc
           </span>
         </div>
       </div>
+
+      {spotlight && onReturnToPage && (
+        <button type="button" className={styles.revealReturnBtn} onClick={onReturnToPage}>
+          Return to case view
+        </button>
+      )}
     </BriefingSheet>
   );
 }

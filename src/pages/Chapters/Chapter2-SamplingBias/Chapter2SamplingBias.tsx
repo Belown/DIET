@@ -53,6 +53,8 @@ export default function Chapter2SamplingBias() {
     "phone-model": 0,
     "past-police-stops": 0,
   });
+  const [isBoundarySheetOpen, setIsBoundarySheetOpen] = useState(false);
+  const [revealSheetMode, setRevealSheetMode] = useState<"hidden" | "spotlight" | "inline">("hidden");
 
   const strategy = useMemo(() => summarizeStrategy(dayPlans, dayLocked), [dayPlans, dayLocked]);
   const regionAccs = strategy.regionAccs;
@@ -242,6 +244,8 @@ export default function Chapter2SamplingBias() {
 
   useEffect(() => {
     setShowChoices(false);
+    setIsBoundarySheetOpen(false);
+    setRevealSheetMode("hidden");
   }, [passage]);
 
   const passageChoices = useMemo((): Choice[] => {
@@ -288,6 +292,12 @@ export default function Chapter2SamplingBias() {
 
   const handleAdvance = () => {
     if (passage === "demo-intro") {
+      setIsBoundarySheetOpen(true);
+      return;
+    }
+
+    if (passage === "demo-reveal" && revealSheetMode === "hidden") {
+      setRevealSheetMode("spotlight");
       return;
     }
 
@@ -335,6 +345,8 @@ export default function Chapter2SamplingBias() {
   const characterContent = (() => {
     switch (passage) {
       case "demo-intro": {
+        if (!isBoundarySheetOpen) return null;
+
         return (
           <BoundaryExercise
             boundary={demoBoundary}
@@ -348,9 +360,13 @@ export default function Chapter2SamplingBias() {
 
       case "demo-reveal":
       {
+        if (revealSheetMode === "hidden") return null;
+
         return (
           <BoundaryReveal
             boundary={demoBoundary}
+            spotlight={revealSheetMode === "spotlight"}
+            onReturnToPage={() => setRevealSheetMode("inline")}
             realWorldAccuracy={pct(demoFullAcc)}
             trainingAccuracy={pct(demoTrainAcc)}
           />

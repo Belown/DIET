@@ -45,7 +45,7 @@ export default function BoundaryExercise({
   };
 
   return (
-    <BriefingSheet sheet={sheet}>
+    <BriefingSheet sheet={sheet} spotlight>
       <div className={styles.boundaryWorkbench}>
         <div className={styles.boundaryHeader}>
           <div>
@@ -62,69 +62,73 @@ export default function BoundaryExercise({
           Black rings mark mistakes.
         </p>
 
-        <div className={styles.boundaryPlot}>
-          <ScatterPlot pts={DEMO_INIT} ariaLabel={`${DEMO_INIT.length} training points from Region 1`} boundary={boundary} />
-        </div>
-
-        <div className={styles.boundaryControls}>
-          <div className={styles.sliderRow}>
-            <span className={styles.sliderLabel}>Slope</span>
-            <input
-              type="range"
-              min={-1.5}
-              max={1.5}
-              step={0.01}
-              value={boundary.slope}
-              onChange={(e) => {
-                const slope = parseFloat(e.target.value);
-                setBoundary((b) => ({ ...b, slope, intercept: -slope * boundaryShift }));
-              }}
-              className={styles.sliderInput}
-            />
-            <span className={styles.sliderValue}>{boundary.slope.toFixed(2)}</span>
-          </div>
-          <div className={styles.sliderRow}>
-            <span className={styles.sliderLabel}>X-shift</span>
-            <input
-              type="range"
-              min={-40}
-              max={120}
-              step={1}
-              value={sliderShift}
-              onChange={(e) => {
-                const shift = parseFloat(e.target.value);
-                setBoundary((b) => ({ ...b, intercept: -b.slope * shift }));
-              }}
-              className={styles.sliderInput}
-            />
-            <span className={styles.sliderValue}>{boundaryShift.toFixed(0)}</span>
-          </div>
-        </div>
-
-        <div className={styles.boundaryFooter}>
-          <div className={styles.scatterLegend}>
-            <span className={styles.scatterLegendItem}>
-              <span className={styles.scatterSwatch} style={{ background: "#16a34a" }} />
-              Safe
-            </span>
-            <span className={styles.scatterLegendItem}>
-              <span className={styles.scatterSwatch} style={{ background: "#dc2626" }} />
-              Threat
-            </span>
-            <span className={styles.scatterLegendItem}>
-              <span className={styles.scatterSwatchOutline} />
-              Misclassified
-            </span>
+        <div className={styles.boundaryInteractive}>
+          <div className={styles.boundaryPlot}>
+            <ScatterPlot pts={DEMO_INIT} ariaLabel={`${DEMO_INIT.length} training points from Region 1`} boundary={boundary} />
           </div>
 
-          <div className={styles.sheetSubmitRow}>
-            <div>
-              <p className={styles.sheetSubmitHint}>Submit unlocks when the training sample has no mistakes.</p>
-              {submitError && <p className={styles.sheetSubmitError}>{submitError}</p>}
+          <div className={styles.boundarySidePanel}>
+            <div className={styles.boundaryControls}>
+              <div className={styles.sliderRow}>
+                <span className={styles.sliderLabel}>Slope</span>
+                <input
+                  type="range"
+                  min={-1.5}
+                  max={1.5}
+                  step={0.01}
+                  value={boundary.slope}
+                  onChange={(e) => {
+                    const slope = parseFloat(e.target.value);
+                    setBoundary((b) => ({ ...b, slope, intercept: -slope * boundaryShift }));
+                  }}
+                  className={styles.sliderInput}
+                />
+                <span className={styles.sliderValue}>{boundary.slope.toFixed(2)}</span>
+              </div>
+              <div className={styles.sliderRow}>
+                <span className={styles.sliderLabel}>X-shift</span>
+                <input
+                  type="range"
+                  min={-40}
+                  max={120}
+                  step={1}
+                  value={sliderShift}
+                  onChange={(e) => {
+                    const shift = parseFloat(e.target.value);
+                    setBoundary((b) => ({ ...b, intercept: -b.slope * shift }));
+                  }}
+                  className={styles.sliderInput}
+                />
+                <span className={styles.sliderValue}>{boundaryShift.toFixed(0)}</span>
+              </div>
             </div>
-            <button type="button" className={styles.sheetSubmitBtn} onClick={handleSubmit}>
-              Submit boundary
-            </button>
+
+            <div className={styles.boundaryFooter}>
+              <div className={styles.scatterLegend}>
+                <span className={styles.scatterLegendItem}>
+                  <span className={styles.scatterSwatch} style={{ background: "#16a34a" }} />
+                  Safe
+                </span>
+                <span className={styles.scatterLegendItem}>
+                  <span className={styles.scatterSwatch} style={{ background: "#dc2626" }} />
+                  Threat
+                </span>
+                <span className={styles.scatterLegendItem}>
+                  <span className={styles.scatterSwatchOutline} />
+                  Misclassified
+                </span>
+              </div>
+
+              <div className={styles.sheetSubmitRow}>
+                <div>
+                  <p className={styles.sheetSubmitHint}>Submit unlocks when the training sample has no mistakes.</p>
+                  {submitError && <p className={styles.sheetSubmitError}>{submitError}</p>}
+                </div>
+                <button type="button" className={styles.sheetSubmitBtn} onClick={handleSubmit}>
+                  Submit boundary
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

@@ -74,9 +74,6 @@ export default function ScatterPlot({ pts, ariaLabel, boundary }: ScatterPlotPro
         strokeDasharray="8 5"
         strokeLinecap="round"
       />
-
-      <text x={PL + IW * 0.80} y={PT + 18} textAnchor="middle" fontSize="10" fill="#191c1f" opacity="0.25" fontWeight="500">flagged</text>
-      <text x={PL + IW * 0.12} y={PT + IH - 6} textAnchor="middle" fontSize="10" fill="#191c1f" opacity="0.25" fontWeight="500">clear</text>
     </svg>
   );
 }
