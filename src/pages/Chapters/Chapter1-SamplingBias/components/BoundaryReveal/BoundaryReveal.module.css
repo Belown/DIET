@@ -1,7 +1,7 @@
 .panel {
   background: var(--rui-surface);
   border-radius: var(--radius-card);
-  padding: 32px;
+  padding: clamp(22px, 3vw, 30px);
 }
 
 .panelEyebrow {
@@ -35,12 +35,17 @@
   background: var(--rui-white);
   border: 1px solid var(--rui-border);
   border-radius: var(--radius-card);
-  padding: 24px 28px;
-  width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  padding: clamp(18px, 2.5vw, 24px);
+  width: min(100%, 660px);
+  margin-inline: auto;
 }
 
 .scatterHeader {
-  margin-bottom: 8px;
+  justify-self: stretch;
+  margin-bottom: 0;
 }
 
 .scatterStat {
@@ -57,8 +62,11 @@
 }
 
 .revealReturnBtn {
-  justify-self: end;
   appearance: none;
+  position: absolute;
+  right: clamp(12px, 2.5vw, 15px);
+  bottom: clamp(12px, 2.5vw, 15px);
+  z-index: 3;
   border: 0;
   background: var(--rui-dark);
   color: var(--rui-white);
@@ -69,11 +77,13 @@
   border-radius: 9999px;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 12px 28px rgba(25, 28, 31, 0.18);
+  transition: background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .revealReturnBtn:hover {
   background: var(--rui-blue);
+  box-shadow: 0 16px 34px rgba(25, 28, 31, 0.22);
   transform: translateY(-1px);
 }
 
@@ -81,6 +91,7 @@
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
+  justify-self: start;
 }
 
 .scatterLegendItem {

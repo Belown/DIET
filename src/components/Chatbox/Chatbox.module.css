@@ -1,8 +1,14 @@
 .chatbox {
+  --chatbox-bottom: 16px;
+  --chatbox-open-padding-top: 34px;
+  --chatbox-open-padding-bottom: 30px;
+  --chatbox-open-padding: 34px clamp(28px, 3.5vw, 48px) 30px;
+  --chatbox-open-max-height: 260px;
+  --chatbox-collapsed-height: 28px;
   position: fixed;
   left: 50%;
   right: auto;
-  bottom: 16px;
+  bottom: var(--chatbox-bottom);
   width: min(1240px, calc(100vw - 32px));
   transform: translateX(-50%);
   background:
@@ -14,11 +20,21 @@
     0 20px 50px rgba(25, 28, 31, 0.22),
     inset 0 0 0 1px rgba(255, 255, 255, 0.8),
     inset 0 -8px 0 rgba(73, 79, 223, 0.08);
-  padding: 34px clamp(28px, 3.5vw, 48px) 30px;
+  max-height: var(--chatbox-open-max-height);
+  overflow: visible;
+  padding: var(--chatbox-open-padding);
   cursor: pointer;
   z-index: 20;
   user-select: none;
   backdrop-filter: blur(14px);
+  animation: chatboxOpenIn 0.24s ease-out;
+  transition:
+    padding 0.24s ease,
+    max-height 0.24s ease,
+    min-height 0.24s ease,
+    box-shadow 0.24s ease,
+    opacity 0.18s ease,
+    transform 0.24s ease;
 }
 
 .chatbox::before {
@@ -34,14 +50,14 @@
 }
 
 .chatboxCollapsed {
-  bottom: 0;
+  bottom: var(--chatbox-bottom);
   width: min(1240px, calc(100vw - 32px));
-  min-height: 28px;
+  max-height: var(--chatbox-collapsed-height);
+  min-height: var(--chatbox-collapsed-height);
   padding: 0;
   display: block;
   cursor: default;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
+  animation: chatboxCollapseHeightIn 0.24s ease-out;
 }
 
 .chatboxCollapsed::before {
@@ -68,7 +84,10 @@
   padding: 0 16px;
   cursor: pointer;
   box-shadow: 0 -6px 14px rgba(25, 28, 31, 0.12);
-  transition: background 0.2s ease, transform 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition: background 0.2s ease, opacity 0.18s ease, transform 0.24s ease;
 }
 
 .openChatboxBtn:hover {
@@ -92,6 +111,9 @@
   letter-spacing: 0;
   line-height: 1;
   box-shadow: 0 8px 18px rgba(25, 28, 31, 0.18);
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.18s ease, transform 0.24s ease;
 }
 
 .chatboxInner {
@@ -100,8 +122,17 @@
   align-items: center;
   gap: 18px;
   min-height: 104px;
+  max-height: 150px;
   position: relative;
   z-index: 1;
+  overflow: hidden;
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    max-height 0.24s ease,
+    min-height 0.24s ease,
+    opacity 0.18s ease,
+    transform 0.24s ease;
 }
 
 .portraitFrame {
@@ -232,13 +263,41 @@
   font-weight: 500;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  opacity: 1;
+  transform: translateY(0);
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.18s ease, transform 0.24s ease;
   box-shadow: 0 -6px 14px rgba(25, 28, 31, 0.12);
 }
 
 .hideBtn:hover {
   background: var(--rui-blue);
   color: var(--rui-white);
+  transform: translateY(-1px);
+}
+
+.chatboxCollapsed .openChatboxBtn {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.chatboxCollapsed .openChatboxBtn:hover {
+  transform: translateY(-1px);
+}
+
+.chatboxCollapsed .namePlate,
+.chatboxCollapsed .hideBtn {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+}
+
+.chatboxCollapsed .chatboxInner {
+  min-height: 0;
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
 }
 
 .historyIcon {
@@ -445,15 +504,57 @@
   }
 }
 
+@keyframes chatboxOpenIn {
+  from {
+    max-height: var(--chatbox-collapsed-height);
+    min-height: var(--chatbox-collapsed-height);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    max-height: var(--chatbox-open-max-height);
+    min-height: 0;
+    padding-top: var(--chatbox-open-padding-top);
+    padding-bottom: var(--chatbox-open-padding-bottom);
+  }
+}
+
+@keyframes chatboxCollapseHeightIn {
+  from {
+    max-height: var(--chatbox-open-max-height);
+    min-height: 0;
+    padding-top: var(--chatbox-open-padding-top);
+    padding-bottom: var(--chatbox-open-padding-bottom);
+  }
+  to {
+    max-height: var(--chatbox-collapsed-height);
+    min-height: var(--chatbox-collapsed-height);
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chatbox,
+  .chatboxCollapsed,
+  .openChatboxBtn,
+  .hideBtn {
+    animation: none;
+    transition: none;
+  }
+}
+
 @media (max-width: 640px) {
   .chatbox {
-    bottom: 12px;
+    --chatbox-bottom: 12px;
+    --chatbox-open-padding-top: 30px;
+    --chatbox-open-padding-bottom: 22px;
+    --chatbox-open-padding: 30px 18px 22px;
+    --chatbox-open-max-height: 260px;
     width: calc(100vw - 24px);
-    padding: 30px 18px 22px;
   }
 
   .chatboxCollapsed {
-    bottom: 0;
     width: calc(100vw - 24px);
     padding: 0;
   }

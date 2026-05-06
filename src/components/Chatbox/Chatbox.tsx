@@ -8,6 +8,8 @@ export interface ChatboxProps {
   history?: DialogueHistoryItem[];
   onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
+  onTextComplete?: () => void;
+  autoCollapseOnTextComplete?: boolean;
   speakerName?: string;
   disableKeyboardAdvance?: boolean;
 }
@@ -27,6 +29,8 @@ export default function Chatbox({
   history = [],
   onHistorySelect,
   onAdvance,
+  onTextComplete,
+  autoCollapseOnTextComplete = false,
   speakerName = "Detective",
   disableKeyboardAdvance = false,
 }: ChatboxProps) {
@@ -36,6 +40,8 @@ export default function Chatbox({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openHistoryGroups, setOpenHistoryGroups] = useState<Record<string, boolean>>({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hasReportedCompleteRef = useRef(false);
+  const wasAutoCollapsedRef = useRef(false);
   const historyGroupRefs = useRef<Record<string, HTMLElement | null>>({});
   const hasPastDialogue = history.some((item) => !item.current);
   const currentHistoryItem = history.find((item) => item.current);
@@ -85,6 +91,16 @@ export default function Chatbox({
     });
   }, [currentHistoryGroupId, isHistoryOpen]);
 
+  const reportComplete = useCallback(() => {
+    if (hasReportedCompleteRef.current) return;
+    hasReportedCompleteRef.current = true;
+    onTextComplete?.();
+    if (autoCollapseOnTextComplete) {
+      wasAutoCollapsedRef.current = true;
+      setIsCollapsed(true);
+    }
+  }, [autoCollapseOnTextComplete, onTextComplete]);
+
   const complete = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -92,15 +108,22 @@ export default function Chatbox({
     }
     setDisplayedLength(text.length);
     setIsComplete(true);
-  }, [text.length]);
+    reportComplete();
+  }, [reportComplete, text.length]);
 
   useEffect(() => {
     setDisplayedLength(0);
     setIsComplete(false);
     setIsHistoryOpen(false);
+    hasReportedCompleteRef.current = false;
+    if (wasAutoCollapsedRef.current && !autoCollapseOnTextComplete) {
+      wasAutoCollapsedRef.current = false;
+      setIsCollapsed(false);
+    }
 
     if (!text.length) {
       setIsComplete(true);
+      reportComplete();
       return;
     }
 
@@ -113,6 +136,7 @@ export default function Chatbox({
             timerRef.current = null;
           }
           setIsComplete(true);
+          reportComplete();
           return text.length;
         }
         return next;
@@ -125,7 +149,7 @@ export default function Chatbox({
         timerRef.current = null;
       }
     };
-  }, [text]);
+  }, [reportComplete, text]);
 
   const handleClick = () => {
     if (isCollapsed) return;
@@ -149,11 +173,13 @@ export default function Chatbox({
 
   const handleCollapseClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    wasAutoCollapsedRef.current = false;
     setIsCollapsed(true);
   };
 
   const handleOpenClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
   };
 
@@ -195,16 +221,6 @@ export default function Chatbox({
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [complete, disableKeyboardAdvance, history, isCollapsed, isComplete, isHistoryOpen, onAdvance, onHistorySelect]);
-
-  if (isCollapsed) {
-    return (
-      <div className={`${styles.chatbox} ${styles.chatboxCollapsed}`} role="region" aria-label="Narrative collapsed">
-        <button type="button" className={styles.openChatboxBtn} onClick={handleOpenClick} aria-label="Open narrative">
-          Open
-        </button>
-      </div>
-    );
-  }
 
   return (
     <>
@@ -285,8 +301,16 @@ export default function Chatbox({
           </div>
         </div>
       )}
-      <div className={styles.chatbox} onClick={handleClick} role="region" aria-label="Narrative">
+      <div
+        className={`${styles.chatbox} ${isCollapsed ? styles.chatboxCollapsed : ""}`}
+        onClick={handleClick}
+        role="region"
+        aria-label={isCollapsed ? "Narrative collapsed" : "Narrative"}
+      >
         <div className={styles.namePlate}>{speakerName}</div>
+        <button type="button" className={styles.openChatboxBtn} onClick={handleOpenClick} aria-label="Open narrative">
+          Open
+        </button>
         <button type="button" className={styles.hideBtn} onClick={handleCollapseClick} aria-label="Hide narrative">
           Hide
         </button>

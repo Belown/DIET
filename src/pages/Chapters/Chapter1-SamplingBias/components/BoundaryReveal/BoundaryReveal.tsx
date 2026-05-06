@@ -24,7 +24,7 @@ export default function BoundaryReveal({
   if (!sheet) return null;
 
   return (
-    <BriefingSheet sheet={sheet} spotlight={spotlight}>
+    <BriefingSheet sheet={sheet} spotlight={spotlight} spotlightLayout="split">
       <div className={styles.panel}>
         <p className={styles.panelEyebrow}>The reveal · {DEMO_FULL.length} points across 4 regions</p>
         <h2 className={styles.h2}>Same line. Real-world failure.</h2>
@@ -59,7 +59,7 @@ export default function BoundaryReveal({
 
       {spotlight && onReturnToPage && (
         <button type="button" className={styles.revealReturnBtn} onClick={onReturnToPage}>
-          Return to case view
+          Return to chat
         </button>
       )}
     </BriefingSheet>

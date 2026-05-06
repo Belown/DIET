@@ -263,6 +263,8 @@ export default function Chapter1SamplingBias() {
     return Boolean(chunks && chunkIndex < chunks.length - 1);
   }, [passage, chunkIndex]);
   const isSheetPopupOpen = isBoundarySheetOpen || revealSheetMode === "spotlight";
+  const isMissionPlannerPassage = passage === "day1-plan" || passage === "day2-plan" || passage === "day3-plan";
+  const shouldAutoHidePlannerNarrative = isMissionPlannerPassage && !hasMoreChunks;
 
   const rememberCurrentChat = () => {
     const currentLocation = { passage, chunkIndex, text: passageText };
@@ -449,6 +451,7 @@ export default function Chapter1SamplingBias() {
         history={dialogueHistory}
         onHistorySelect={handleHistorySelect}
         onAdvance={handleAdvance}
+        autoCollapseOnTextComplete={shouldAutoHidePlannerNarrative}
         disableKeyboardAdvance={isSheetPopupOpen}
       />
 
