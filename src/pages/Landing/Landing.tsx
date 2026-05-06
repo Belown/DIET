@@ -161,7 +161,7 @@ export default function Landing() {
 
         {/* Audience Section */}
         <section className={styles.audience_section} id="audience">
-          <div className={styles.audience_left}>
+          <div>
             <p className="eyebrow">Why bother?</p>
             <h2 className={`section__title section__title--dark ${styles.audience_title}`}>
               Because your<br />first model<br />won't be neutral.
@@ -170,7 +170,7 @@ export default function Landing() {
               Built for CS and data science students who've been taught to chase accuracy, and are starting to wonder what that costs.
             </p>
           </div>
-          <div className={styles.audience_right}>
+          <div>
             <ol className={styles.audience_goals}>
               {TAKEAWAYS.map((text, i) => (
                 <li key={i}>

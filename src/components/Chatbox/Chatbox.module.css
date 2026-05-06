@@ -41,9 +41,6 @@
   content: "";
   position: absolute;
   pointer-events: none;
-}
-
-.chatbox::before {
   inset: 8px;
   border: 1px solid rgba(25, 28, 31, 0.18);
   border-radius: 4px;

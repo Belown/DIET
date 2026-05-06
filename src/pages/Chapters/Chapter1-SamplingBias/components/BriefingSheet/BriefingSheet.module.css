@@ -186,90 +186,11 @@
   width: 100%;
 }
 
-.caseSheetExercise .panel {
-  height: 100%;
-  background: rgba(244, 244, 244, 0.76);
-  border: 1px solid rgba(25, 28, 31, 0.12);
-  border-radius: 6px;
-  padding: 22px;
-}
-
-.caseSheetExercise .plotCard {
-  max-width: none;
-  margin-inline: 0;
-  border-radius: 6px;
-  padding: 20px 22px;
-}
-
-@keyframes sheetIn {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes sheetSpotlightIn {
-  0% {
-    opacity: 0;
-    transform: translateY(42px) scale(0.96);
-  }
-  72% {
-    opacity: 1;
-    transform: translateY(-4px) scale(1.01);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .caseSheet,
-  .caseSheetSpotlight {
-    animation: none;
-  }
-}
-
-@media (max-width: 980px) {
-  .caseSheetSpotlightSplit .caseSheetLandscape {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 640px) {
-  .caseSheet {
-    padding: 24px 20px;
-    margin-top: 0;
-  }
-
-  .sheetPopupLayer {
-    place-items: start center;
-    padding: 56px 10px 216px;
-  }
-
-  .caseSheetSpotlight {
-    width: min(100%, calc(100vw - 28px));
-    height: min(680px, calc(100vh - 272px));
-    min-height: min(520px, calc(100vh - 272px));
-    max-height: none;
-  }
-
-  .caseSheetSpotlight .caseSheetLandscape {
+.caseSheetExercise {
     grid-template-columns: 1fr;
   }
 
-  .caseSheetTitle {
-    font-size: 27px;
-  }
-
-  .caseSheetExercise {
-    grid-template-columns: 1fr;
-  }
-
-  .caseSheetLandscape {
-    grid-template-columns: 1fr;
-  }
-
-  .caseSheetExercise .panel,
-  .caseSheetExercise .plotCard {
-    padding: 18px;
-  }
+.caseSheetLandscape {
+  grid-template-columns: 1fr;
 }
+

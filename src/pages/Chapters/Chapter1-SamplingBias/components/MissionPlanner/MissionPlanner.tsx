@@ -1,4 +1,5 @@
 import styles from "./MissionPlanner.module.css";
+import shared from "../../../../../styles/shared.module.css";
 import { ZONE_VISUALS } from "../../../../../assets/image/zoneVisuals";
 import { DAILY_BUDGET, QUESTION_OPTIONS, REGIONS } from "../../chapterData";
 import type { MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "../../types";
@@ -187,8 +188,8 @@ export default function MissionPlanner({
               <p className={styles.panelEyebrow}>Deployment split</p>
               {REGIONS.map((r, i) =>
                 planZones[i] ? (
-                  <div key={r.id} className={styles.sliderRow}>
-                    <span className={styles.sliderLabel}>{r.label}</span>
+                  <div key={r.id} className={shared.sliderRow}>
+                    <span className={shared.sliderLabel}>{r.label}</span>
                     <input
                       type="range"
                       min={0}
@@ -196,10 +197,10 @@ export default function MissionPlanner({
                       step={10}
                       value={Math.round(planDistribution[i] * 100)}
                       onChange={(e) => setDistributionForZone(i, parseInt(e.target.value, 10) || 0)}
-                      className={styles.sliderInput}
+                      className={shared.sliderInput}
                       disabled={locked}
                     />
-                    <span className={styles.sliderValue}>{Math.round(planDistribution[i] * 100)}%</span>
+                    <span className={shared.sliderValue}>{Math.round(planDistribution[i] * 100)}%</span>
                   </div>
                 ) : null,
               )}
@@ -287,7 +288,7 @@ export default function MissionPlanner({
             <strong>{draftCost}</strong>
             <p>{selectedDistricts.length ? selectedDistricts.join(", ") : "No district selected"}</p>
           </div>
-          <button type="button" className={styles.continueBtn} onClick={addPlan} disabled={!canAddPlan}>
+          <button type="button" className={shared.continueBtn} onClick={addPlan} disabled={!canAddPlan}>
             Add Sortie
           </button>
 
@@ -326,12 +327,12 @@ export default function MissionPlanner({
       <section className={styles.dispatchBar}>
         <div>
           <p className={styles.panelEyebrow}>Dispatch Gate</p>
-          <p className={styles.continueHint}>
+          <p className={`${shared.continueHint} ${styles.dispatchHint}`}>
             Day {currentDay + 1}: {currentPlans.length} mission(s) | spent {spentToday}/{DAILY_BUDGET}
           </p>
         </div>
         {currentPlans.length > 0 && !locked && (
-          <button type="button" className={styles.continueBtn} onClick={sendDetectiveAndAdvance}>
+          <button type="button" className={`${shared.continueBtn} ${styles.dispatchContinueBtn}`} onClick={sendDetectiveAndAdvance}>
             {currentDay < 2
               ? `Deploy Detective | Unlock Day ${currentDay + 2}`
               : "Deploy Detective | Train Model"}

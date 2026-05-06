@@ -222,24 +222,6 @@
   50% { opacity: 0; }
 }
 
-.metaGrid {
-  margin-top: 12px;
-  display: grid;
-  gap: 10px;
-}
-
-.list {
-  margin: 0;
-  padding-left: 18px;
-  color: var(--rui-slate);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.list li + li {
-  margin-top: 6px;
-}
-
 @media (max-width: 1160px) {
   .grid {
     grid-template-columns: 1fr;

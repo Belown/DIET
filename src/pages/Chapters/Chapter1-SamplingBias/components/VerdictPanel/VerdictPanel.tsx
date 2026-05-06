@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { REGIONS } from "../../chapterData";
 import styles from "./VerdictPanel.module.css";
+import shared from "../../../../../styles/shared.module.css";
 
 type VerdictPanelProps = {
   overallAcc: number;
@@ -142,8 +143,8 @@ export default function VerdictPanel({
       </div>
 
       <div className={styles.continueRow}>
-        <p className={styles.continueHint}>Case closed for this timeline. Reopen with a different strategy?</p>
-        <button type="button" className={styles.continueBtn} onClick={onRestart}>
+        <p className={shared.continueHint}>Case closed for this timeline. Reopen with a different strategy?</p>
+        <button type="button" className={shared.continueBtn} onClick={onRestart}>
           Restart from Day 1
         </button>
       </div>
