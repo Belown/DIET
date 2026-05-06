@@ -112,7 +112,14 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
                   <div className={styles.zoneTop}>
                     <img className={styles.zoneIcon} src={ZONE_VISUALS[i].icon} alt="" aria-hidden="true" />
                     <span className={styles.zoneLabel} style={{ color: region.color }}>
-                      {districtCode(i)} · {region.label}
+                      {i === 3 ? (
+                        <>
+                          <span className={styles.zoneCode}>{districtCode(i)} ·</span>
+                          <span className={styles.zoneLabelBreak}>{region.label}</span>
+                        </>
+                      ) : (
+                        `${districtCode(i)} · ${region.label}`
+                      )}
                     </span>
                   </div>
                   <p className={styles.zoneScore} style={{ color: region.color }}>{barValues[i]}%</p>

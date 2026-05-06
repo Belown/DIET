@@ -1,6 +1,15 @@
 import styles from "./MissionPlanner.module.css";
 import shared from "../../../../../styles/shared.module.css";
 import { ZONE_VISUALS } from "../../../../../assets/image/zoneVisuals";
+import budgetIcon from "../../../../../assets/image/Budget.png";
+import spentIcon from "../../../../../assets/image/Spend.png";
+import draftIcon from "../../../../../assets/image/Draft.png";
+import p100 from "../../../../../assets/image/P100.png";
+import p500 from "../../../../../assets/image/P500.png";
+import p1000 from "../../../../../assets/image/P1000.png";
+import routineIcon from "../../../../../assets/image/routine.png";
+import phoneIcon from "../../../../../assets/image/phone.png";
+import policeIcon from "../../../../../assets/image/police.png";
 import { DAILY_BUDGET, QUESTION_OPTIONS, REGIONS } from "../../chapterData";
 import type { MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "../../types";
 
@@ -14,7 +23,6 @@ type MissionPlannerProps = {
   remainToday: number;
   planPopulation: PopulationOption;
   planZones: boolean[];
-  planDistribution: number[];
   planQuestions: QuestionKey[];
   selectedQuestionInfos: SelectedQuestionInfo[];
   zoneCount: number;
@@ -22,7 +30,6 @@ type MissionPlannerProps = {
   canAddPlan: boolean;
   togglePlanZone: (index: number, checked: boolean) => void;
   setPlanPopulation: (population: PopulationOption) => void;
-  setDistributionForZone: (zoneIndex: number, value: number) => void;
   toggleQuestion: (key: QuestionKey, checked: boolean) => void;
   addPlan: () => void;
   removePlan: (id: string) => void;
@@ -43,6 +50,36 @@ const POPULATION_TIERS: Array<{ value: PopulationOption; title: string; desc: st
   { value: 1000, title: "Citywide Dragnet", desc: "High power, high cost" },
 ];
 
+const DAY_COPY = [
+  {
+    kicker: "Day 1 / 3 — Mission Control",
+    title: "The investigation begins.",
+    desc: "Send your detectives into the city to gather clues. Choose which districts to visit, how many people to talk to, and what questions to ask.",
+  },
+  {
+    kicker: "Day 2 / 3 — Mission Control",
+    title: "The first report reveals missing clues.",
+    desc: "Use yesterday's results to decide where your detectives should search next.",
+  },
+  {
+    kicker: "Day 3 / 3 — Final Collection Day",
+    title: "This is your last chance to complete the evidence.",
+    desc: "Fill the remaining gaps before the AI system is used in court.",
+  },
+] as const;
+
+const POP_IMAGES: Record<PopulationOption, string> = {
+  100: p100,
+  500: p500,
+  1000: p1000,
+};
+
+const QUESTION_VISUALS: Record<QuestionKey, { icon: string; tag: string }> = {
+  "daily-routine": { icon: routineIcon, tag: "Useful context" },
+  "phone-model": { icon: phoneIcon, tag: "Useless noise" },
+  "past-police-stops": { icon: policeIcon, tag: "Bias trap" },
+};
+
 export default function MissionPlanner({
   currentDay,
   currentPlans,
@@ -51,7 +88,6 @@ export default function MissionPlanner({
   remainToday,
   planPopulation,
   planZones,
-  planDistribution,
   planQuestions,
   selectedQuestionInfos,
   zoneCount,
@@ -59,7 +95,6 @@ export default function MissionPlanner({
   canAddPlan,
   togglePlanZone,
   setPlanPopulation,
-  setDistributionForZone,
   toggleQuestion,
   addPlan,
   removePlan,
@@ -78,21 +113,18 @@ export default function MissionPlanner({
   ];
   const readinessScore = Math.round((readinessSteps.filter((step) => step.complete).length / readinessSteps.length) * 100);
   const selectedDistricts = REGIONS.filter((_, i) => planZones[i]).map((region) => region.label);
+  const dayCopy = DAY_COPY[currentDay];
 
   return (
     <div className={styles.missionDashboard}>
       <section className={styles.missionHeader}>
         <div className={styles.commandIntro}>
           <div className={styles.commandMeta}>
-            <span className={styles.dayBadge}>Day {currentDay + 1} / 3</span>
+            <span className={styles.dayBadge}>{dayCopy.kicker}</span>
             <span className={styles.rankBadge}>{DAY_RANKS[currentDay]}</span>
           </div>
-          <p className={styles.panelEyebrow}>Mission Control</p>
-          <h2 className={styles.h2}>Build today&apos;s data collection strategy</h2>
-          <p className={styles.panelBody}>
-            Fixed records are always available: Night Activity and Group Size. Tune coverage, sample volume,
-            and optional questions before adding missions to today&apos;s queue.
-          </p>
+          <h2 className={styles.h2}>{dayCopy.title}</h2>
+          <p className={styles.panelBody}>{dayCopy.desc}</p>
           <div className={styles.objectiveTrack} aria-label="Mission readiness checklist">
             {readinessSteps.map((step, index) => (
               <span
@@ -109,13 +141,13 @@ export default function MissionPlanner({
         <div className={styles.budgetPanel} aria-label="Budget status">
           <div className={styles.budgetRing} style={{ ["--budget-used" as string]: `${budgetUsed}%` }}>
             <span>{remainToday}</span>
-            <small>left</small>
+            <small>IP left</small>
           </div>
           <div className={styles.budgetStats}>
             <strong>Readiness {readinessScore}%</strong>
-            <span>Budget {DAILY_BUDGET}</span>
-            <span>Spent {spentToday}</span>
-            <span>Draft {draftCost}</span>
+            <span><img src={budgetIcon} alt="" aria-hidden="true" /> Budget {DAILY_BUDGET}</span>
+            <span><img src={spentIcon} alt="" aria-hidden="true" /> Spent {spentToday}</span>
+            <span><img src={draftIcon} alt="" aria-hidden="true" /> Draft {draftCost}</span>
           </div>
         </div>
       </section>
@@ -142,11 +174,9 @@ export default function MissionPlanner({
                   onChange={(e) => togglePlanZone(i, e.target.checked)}
                   disabled={locked}
                 />
-                <span className={styles.regionArt}>
-                  <img src={ZONE_VISUALS[i].icon} alt="" aria-hidden="true" />
-                </span>
+                <img className={styles.regionImage} src={ZONE_VISUALS[i].image} alt={r.label} />
                 <span className={styles.regionTopline}>
-                  <span className={styles.regionDot} style={{ background: r.color }} />
+                  <img src={ZONE_VISUALS[i].icon} alt="" aria-hidden="true" className={styles.regionMiniIcon} />
                   <span className={styles.regionCode}>Zone {i + 1}</span>
                 </span>
                 <span className={styles.regionName}>{r.label}</span>
@@ -175,6 +205,7 @@ export default function MissionPlanner({
                 onClick={() => setPlanPopulation(tier.value)}
                 disabled={locked}
               >
+                <img src={POP_IMAGES[tier.value]} alt="" aria-hidden="true" className={styles.sampleTierIcon} />
                 <span className={styles.sampleTierKicker}>Level {index + 1}</span>
                 <strong>{tier.value}</strong>
                 <span>{tier.title}</span>
@@ -182,30 +213,6 @@ export default function MissionPlanner({
               </button>
             ))}
           </div>
-
-          {zoneCount > 1 && (
-            <div className={styles.distributionPanel}>
-              <p className={styles.panelEyebrow}>Deployment split</p>
-              {REGIONS.map((r, i) =>
-                planZones[i] ? (
-                  <div key={r.id} className={shared.sliderRow}>
-                    <span className={shared.sliderLabel}>{r.label}</span>
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      step={10}
-                      value={Math.round(planDistribution[i] * 100)}
-                      onChange={(e) => setDistributionForZone(i, parseInt(e.target.value, 10) || 0)}
-                      className={shared.sliderInput}
-                      disabled={locked}
-                    />
-                    <span className={shared.sliderValue}>{Math.round(planDistribution[i] * 100)}%</span>
-                  </div>
-                ) : null,
-              )}
-            </div>
-          )}
         </section>
 
         <section className={`${styles.missionCard} ${styles.missionCardWide}`}>
@@ -218,25 +225,25 @@ export default function MissionPlanner({
           </div>
 
           <div className={styles.featureGrid}>
-            {QUESTION_OPTIONS.map((f, index) => (
-              <label
-                key={f.key}
-                className={`${styles.featureChip} ${styles.missionFeatureChip} ${planQuestions.includes(f.key) ? styles.featureChipOn : ""}`}
-              >
-                <input
-                  type="checkbox"
-                  checked={planQuestions.includes(f.key)}
-                  onChange={(e) => toggleQuestion(f.key, e.target.checked)}
-                  disabled={locked}
-                />
-                <span className={styles.featureChipMeta}>
-                  <span className={styles.featureChipKicker}>Intel card {index + 1}</span>
-                  <span className={styles.featureChipLabel}>{f.label}</span>
-                  <span className={styles.featureChipTactic}>{f.tactic}</span>
-                </span>
-                <strong>+{f.cost}</strong>
-              </label>
-            ))}
+            {QUESTION_OPTIONS.map((f) => {
+              const compactLabel = f.label.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+              return (
+                <label
+                  key={f.key}
+                  className={`${styles.featureChip} ${styles.missionFeatureChip} ${planQuestions.includes(f.key) ? styles.featureChipOn : ""}`}
+                >
+                  <input
+                    type="checkbox"
+                    checked={planQuestions.includes(f.key)}
+                    onChange={(e) => toggleQuestion(f.key, e.target.checked)}
+                    disabled={locked}
+                  />
+                  <img src={QUESTION_VISUALS[f.key].icon} alt="" aria-hidden="true" className={styles.featureIcon} />
+                  <span className={styles.featureChipLabel}>{compactLabel}</span>
+                  <strong>+{f.cost}</strong>
+                </label>
+              );
+            })}
           </div>
 
           <div className={styles.featureIntelPanel}>
@@ -264,23 +271,6 @@ export default function MissionPlanner({
             <span className={remainingAfterAdd < 0 ? styles.missionPillBad : styles.missionPill}>
               {remainingAfterAdd} left
             </span>
-          </div>
-
-          <div className={styles.readinessPanel}>
-            <div className={styles.readinessHeader}>
-              <span>Mission readiness</span>
-              <strong>{readinessScore}%</strong>
-            </div>
-            <div className={styles.readinessTrack}>
-              <span style={{ ["--readiness" as string]: `${readinessScore}%` }} />
-            </div>
-            <div className={styles.readinessChecks}>
-              {readinessSteps.map((step) => (
-                <span key={step.label} className={step.complete ? styles.readinessCheckDone : ""}>
-                  {step.label}
-                </span>
-              ))}
-            </div>
           </div>
 
           <div className={styles.draftSummary}>
@@ -321,24 +311,16 @@ export default function MissionPlanner({
               ))
             )}
           </div>
+
+          {currentPlans.length > 0 && !locked && (
+            <button type="button" className={`${shared.continueBtn} ${styles.queueDeployBtn}`} onClick={sendDetectiveAndAdvance}>
+              {currentDay < 2
+                ? `Deploy Detective | Unlock Day ${currentDay + 2}`
+                : "Deploy Detective | Train Model"}
+            </button>
+          )}
         </aside>
       </div>
-
-      <section className={styles.dispatchBar}>
-        <div>
-          <p className={styles.panelEyebrow}>Dispatch Gate</p>
-          <p className={`${shared.continueHint} ${styles.dispatchHint}`}>
-            Day {currentDay + 1}: {currentPlans.length} mission(s) | spent {spentToday}/{DAILY_BUDGET}
-          </p>
-        </div>
-        {currentPlans.length > 0 && !locked && (
-          <button type="button" className={`${shared.continueBtn} ${styles.dispatchContinueBtn}`} onClick={sendDetectiveAndAdvance}>
-            {currentDay < 2
-              ? `Deploy Detective | Unlock Day ${currentDay + 2}`
-              : "Deploy Detective | Train Model"}
-          </button>
-        )}
-      </section>
     </div>
   );
 }

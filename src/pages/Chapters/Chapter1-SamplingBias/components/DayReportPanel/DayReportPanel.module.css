@@ -160,6 +160,11 @@
   line-height: 1.15;
 }
 
+.zoneCode,
+.zoneLabelBreak {
+  display: block;
+}
+
 .zoneScore {
   margin: 0;
   font-family: var(--font-display);

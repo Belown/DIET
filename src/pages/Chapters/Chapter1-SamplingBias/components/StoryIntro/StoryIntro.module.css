@@ -1,0 +1,279 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IM+Fell+English:ital@0;1&family=Spectral:wght@400;500;600&display=swap");
+
+.root {
+  padding: 0;
+}
+
+.bookShell {
+  position: relative;
+  width: 100%;
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.skipBtn {
+  position: absolute;
+  top: 10px;
+  right: 8px;
+  z-index: 3;
+  appearance: none;
+  border: 1px solid rgba(24, 36, 54, 0.14);
+  border-radius: 999px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #2b3442;
+  font-family: "Cormorant Garamond", "Spectral", Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(18, 28, 44, 0.08);
+}
+
+.skipBtn:hover {
+  background: rgba(255, 255, 255, 0.96);
+}
+
+.bookPageSpread {
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.leftPage,
+.rightPage {
+  border-radius: 0;
+}
+
+.leftPage {
+  overflow: hidden;
+  background: transparent;
+  align-self: start;
+  border: 0;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.rightPage {
+  position: relative;
+  appearance: none;
+  text-align: left;
+  background: transparent;
+  padding: 26px 26px 22px;
+  cursor: pointer;
+  transition: transform 0.24s ease;
+  transform-origin: left center;
+  align-self: start;
+  overflow: auto;
+  border: 0;
+}
+
+.rightPage:disabled {
+  cursor: default;
+}
+
+.rightPageTurning {
+  animation: pageTurn 0.52s cubic-bezier(0.2, 0.7, 0.22, 1) both;
+}
+
+@keyframes pageTurn {
+  from { transform: perspective(1300px) rotateY(0deg); opacity: 1; }
+  60% { transform: perspective(1300px) rotateY(-28deg); opacity: 0.9; }
+  to { transform: perspective(1300px) rotateY(-78deg); opacity: 0.3; }
+}
+
+.captionTextGhost,
+.captionTextTyped {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: clamp(14px, 1.05vw, 20px);
+  line-height: 1.56;
+  color: #3b2b1f;
+  font-family: "IM Fell English", "Spectral", Georgia, serif;
+}
+
+.textViewport {
+  position: relative;
+}
+
+.captionTextGhost {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.captionTextTyped {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.sparkleHint {
+  position: absolute;
+  right: 16px;
+  bottom: 12px;
+  color: #8b5cf6;
+  font-size: clamp(18px, 1.2vw, 22px);
+  animation: sparkleBlink 1.2s ease-in-out infinite;
+}
+
+@keyframes sparkleBlink {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+
+.finalStage {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  animation: finalStageReveal 0.9s cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.finalImageWrap {
+  position: relative;
+  width: min(100%, 980px);
+  border-radius: 0;
+  overflow: hidden;
+  border: 0;
+}
+
+.finalImage {
+  width: 100%;
+  height: auto;
+  display: block;
+  transform: scale(1.015);
+  animation: finalImageDrift 7.5s ease-in-out infinite;
+}
+
+.finalCinematicOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 100%, rgba(3, 9, 20, 0.74) 0%, rgba(3, 9, 20, 0.28) 44%, rgba(3, 9, 20, 0) 70%),
+    radial-gradient(70% 46% at 50% 4%, rgba(162, 213, 255, 0.45) 0%, rgba(162, 213, 255, 0.16) 36%, rgba(162, 213, 255, 0) 76%),
+    linear-gradient(112deg, rgba(186, 209, 231, 0.2) 18%, rgba(186, 209, 231, 0) 38%),
+    linear-gradient(248deg, rgba(103, 191, 255, 0.2) 20%, rgba(103, 191, 255, 0) 40%);
+  mix-blend-mode: screen;
+}
+
+
+.startBtn {
+  appearance: none;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(12px, 3.5vw, 34px);
+  transform: translateX(-50%);
+  z-index: 2;
+  border: 1px solid rgba(182, 214, 240, 0.58);
+  border-radius: 999px;
+  padding: 12px 30px;
+  font-family: "Cormorant Garamond", "Spectral", Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background:
+    linear-gradient(180deg, rgba(226, 244, 255, 0.18), rgba(226, 244, 255, 0) 44%),
+    linear-gradient(108deg, rgba(10, 26, 44, 0.74) 0%, rgba(20, 45, 74, 0.7) 55%, rgba(54, 95, 142, 0.66) 100%);
+  color: #eaf5ff;
+  box-shadow:
+    0 0 0 0 rgba(134, 199, 247, 0.24),
+    inset 0 1px 0 rgba(232, 245, 255, 0.42),
+    inset 0 -10px 18px rgba(5, 16, 30, 0.34),
+    0 10px 20px rgba(1, 8, 18, 0.46),
+    0 0 20px rgba(116, 189, 243, 0.28);
+  text-shadow: 0 1px 2px rgba(2, 11, 22, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: startGlow 2.1s ease-in-out infinite;
+}
+
+.startBtn:hover {
+  transform: translateX(-50%);
+  filter: saturate(1.08) brightness(1.08);
+}
+
+.startBtn:active {
+  transform: translateX(-50%);
+}
+
+.startBtn::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(136, 208, 255, 0.34) 0%, rgba(136, 208, 255, 0) 72%);
+  filter: blur(4px);
+  opacity: 0.56;
+  animation: haloPulse 2.2s ease-in-out infinite;
+}
+
+.startBtn::after {
+  content: "✦";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: rgba(208, 236, 255, 0.9);
+  text-shadow: 0 0 7px rgba(141, 214, 255, 0.66);
+}
+
+@keyframes startGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(134, 201, 246, 0.18), 0 0 14px rgba(134, 201, 246, 0.22); }
+  50% { box-shadow: 0 0 0 8px rgba(134, 201, 246, 0), 0 0 22px rgba(134, 201, 246, 0.44); }
+}
+
+@keyframes haloPulse {
+  0%, 100% { opacity: 0.46; transform: scale(0.98); }
+  50% { opacity: 0.86; transform: scale(1.03); }
+}
+
+@keyframes finalStageReveal {
+  from { opacity: 0; transform: translateY(16px) scale(0.994); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes finalImageDrift {
+  0%, 100% { transform: scale(1.015) translateY(0); }
+  50% { transform: scale(1.03) translateY(-3px); }
+}
+
+@media (max-width: 1020px) {
+  .bookPageSpread {
+    grid-template-columns: 1fr;
+  }
+
+  .captionTextGhost,
+  .captionTextTyped {
+    font-size: 16px;
+  }
+
+  .rightPage {
+    padding: 20px 20px 18px;
+  }
+
+  .startBtn {
+    font-size: 20px;
+    padding: 11px 22px;
+  }
+
+  .skipBtn {
+    top: 6px;
+    right: 0;
+  }
+
+}

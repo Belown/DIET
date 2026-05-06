@@ -33,24 +33,24 @@
 }
 
 .missionHeader {
-  position: relative;
-  overflow: hidden;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
-  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 360px);
+  gap: 18px;
   align-items: stretch;
-  padding: 24px 28px;
-  background:
-    linear-gradient(90deg, rgba(73, 79, 223, 0.08) 1px, transparent 1px),
-    linear-gradient(180deg, rgba(25, 28, 31, 0.05) 1px, transparent 1px),
-    var(--rui-surface);
-  background-size: 32px 32px;
-  border: 1px solid var(--rui-border);
-  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 .commandIntro {
   min-width: 0;
+  border: 1px solid rgba(73, 79, 223, 0.16);
+  border-radius: 14px;
+  padding: 20px 22px;
+  background: var(--rui-white);
+  display: grid;
+  align-content: center;
 }
 
 .commandMeta {
@@ -73,7 +73,7 @@
 }
 
 .dayBadge {
-  background: var(--rui-dark);
+  background: rgba(16, 24, 40, 0.92);
   color: var(--rui-white);
 }
 
@@ -127,11 +127,12 @@
 }
 
 .budgetPanel {
-  display: flex;
+  min-height: 100%;
+  display: grid;
+  grid-template-columns: minmax(112px, 0.92fr) minmax(0, 1fr);
   align-items: center;
-  justify-content: flex-end;
-  gap: 18px;
-  padding: 14px;
+  gap: 20px;
+  padding: 20px 22px;
   background: var(--rui-white);
   border: 1px solid rgba(25, 28, 31, 0.12);
   border-radius: 8px;
@@ -139,11 +140,12 @@
 
 .budgetRing {
   --budget-used: 0%;
-  width: 92px;
-  height: 92px;
+  width: 112px;
+  height: 112px;
   display: grid;
   place-items: center;
   align-content: center;
+  justify-self: center;
   border-radius: 999px;
   background:
     radial-gradient(circle at center, var(--rui-white) 0 58%, transparent 59%),
@@ -153,27 +155,40 @@
 }
 
 .budgetRing span {
-  font-size: 24px;
+  font-size: 36px;
   line-height: 1;
 }
 
 .budgetRing small {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--rui-gray);
 }
 
 .budgetStats {
   display: grid;
-  gap: 6px;
+  align-content: center;
+  gap: 10px;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 14px;
   color: var(--rui-slate);
   white-space: nowrap;
 }
 
+.budgetStats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.budgetStats img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
 .budgetStats strong {
   color: var(--rui-dark);
-  font-size: 13px;
+  font-size: 18px;
 }
 
 .missionGrid {
@@ -250,33 +265,30 @@
 
 .missionRegionCard {
   position: relative;
-  min-height: 174px;
-  padding: 14px;
+  min-height: 220px;
+  padding: 0 12px 12px;
   overflow: hidden;
 }
 
-.regionArt {
-  height: 54px;
-  width: 54px;
-  display: inline-grid;
-  place-items: center;
-  margin-bottom: 6px;
-  border-radius: 14px;
-  background: rgba(245, 247, 250, 0.88);
-  border: 1px solid rgba(25, 28, 31, 0.1);
-  overflow: hidden;
-}
-
-.regionArt img {
-  width: 120%;
-  height: 120%;
+.regionImage {
+  margin: 0 -12px 10px;
+  width: calc(100% + 24px);
+  height: 92px;
   object-fit: cover;
+  border-bottom: 1px solid rgba(25, 28, 31, 0.1);
 }
 
 .regionTopline {
   display: flex;
   align-items: center;
   gap: 7px;
+}
+
+.regionMiniIcon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+  border-radius: 999px;
 }
 
 .regionCode {
@@ -308,7 +320,7 @@
   appearance: none;
   width: 100%;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 3px 12px;
   padding: 13px 14px;
@@ -337,8 +349,15 @@
   background: rgba(0, 168, 126, 0.1);
 }
 
+.sampleTierIcon {
+  grid-row: 1 / span 3;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+}
+
 .sampleTierKicker {
-  grid-column: 1 / -1;
+  grid-column: 2 / -1;
   font-family: var(--font-display);
   font-size: 11px;
   color: var(--rui-gray);
@@ -346,6 +365,7 @@
 }
 
 .sampleTier strong {
+  grid-column: 2;
   font-family: var(--font-display);
   font-size: 24px;
   line-height: 1;
@@ -353,6 +373,7 @@
 }
 
 .sampleTier > span:not(.sampleTierKicker) {
+  grid-column: 3;
   justify-self: end;
   font-family: var(--font-display);
   font-size: 13px;
@@ -360,53 +381,51 @@
 }
 
 .sampleTier small {
-  grid-column: 1 / -1;
+  grid-column: 2 / -1;
   color: var(--rui-slate);
   font-size: 12px;
-}
-
-.distributionPanel {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-  padding-top: 14px;
-  border-top: 1px solid rgba(25, 28, 31, 0.1);
 }
 
 .missionFeatureChip {
-  flex: 1 1 220px;
-  justify-content: space-between;
+  flex: 1 1 240px;
+  justify-content: flex-start;
   border-radius: 8px;
-  align-items: flex-start;
-  padding: 13px 14px;
+  align-items: center;
+  padding: 11px 14px;
+  gap: 10px;
 }
 
-.featureChipMeta {
-  display: grid;
-  gap: 3px;
-  min-width: 0;
+.featureIcon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .featureChipKicker {
-  font-family: var(--font-display);
-  font-size: 11px;
-  color: var(--rui-gray);
-  text-transform: uppercase;
+  display: none;
 }
 
 .featureChipLabel {
+  min-width: 0;
+  flex: 1 1 auto;
   font-family: var(--font-display);
   font-size: 13px;
-  line-height: 1.25;
+  line-height: 1.15;
   color: var(--rui-dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .featureChipTactic {
-  font-size: 12px;
-  color: var(--rui-slate);
+  display: none;
 }
 
 .missionFeatureChip strong {
+  margin-left: auto;
+  flex: 0 0 auto;
   font-family: var(--font-display);
   font-size: 12px;
   color: inherit;
@@ -570,37 +589,9 @@
   color: #dc2626;
 }
 
-.dispatchBar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  padding: 18px 20px;
-  background: var(--rui-dark);
-  color: var(--rui-white);
-  border-radius: 8px;
-}
-
-.dispatchBar .panelEyebrow {
-  color: var(--rui-white);
-}
-
-.dispatchHint {
-  font-family: var(--font-display);
-  font-size: 16px;
-  font-weight: 500;
-  color: var(--rui-white);
-  margin: 0;
-}
-
-.dispatchContinueBtn {
-  background: var(--rui-white);
-  color: var(--rui-dark);
-}
-
-.dispatchContinueBtn:hover {
-  background: var(--rui-blue);
-  color: var(--rui-white);
+.queueDeployBtn {
+  justify-self: end;
+  margin-top: 4px;
 }
 
 /* ─── Region selection ───────────────────────────────────────────────────── */
@@ -779,10 +770,15 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .dispatchBar {
-    align-items: stretch;
-    flex-direction: column;
+  .commandIntro {
+    grid-template-columns: 1fr;
   }
+
+  .heroIcon {
+    width: 88px;
+    height: 88px;
+  }
+
 }
 
 @media (max-width: 560px) {
@@ -795,6 +791,24 @@
   .budgetPanel {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .sampleTier {
+    grid-template-columns: 1fr;
+  }
+
+  .sampleTierIcon {
+    grid-row: auto;
+    width: 38px;
+    height: 38px;
+  }
+
+  .sampleTierKicker,
+  .sampleTier strong,
+  .sampleTier > span:not(.sampleTierKicker),
+  .sampleTier small {
+    grid-column: auto;
+    justify-self: start;
   }
 
   .missionCardHeader {

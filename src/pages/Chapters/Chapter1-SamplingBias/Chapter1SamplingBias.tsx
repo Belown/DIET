@@ -1,6 +1,6 @@
 ﻿import { useState, useMemo, useEffect } from "react";
 import styles from "./Chapter1SamplingBias.module.css";
-import { BoundaryExercise, BoundaryReveal, ChoiceList, DayReportPanel, MissionPlanner, NarrativeBox, VerdictPanel } from "./components";
+import { BoundaryExercise, BoundaryReveal, ChoiceList, DayReportPanel, MissionPlanner, NarrativeBox, StoryIntro, VerdictPanel } from "./components";
 import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
 import { portraits } from "../../../assets/detective/portraits";
 import type { PassageId, Choice } from "./passages";
@@ -37,6 +37,7 @@ const getPortraitForText = (text: string) => {
 };
 
 export default function Chapter1SamplingBias() {
+  const [showStoryIntro, setShowStoryIntro] = useState(true);
   const [passage, setPassage] = useState<PassageId>("intro");
   const [chunkIndex, setChunkIndex] = useState(0);
   const [narrativeHistory, setNarrativeHistory] = useState<NarrativeLocation[]>([]);
@@ -80,8 +81,6 @@ export default function Chapter1SamplingBias() {
       return next;
     });
 
-  const toPoints = (fraction: number) => Math.max(0, Math.min(10, Math.round(fraction * 10)));
-
   const buildEqualDistribution = (zones: boolean[]) => {
     const next = [0, 0, 0, 0];
     const active = zones.map((on, i) => (on ? i : -1)).filter((idx) => idx >= 0);
@@ -93,64 +92,6 @@ export default function Chapter1SamplingBias() {
       if (remainder > 0) remainder -= 1;
     });
     return next;
-  };
-
-  const rebalanceWithTarget = (zones: boolean[], current: number[], targetIdx: number, targetPct: number) => {
-    const next = [0, 0, 0, 0];
-    const active = zones.map((on, i) => (on ? i : -1)).filter((idx) => idx >= 0);
-    if (!active.length) return next;
-    if (!active.includes(targetIdx)) return buildEqualDistribution(zones);
-    if (active.length === 1) {
-      next[targetIdx] = 1;
-      return next;
-    }
-
-    const targetPoints = Math.max(0, Math.min(10, Math.round(targetPct / 10)));
-    const remainingPoints = 10 - targetPoints;
-    const points = [0, 0, 0, 0];
-    active.forEach((idx) => { points[idx] = toPoints(current[idx]); });
-    points[targetIdx] = targetPoints;
-
-    const others = active.filter((idx) => idx !== targetIdx);
-    if (remainingPoints <= 0) {
-      others.forEach((idx) => { points[idx] = 0; });
-    } else {
-      const otherSum = others.reduce((s, idx) => s + points[idx], 0);
-      if (otherSum <= 0) {
-        const base = Math.floor(remainingPoints / others.length);
-        let rem = remainingPoints - base * others.length;
-        others.forEach((idx) => {
-          points[idx] = base + (rem > 0 ? 1 : 0);
-          if (rem > 0) rem -= 1;
-        });
-      } else {
-        const scaled = others.map((idx) => {
-          const value = (points[idx] / otherSum) * remainingPoints;
-          return { idx, floor: Math.floor(value), frac: value - Math.floor(value) };
-        });
-        let assigned = 0;
-        scaled.forEach((s) => {
-          points[s.idx] = s.floor;
-          assigned += s.floor;
-        });
-        let rem = remainingPoints - assigned;
-        scaled.sort((a, b) => b.frac - a.frac);
-        for (let i = 0; i < scaled.length && rem > 0; i += 1) {
-          points[scaled[i].idx] += 1;
-          rem -= 1;
-        }
-      }
-    }
-
-    active.forEach((idx) => {
-      next[idx] = points[idx] / 10;
-    });
-    return next;
-  };
-
-  const setDistributionForZone = (zoneIdx: number, value: number) => {
-    const snapped = Math.max(0, Math.min(100, Math.round(value / 10) * 10));
-    setPlanDistribution((prev) => rebalanceWithTarget(planZones, prev, zoneIdx, snapped));
   };
 
   const toggleQuestion = (key: QuestionKey, checked: boolean) => {
@@ -389,7 +330,6 @@ export default function Chapter1SamplingBias() {
             remainToday={remainToday}
             planPopulation={planPopulation}
             planZones={planZones}
-            planDistribution={planDistribution}
             planQuestions={planQuestions}
             selectedQuestionInfos={selectedQuestionInfos}
             zoneCount={zoneCount}
@@ -397,7 +337,6 @@ export default function Chapter1SamplingBias() {
             canAddPlan={canAddPlan}
             togglePlanZone={togglePlanZone}
             setPlanPopulation={setPlanPopulation}
-            setDistributionForZone={setDistributionForZone}
             toggleQuestion={toggleQuestion}
             addPlan={addPlan}
             removePlan={removePlan}
@@ -435,6 +374,18 @@ export default function Chapter1SamplingBias() {
         return null;
     }
   })();
+
+  if (showStoryIntro) {
+    return (
+      <div className={styles.phase}>
+        <div className={styles.scene}>
+          <div className={styles.sceneInner}>
+            <StoryIntro onStart={() => setShowStoryIntro(false)} />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.phase}>

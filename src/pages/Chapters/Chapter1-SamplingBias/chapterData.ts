@@ -5,7 +5,7 @@ export const REGIONS: readonly Region[] = [
   { id: 0, label: "Uptown",       desc: "Wealthy, privileged area",        xMean: 28, yMean: 25, std: 8, suspRate: 0.12, color: "#494fdf" },
   { id: 1, label: "Downtown",     desc: "Busy commercial area",            xMean: 22, yMean: 20, std: 7, suspRate: 0.10, color: "#7c3aed" },
   { id: 2, label: "Factory Zone", desc: "Working-class area",              xMean: 68, yMean: 70, std: 9, suspRate: 0.13, color: "#e61e49" },
-  { id: 3, label: "The Slums",    desc: "Unpredictable, low-income area",  xMean: 62, yMean: 66, std: 9, suspRate: 0.11, color: "#e8a308" },
+  { id: 3, label: "\n The \n Slums",    desc: "Unpredictable, low-income area",  xMean: 62, yMean: 66, std: 9, suspRate: 0.11, color: "#e8a308" },
 ] as const;
 
 export const BRIEFING_SHEETS: Partial<Record<PassageId, BriefingSheet>> = {
