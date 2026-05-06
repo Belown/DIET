@@ -1,14 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
+import { ZONE_VISUALS } from "../../../../../assets/image/zoneVisuals";
 import { REGIONS } from "../../chapterData";
 import styles from "./DayReportPanel.module.css";
-import zone1icon from "../../../../../assets/image/zone1icon.png";
-import zone1image from "../../../../../assets/image/zone1image.png";
-import zone2icon from "../../../../../assets/image/zone2icon.png";
-import zone2image from "../../../../../assets/image/zone2image.png";
-import zone3icon from "../../../../../assets/image/zone3icon.png";
-import zone3image from "../../../../../assets/image/zone3image.png";
-import zone4icon from "../../../../../assets/image/zone4icon.png";
-import zone4image from "../../../../../assets/image/zone4image.png";
 
 type DayReportPanelProps = {
   dayNumber: 1 | 2 | 3;
@@ -18,13 +11,6 @@ type DayReportPanelProps = {
 };
 
 const districtCode = (index: number) => ["UP", "DT", "FZ", "SL"][index] ?? "RG";
-
-const ZONE_VISUALS = [
-  { icon: zone1icon, image: zone1image },
-  { icon: zone2icon, image: zone2image },
-  { icon: zone3icon, image: zone3image },
-  { icon: zone4icon, image: zone4image },
-];
 
 export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, sampledFlags }: DayReportPanelProps) {
   const [barValues, setBarValues] = useState([0, 0, 0, 0]);

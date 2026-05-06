@@ -262,6 +262,7 @@ export default function Chapter1SamplingBias() {
     const chunks = PASSAGES[passage].chunks;
     return Boolean(chunks && chunkIndex < chunks.length - 1);
   }, [passage, chunkIndex]);
+  const isSheetPopupOpen = isBoundarySheetOpen || revealSheetMode === "spotlight";
 
   const rememberCurrentChat = () => {
     const currentLocation = { passage, chunkIndex, text: passageText };
@@ -278,6 +279,7 @@ export default function Chapter1SamplingBias() {
 
     return history.map((item) => ({
       ...item,
+      passageId: item.passage,
       current: isSameNarrativeLocation(item, currentLocation),
     }));
   }, [chunkIndex, narrativeHistory, passage, passageText]);
@@ -447,6 +449,7 @@ export default function Chapter1SamplingBias() {
         history={dialogueHistory}
         onHistorySelect={handleHistorySelect}
         onAdvance={handleAdvance}
+        disableKeyboardAdvance={isSheetPopupOpen}
       />
 
       {showChoices && passageChoices.length > 1 && (

@@ -33,14 +33,97 @@
 }
 
 .missionHeader {
+  position: relative;
+  overflow: hidden;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
   gap: 20px;
   align-items: stretch;
   padding: 24px 28px;
-  background: var(--rui-surface);
+  background:
+    linear-gradient(90deg, rgba(73, 79, 223, 0.08) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(25, 28, 31, 0.05) 1px, transparent 1px),
+    var(--rui-surface);
+  background-size: 32px 32px;
   border: 1px solid var(--rui-border);
   border-radius: 8px;
+}
+
+.commandIntro {
+  min-width: 0;
+}
+
+.commandMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.dayBadge,
+.rankBadge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 7px 11px;
+  border-radius: 999px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.dayBadge {
+  background: var(--rui-dark);
+  color: var(--rui-white);
+}
+
+.rankBadge {
+  background: rgba(0, 168, 126, 0.12);
+  color: var(--rui-teal);
+  border: 1px solid rgba(0, 168, 126, 0.32);
+}
+
+.objectiveTrack {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.objectiveStep {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 30px;
+  padding: 5px 10px 5px 6px;
+  border: 1px solid rgba(25, 28, 31, 0.14);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--rui-slate);
+  font-family: var(--font-display);
+  font-size: 12px;
+}
+
+.objectiveStep span {
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(25, 28, 31, 0.1);
+  color: var(--rui-dark);
+  font-size: 11px;
+}
+
+.objectiveStepDone {
+  border-color: rgba(0, 168, 126, 0.32);
+  background: rgba(0, 168, 126, 0.1);
+  color: #0f766e;
+}
+
+.objectiveStepDone span {
+  background: var(--rui-teal);
+  color: var(--rui-white);
 }
 
 .budgetPanel {
@@ -86,6 +169,11 @@
   font-size: 12px;
   color: var(--rui-slate);
   white-space: nowrap;
+}
+
+.budgetStats strong {
+  color: var(--rui-dark);
+  font-size: 13px;
 }
 
 .missionGrid {
@@ -161,8 +249,54 @@
 }
 
 .missionRegionCard {
-  min-height: 118px;
+  position: relative;
+  min-height: 174px;
   padding: 14px;
+  overflow: hidden;
+}
+
+.regionArt {
+  height: 54px;
+  width: 54px;
+  display: inline-grid;
+  place-items: center;
+  margin-bottom: 6px;
+  border-radius: 14px;
+  background: rgba(245, 247, 250, 0.88);
+  border: 1px solid rgba(25, 28, 31, 0.1);
+  overflow: hidden;
+}
+
+.regionArt img {
+  width: 120%;
+  height: 120%;
+  object-fit: cover;
+}
+
+.regionTopline {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.regionCode {
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--rui-gray);
+  text-transform: uppercase;
+}
+
+.regionStatus {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 24px;
+  border-radius: 999px;
+  background: rgba(25, 28, 31, 0.06);
+  color: var(--rui-slate);
+  font-family: var(--font-display);
+  font-size: 11px;
 }
 
 .missionSliderBlock {
@@ -192,6 +326,72 @@
   color: var(--rui-slate);
 }
 
+.sampleTierGrid {
+  display: grid;
+  gap: 10px;
+}
+
+.sampleTier {
+  appearance: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 3px 12px;
+  padding: 13px 14px;
+  border: 2px solid var(--rui-border);
+  border-radius: 8px;
+  background: var(--rui-white);
+  color: var(--rui-dark);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.16s ease, background 0.16s ease, transform 0.16s ease;
+}
+
+.sampleTier:hover {
+  background: var(--rui-surface);
+  transform: translateY(-1px);
+}
+
+.sampleTier:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+}
+
+.sampleTierOn {
+  border-color: var(--rui-teal);
+  background: rgba(0, 168, 126, 0.1);
+}
+
+.sampleTierKicker {
+  grid-column: 1 / -1;
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--rui-gray);
+  text-transform: uppercase;
+}
+
+.sampleTier strong {
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--rui-dark);
+}
+
+.sampleTier > span:not(.sampleTierKicker) {
+  justify-self: end;
+  font-family: var(--font-display);
+  font-size: 13px;
+  color: var(--rui-dark);
+}
+
+.sampleTier small {
+  grid-column: 1 / -1;
+  color: var(--rui-slate);
+  font-size: 12px;
+}
+
 .distributionPanel {
   display: grid;
   gap: 10px;
@@ -201,24 +401,111 @@
 }
 
 .missionFeatureChip {
+  flex: 1 1 220px;
   justify-content: space-between;
   border-radius: 8px;
+  align-items: flex-start;
+  padding: 13px 14px;
 }
 
-.missionFeatureChip span {
+.featureChipMeta {
+  display: grid;
+  gap: 3px;
   min-width: 0;
+}
+
+.featureChipKicker {
+  font-family: var(--font-display);
+  font-size: 11px;
+  color: var(--rui-gray);
+  text-transform: uppercase;
+}
+
+.featureChipLabel {
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--rui-dark);
+}
+
+.featureChipTactic {
+  font-size: 12px;
+  color: var(--rui-slate);
 }
 
 .missionFeatureChip strong {
   font-family: var(--font-display);
   font-size: 12px;
   color: inherit;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(25, 28, 31, 0.08);
+}
+
+.readinessPanel {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(25, 28, 31, 0.96), rgba(42, 48, 54, 0.96));
+  color: var(--rui-white);
+}
+
+.readinessHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-display);
+  font-size: 13px;
+}
+
+.readinessHeader strong {
+  color: #8ef0cf;
+}
+
+.readinessTrack {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.readinessTrack span {
+  --readiness: 0%;
+  display: block;
+  height: 100%;
+  width: var(--readiness);
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--rui-teal), var(--rui-blue));
+  transition: width 0.25s ease;
+}
+
+.readinessChecks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.readinessChecks span {
+  padding: 4px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.68);
+  font-family: var(--font-display);
+  font-size: 11px;
+}
+
+.readinessChecks .readinessCheckDone {
+  background: rgba(142, 240, 207, 0.18);
+  color: #8ef0cf;
 }
 
 .draftSummary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: baseline;
+  gap: 4px 12px;
   padding: 14px;
   border-radius: 8px;
   background: var(--rui-surface);
@@ -230,6 +517,14 @@
   font-family: var(--font-display);
   font-size: 24px;
   color: var(--rui-dark);
+}
+
+.draftSummary p {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--rui-gray);
 }
 
 .queueList {
@@ -257,6 +552,24 @@
   font-family: var(--font-display);
   font-size: 13px;
   color: var(--rui-dark);
+}
+
+.queueItemHeader strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.queueBadge {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  font-size: 11px;
+  line-height: 1;
 }
 
 .queueItem p {
@@ -412,6 +725,12 @@
 .regionCardOn {
   border-color: var(--rui-blue);
   background: #f0f0ff;
+  box-shadow: inset 0 0 0 1px rgba(73, 79, 223, 0.18), 0 14px 24px rgba(73, 79, 223, 0.1);
+}
+
+.regionCardOn .regionStatus {
+  background: var(--rui-blue);
+  color: var(--rui-white);
 }
 
 .regionCard input {

@@ -33,6 +33,49 @@
   border-radius: 4px;
 }
 
+.chatboxCollapsed {
+  bottom: 0;
+  width: min(1240px, calc(100vw - 32px));
+  min-height: 28px;
+  padding: 0;
+  display: block;
+  cursor: default;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.chatboxCollapsed::before {
+  display: none;
+}
+
+.openChatboxBtn {
+  appearance: none;
+  position: absolute;
+  top: -24px;
+  right: 28px;
+  z-index: 2;
+  height: 32px;
+  min-width: 64px;
+  border: 2px solid rgba(25, 28, 31, 0.86);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 0 16px;
+  cursor: pointer;
+  box-shadow: 0 -6px 14px rgba(25, 28, 31, 0.12);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.openChatboxBtn:hover {
+  background: var(--rui-blue);
+  transform: translateY(-1px);
+}
+
 .namePlate {
   position: absolute;
   left: clamp(18px, 3vw, 34px);
@@ -166,6 +209,38 @@
   transform: translateY(-2px);
 }
 
+.hideBtn {
+  appearance: none;
+  position: absolute;
+  top: -24px;
+  right: 28px;
+  z-index: 2;
+  height: 32px;
+  min-width: 64px;
+  display: inline-flex;
+  align-items: center;
+  place-items: center;
+  justify-content: center;
+  background: var(--rui-dark);
+  border: 2px solid rgba(25, 28, 31, 0.86);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  color: var(--rui-white);
+  padding: 0 16px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 -6px 14px rgba(25, 28, 31, 0.12);
+}
+
+.hideBtn:hover {
+  background: var(--rui-blue);
+  color: var(--rui-white);
+}
+
 .historyIcon {
   width: 16px;
   height: 16px;
@@ -187,7 +262,7 @@
 
 .historyDialog {
   width: min(760px, calc(100vw - 48px));
-  max-height: min(72vh, 620px);
+  max-height: min(72vh, 720px);
   display: flex;
   flex-direction: column;
   background: rgba(255, 255, 255, 0.97);
@@ -242,6 +317,68 @@
   gap: 10px;
 }
 
+.historyGroup {
+  display: grid;
+  gap: 8px;
+}
+
+.historyGroupToggle {
+  appearance: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(25, 28, 31, 0.2);
+  border-radius: 6px;
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  font-family: var(--font-display);
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: left;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.historyGroupToggle:hover {
+  background: var(--rui-blue);
+}
+
+.historyGroupIcon {
+  width: 24px;
+  height: 24px;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: 999px;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.historyGroupLabel {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.historyGroupCount {
+  min-width: 28px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.86);
+  font-size: 12px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.historyGroupList {
+  display: grid;
+  gap: 8px;
+  padding-left: 16px;
+}
+
 .historyLine {
   appearance: none;
   width: 100%;
@@ -271,6 +408,13 @@
   cursor: default;
 }
 
+.historyLineCurrent,
+.historyLineCurrent:disabled {
+  border: 3px solid var(--rui-blue);
+  background: rgba(73, 79, 223, 0.08);
+  color: var(--rui-dark);
+}
+
 .speaker {
   font-family: var(--font-display);
   font-size: 12px;
@@ -280,6 +424,14 @@
 
 .historyText {
   min-width: 0;
+}
+
+.historySheetMarker {
+  display: inline-block;
+  margin-right: 7px;
+  font-size: 13px;
+  line-height: 1;
+  vertical-align: 0.05em;
 }
 
 @keyframes advanceIn {
@@ -298,6 +450,20 @@
     bottom: 12px;
     width: calc(100vw - 24px);
     padding: 30px 18px 22px;
+  }
+
+  .chatboxCollapsed {
+    bottom: 0;
+    width: calc(100vw - 24px);
+    padding: 0;
+  }
+
+  .openChatboxBtn {
+    top: -22px;
+    right: 16px;
+    height: 30px;
+    min-width: 58px;
+    padding-inline: 14px;
   }
 
   .chatboxInner {
@@ -321,6 +487,14 @@
     min-width: 126px;
     padding-inline: 18px;
     font-size: 13px;
+  }
+
+  .hideBtn {
+    top: -22px;
+    right: 16px;
+    height: 30px;
+    min-width: 58px;
+    padding-inline: 14px;
   }
 
   .historyOverlay {

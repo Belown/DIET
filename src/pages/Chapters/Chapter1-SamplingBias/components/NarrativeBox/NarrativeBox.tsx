@@ -6,6 +6,7 @@ interface NarrativeBoxProps {
   history?: DialogueHistoryItem[];
   onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
+  disableKeyboardAdvance?: boolean;
 }
 
 export type { DialogueHistoryItem };

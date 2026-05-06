@@ -1,5 +1,6 @@
 import styles from "./MissionPlanner.module.css";
-import { DAILY_BUDGET, POP_OPTIONS, QUESTION_OPTIONS, REGIONS } from "../../chapterData";
+import { ZONE_VISUALS } from "../../../../../assets/image/zoneVisuals";
+import { DAILY_BUDGET, QUESTION_OPTIONS, REGIONS } from "../../chapterData";
 import type { MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "../../types";
 
 type SelectedQuestionInfo = QuestionOption & { line: string };
@@ -33,6 +34,14 @@ const getPopulationLabel = (population: PopulationOption) => {
   return "Mass operation";
 };
 
+const DAY_RANKS = ["Rookie Sweep", "Field Operator", "Final Command"] as const;
+
+const POPULATION_TIERS: Array<{ value: PopulationOption; title: string; desc: string }> = [
+  { value: 100, title: "Scout Sweep", desc: "Cheap, fast, narrow signal" },
+  { value: 500, title: "Field Campaign", desc: "Balanced coverage push" },
+  { value: 1000, title: "Citywide Dragnet", desc: "High power, high cost" },
+];
+
 export default function MissionPlanner({
   currentDay,
   currentPlans,
@@ -58,17 +67,42 @@ export default function MissionPlanner({
   const locked = dayLocked[currentDay];
   const remainingAfterAdd = remainToday - draftCost;
   const budgetUsed = Math.min(100, Math.round((spentToday / DAILY_BUDGET) * 100));
+  const coverageProgress = Math.round((zoneCount / REGIONS.length) * 100);
+  const budgetFitsDraft = remainingAfterAdd >= 0;
+  const readinessSteps = [
+    { label: "Coverage", complete: zoneCount > 0 },
+    { label: "Sample", complete: Boolean(planPopulation) },
+    { label: "Budget", complete: budgetFitsDraft },
+    { label: "Queue", complete: currentPlans.length > 0 },
+  ];
+  const readinessScore = Math.round((readinessSteps.filter((step) => step.complete).length / readinessSteps.length) * 100);
+  const selectedDistricts = REGIONS.filter((_, i) => planZones[i]).map((region) => region.label);
 
   return (
     <div className={styles.missionDashboard}>
       <section className={styles.missionHeader}>
-        <div>
-          <p className={styles.panelEyebrow}>Day {currentDay + 1} / 3 | Mission Control</p>
+        <div className={styles.commandIntro}>
+          <div className={styles.commandMeta}>
+            <span className={styles.dayBadge}>Day {currentDay + 1} / 3</span>
+            <span className={styles.rankBadge}>{DAY_RANKS[currentDay]}</span>
+          </div>
+          <p className={styles.panelEyebrow}>Mission Control</p>
           <h2 className={styles.h2}>Build today&apos;s data collection strategy</h2>
           <p className={styles.panelBody}>
             Fixed records are always available: Night Activity and Group Size. Tune coverage, sample volume,
             and optional questions before adding missions to today&apos;s queue.
           </p>
+          <div className={styles.objectiveTrack} aria-label="Mission readiness checklist">
+            {readinessSteps.map((step, index) => (
+              <span
+                key={step.label}
+                className={`${styles.objectiveStep} ${step.complete ? styles.objectiveStepDone : ""}`}
+              >
+                <span>{index + 1}</span>
+                {step.label}
+              </span>
+            ))}
+          </div>
         </div>
 
         <div className={styles.budgetPanel} aria-label="Budget status">
@@ -77,6 +111,7 @@ export default function MissionPlanner({
             <small>left</small>
           </div>
           <div className={styles.budgetStats}>
+            <strong>Readiness {readinessScore}%</strong>
             <span>Budget {DAILY_BUDGET}</span>
             <span>Spent {spentToday}</span>
             <span>Draft {draftCost}</span>
@@ -91,7 +126,7 @@ export default function MissionPlanner({
               <p className={styles.panelEyebrow}>Coverage</p>
               <h3 className={styles.missionCardTitle}>Zones to search</h3>
             </div>
-            <span className={styles.missionPill}>{zoneCount} selected</span>
+            <span className={styles.missionPill}>{coverageProgress}% map</span>
           </div>
 
           <div className={styles.missionRegionGrid}>
@@ -106,9 +141,16 @@ export default function MissionPlanner({
                   onChange={(e) => togglePlanZone(i, e.target.checked)}
                   disabled={locked}
                 />
-                <span className={styles.regionDot} style={{ background: r.color }} />
+                <span className={styles.regionArt}>
+                  <img src={ZONE_VISUALS[i].icon} alt="" aria-hidden="true" />
+                </span>
+                <span className={styles.regionTopline}>
+                  <span className={styles.regionDot} style={{ background: r.color }} />
+                  <span className={styles.regionCode}>Zone {i + 1}</span>
+                </span>
                 <span className={styles.regionName}>{r.label}</span>
                 <span className={styles.regionDesc}>{r.desc}</span>
+                <span className={styles.regionStatus}>{planZones[i] ? "Deployed" : "Standby"}</span>
               </label>
             ))}
           </div>
@@ -123,29 +165,26 @@ export default function MissionPlanner({
             <span className={styles.missionPill}>{getPopulationLabel(planPopulation)}</span>
           </div>
 
-          <div className={styles.missionSliderBlock}>
-            <div className={styles.sampleReadout}>
-              <strong>{planPopulation}</strong>
-              <span>residents</span>
-            </div>
-            <input
-              type="range"
-              min={0}
-              max={2}
-              step={1}
-              value={POP_OPTIONS.indexOf(planPopulation)}
-              onChange={(e) => {
-                const idx = Math.max(0, Math.min(2, parseInt(e.target.value, 10) || 0));
-                setPlanPopulation(POP_OPTIONS[idx]);
-              }}
-              className={styles.sliderInput}
-              disabled={locked}
-            />
+          <div className={styles.sampleTierGrid}>
+            {POPULATION_TIERS.map((tier, index) => (
+              <button
+                key={tier.value}
+                type="button"
+                className={`${styles.sampleTier} ${planPopulation === tier.value ? styles.sampleTierOn : ""}`}
+                onClick={() => setPlanPopulation(tier.value)}
+                disabled={locked}
+              >
+                <span className={styles.sampleTierKicker}>Level {index + 1}</span>
+                <strong>{tier.value}</strong>
+                <span>{tier.title}</span>
+                <small>{tier.desc}</small>
+              </button>
+            ))}
           </div>
 
           {zoneCount > 1 && (
             <div className={styles.distributionPanel}>
-              <p className={styles.panelEyebrow}>Distribution</p>
+              <p className={styles.panelEyebrow}>Deployment split</p>
               {REGIONS.map((r, i) =>
                 planZones[i] ? (
                   <div key={r.id} className={styles.sliderRow}>
@@ -178,7 +217,7 @@ export default function MissionPlanner({
           </div>
 
           <div className={styles.featureGrid}>
-            {QUESTION_OPTIONS.map((f) => (
+            {QUESTION_OPTIONS.map((f, index) => (
               <label
                 key={f.key}
                 className={`${styles.featureChip} ${styles.missionFeatureChip} ${planQuestions.includes(f.key) ? styles.featureChipOn : ""}`}
@@ -189,7 +228,11 @@ export default function MissionPlanner({
                   onChange={(e) => toggleQuestion(f.key, e.target.checked)}
                   disabled={locked}
                 />
-                <span>{f.label}</span>
+                <span className={styles.featureChipMeta}>
+                  <span className={styles.featureChipKicker}>Intel card {index + 1}</span>
+                  <span className={styles.featureChipLabel}>{f.label}</span>
+                  <span className={styles.featureChipTactic}>{f.tactic}</span>
+                </span>
                 <strong>+{f.cost}</strong>
               </label>
             ))}
@@ -214,7 +257,7 @@ export default function MissionPlanner({
         <aside className={styles.missionQueue}>
           <div className={styles.missionCardHeader}>
             <div>
-              <p className={styles.panelEyebrow}>Mission Draft</p>
+              <p className={styles.panelEyebrow}>Operation Stack</p>
               <h3 className={styles.missionCardTitle}>Today&apos;s queue</h3>
             </div>
             <span className={remainingAfterAdd < 0 ? styles.missionPillBad : styles.missionPill}>
@@ -222,12 +265,30 @@ export default function MissionPlanner({
             </span>
           </div>
 
+          <div className={styles.readinessPanel}>
+            <div className={styles.readinessHeader}>
+              <span>Mission readiness</span>
+              <strong>{readinessScore}%</strong>
+            </div>
+            <div className={styles.readinessTrack}>
+              <span style={{ ["--readiness" as string]: `${readinessScore}%` }} />
+            </div>
+            <div className={styles.readinessChecks}>
+              {readinessSteps.map((step) => (
+                <span key={step.label} className={step.complete ? styles.readinessCheckDone : ""}>
+                  {step.label}
+                </span>
+              ))}
+            </div>
+          </div>
+
           <div className={styles.draftSummary}>
-            <span>Draft cost</span>
+            <span>Next sortie</span>
             <strong>{draftCost}</strong>
+            <p>{selectedDistricts.length ? selectedDistricts.join(", ") : "No district selected"}</p>
           </div>
           <button type="button" className={styles.continueBtn} onClick={addPlan} disabled={!canAddPlan}>
-            Add Mission
+            Add Sortie
           </button>
 
           <div className={styles.queueList}>
@@ -237,7 +298,10 @@ export default function MissionPlanner({
               currentPlans.map((p, index) => (
                 <div key={p.id} className={styles.queueItem}>
                   <div className={styles.queueItemHeader}>
-                    <strong>Mission {index + 1}</strong>
+                    <strong>
+                      <span className={styles.queueBadge}>{index + 1}</span>
+                      Mission {index + 1}
+                    </strong>
                     <span>{p.cost} credits</span>
                   </div>
                   <p>{p.population} residents | {p.zones.filter(Boolean).length} zone(s)</p>
@@ -261,7 +325,7 @@ export default function MissionPlanner({
 
       <section className={styles.dispatchBar}>
         <div>
-          <p className={styles.panelEyebrow}>Ready check</p>
+          <p className={styles.panelEyebrow}>Dispatch Gate</p>
           <p className={styles.continueHint}>
             Day {currentDay + 1}: {currentPlans.length} mission(s) | spent {spentToday}/{DAILY_BUDGET}
           </p>
@@ -269,8 +333,8 @@ export default function MissionPlanner({
         {currentPlans.length > 0 && !locked && (
           <button type="button" className={styles.continueBtn} onClick={sendDetectiveAndAdvance}>
             {currentDay < 2
-              ? `Send Detective | Start Day ${currentDay + 2}`
-              : "Send Detective | Train Model"}
+              ? `Deploy Detective | Unlock Day ${currentDay + 2}`
+              : "Deploy Detective | Train Model"}
           </button>
         )}
       </section>
