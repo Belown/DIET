@@ -8,7 +8,10 @@ interface NarrativeBoxProps {
   onAdvance?: () => void;
   onTextComplete?: () => void;
   autoCollapseOnTextComplete?: boolean;
+  autoCollapseDelayMs?: number;
   disableKeyboardAdvance?: boolean;
+  disablePreviousNavigation?: boolean;
+  forceOpen?: boolean;
 }
 
 export type { DialogueHistoryItem };

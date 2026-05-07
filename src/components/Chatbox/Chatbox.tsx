@@ -10,8 +10,11 @@ export interface ChatboxProps {
   onAdvance?: () => void;
   onTextComplete?: () => void;
   autoCollapseOnTextComplete?: boolean;
+  autoCollapseDelayMs?: number;
   speakerName?: string;
   disableKeyboardAdvance?: boolean;
+  disablePreviousNavigation?: boolean;
+  forceOpen?: boolean;
 }
 
 export interface DialogueHistoryItem {
@@ -31,8 +34,11 @@ export default function Chatbox({
   onAdvance,
   onTextComplete,
   autoCollapseOnTextComplete = false,
+  autoCollapseDelayMs = 0,
   speakerName = "Detective",
   disableKeyboardAdvance = false,
+  disablePreviousNavigation = false,
+  forceOpen = false,
 }: ChatboxProps) {
   const [displayedLength, setDisplayedLength] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -40,6 +46,7 @@ export default function Chatbox({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openHistoryGroups, setOpenHistoryGroups] = useState<Record<string, boolean>>({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const collapseDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasReportedCompleteRef = useRef(false);
   const wasAutoCollapsedRef = useRef(false);
   const historyGroupRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -96,10 +103,16 @@ export default function Chatbox({
     hasReportedCompleteRef.current = true;
     onTextComplete?.();
     if (autoCollapseOnTextComplete) {
-      wasAutoCollapsedRef.current = true;
-      setIsCollapsed(true);
+      if (collapseDelayRef.current) {
+        clearTimeout(collapseDelayRef.current);
+      }
+      collapseDelayRef.current = setTimeout(() => {
+        wasAutoCollapsedRef.current = true;
+        setIsCollapsed(true);
+        collapseDelayRef.current = null;
+      }, autoCollapseDelayMs);
     }
-  }, [autoCollapseOnTextComplete, onTextComplete]);
+  }, [autoCollapseDelayMs, autoCollapseOnTextComplete, onTextComplete]);
 
   const complete = useCallback(() => {
     if (timerRef.current) {
@@ -116,6 +129,10 @@ export default function Chatbox({
     setIsComplete(false);
     setIsHistoryOpen(false);
     hasReportedCompleteRef.current = false;
+    if (collapseDelayRef.current) {
+      clearTimeout(collapseDelayRef.current);
+      collapseDelayRef.current = null;
+    }
     if (wasAutoCollapsedRef.current && !autoCollapseOnTextComplete) {
       wasAutoCollapsedRef.current = false;
       setIsCollapsed(false);
@@ -148,8 +165,22 @@ export default function Chatbox({
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      if (collapseDelayRef.current) {
+        clearTimeout(collapseDelayRef.current);
+        collapseDelayRef.current = null;
+      }
     };
   }, [reportComplete, text]);
+
+  useEffect(() => {
+    if (!forceOpen) return;
+    if (collapseDelayRef.current) {
+      clearTimeout(collapseDelayRef.current);
+      collapseDelayRef.current = null;
+    }
+    wasAutoCollapsedRef.current = false;
+    setIsCollapsed(false);
+  }, [forceOpen, text]);
 
   const handleClick = () => {
     if (isCollapsed) return;
@@ -185,12 +216,14 @@ export default function Chatbox({
 
   const handleHistorySelect = (index: number) => {
     setIsHistoryOpen(false);
+    if (disablePreviousNavigation) return;
     if (!history[index]?.current) {
       onHistorySelect?.(index);
     }
   };
 
   const navigateToPreviousHistory = () => {
+    if (disablePreviousNavigation) return;
     const currentIndex = history.findIndex((item) => item.current);
     if (currentIndex <= 0) return;
 
@@ -220,7 +253,7 @@ export default function Chatbox({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [complete, disableKeyboardAdvance, history, isCollapsed, isComplete, isHistoryOpen, onAdvance, onHistorySelect]);
+  }, [complete, disableKeyboardAdvance, disablePreviousNavigation, history, isCollapsed, isComplete, isHistoryOpen, onAdvance, onHistorySelect]);
 
   return (
     <>
@@ -279,7 +312,7 @@ export default function Chatbox({
                             className={`${styles.historyLine}${item.current ? ` ${styles.historyLineCurrent}` : ""}`}
                             key={`${item.index}-${item.text.slice(0, 24)}`}
                             onClick={() => handleHistorySelect(item.index)}
-                            disabled={item.current}
+                            disabled={item.current || disablePreviousNavigation}
                           >
                             <span className={styles.speaker}>{speakerName}</span>
                             <span className={styles.historyText}>

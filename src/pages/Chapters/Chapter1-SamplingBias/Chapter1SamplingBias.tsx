@@ -13,6 +13,19 @@ type NarrativeLocation = {
   chunkIndex: number;
   text: string;
   current?: boolean;
+  snapshot: InvestigationSnapshot;
+};
+
+type InvestigationSnapshot = {
+  currentDay: number;
+  dayPlans: MissionPlan[][];
+  dayLocked: boolean[];
+  planPopulation: PopulationOption;
+  planZones: boolean[];
+  planDistribution: number[];
+  planQuestions: QuestionKey[];
+  flavorRolls: Record<QuestionKey, number>;
+  demoBoundary: DemoBoundary;
 };
 
 const isSameNarrativeLocation = (a: NarrativeLocation, b: NarrativeLocation) =>
@@ -204,11 +217,53 @@ export default function Chapter1SamplingBias() {
     return Boolean(chunks && chunkIndex < chunks.length - 1);
   }, [passage, chunkIndex]);
   const isSheetPopupOpen = isBoundarySheetOpen || revealSheetMode === "spotlight";
-  const isMissionPlannerPassage = passage === "day1-plan" || passage === "day2-plan" || passage === "day3-plan";
-  const shouldAutoHidePlannerNarrative = isMissionPlannerPassage && !hasMoreChunks;
+  const chatboxBehavior = PASSAGES[passage].chatbox;
+  const shouldAutoHidePlannerNarrative = chatboxBehavior === "close" && !hasMoreChunks;
+  const shouldForceOpenNarrative = chatboxBehavior === "open";
+
+  const createInvestigationSnapshot = (): InvestigationSnapshot => ({
+    currentDay,
+    dayPlans: dayPlans.map((plans) => plans.map((plan) => ({
+      ...plan,
+      zones: [...plan.zones],
+      zoneDistribution: [...plan.zoneDistribution],
+      questions: [...plan.questions],
+      flavorLines: { ...plan.flavorLines },
+    }))),
+    dayLocked: [...dayLocked],
+    planPopulation,
+    planZones: [...planZones],
+    planDistribution: [...planDistribution],
+    planQuestions: [...planQuestions],
+    flavorRolls: { ...flavorRolls },
+    demoBoundary: { ...demoBoundary },
+  });
+
+  const restoreInvestigationSnapshot = (snapshot: InvestigationSnapshot) => {
+    setCurrentDay(snapshot.currentDay);
+    setDayPlans(snapshot.dayPlans.map((plans) => plans.map((plan) => ({
+      ...plan,
+      zones: [...plan.zones],
+      zoneDistribution: [...plan.zoneDistribution],
+      questions: [...plan.questions],
+      flavorLines: { ...plan.flavorLines },
+    }))));
+    setDayLocked([...snapshot.dayLocked]);
+    setPlanPopulation(snapshot.planPopulation);
+    setPlanZones([...snapshot.planZones]);
+    setPlanDistribution([...snapshot.planDistribution]);
+    setPlanQuestions([...snapshot.planQuestions]);
+    setFlavorRolls({ ...snapshot.flavorRolls });
+    setDemoBoundary({ ...snapshot.demoBoundary });
+  };
 
   const rememberCurrentChat = () => {
-    const currentLocation = { passage, chunkIndex, text: passageText };
+    const currentLocation: NarrativeLocation = {
+      passage,
+      chunkIndex,
+      text: passageText,
+      snapshot: createInvestigationSnapshot(),
+    };
     setNarrativeHistory((prev) => {
       if (prev.some((item) => isSameNarrativeLocation(item, currentLocation))) return prev;
       return [...prev, currentLocation];
@@ -216,7 +271,12 @@ export default function Chapter1SamplingBias() {
   };
 
   const dialogueHistory = useMemo(() => {
-    const currentLocation: NarrativeLocation = { passage, chunkIndex, text: passageText };
+    const currentLocation: NarrativeLocation = {
+      passage,
+      chunkIndex,
+      text: passageText,
+      snapshot: createInvestigationSnapshot(),
+    };
     const hasCurrent = narrativeHistory.some((item) => isSameNarrativeLocation(item, currentLocation));
     const history = hasCurrent ? narrativeHistory : [...narrativeHistory, currentLocation];
 
@@ -230,6 +290,7 @@ export default function Chapter1SamplingBias() {
   const handleHistorySelect = (index: number) => {
     const selected = dialogueHistory[index];
     if (!selected || selected.current) return;
+    restoreInvestigationSnapshot(selected.snapshot);
     setPassage(selected.passage);
     setChunkIndex(selected.chunkIndex);
     setShowChoices(false);
@@ -403,7 +464,9 @@ export default function Chapter1SamplingBias() {
         onHistorySelect={handleHistorySelect}
         onAdvance={handleAdvance}
         autoCollapseOnTextComplete={shouldAutoHidePlannerNarrative}
+        autoCollapseDelayMs={2000}
         disableKeyboardAdvance={isSheetPopupOpen}
+        forceOpen={shouldForceOpenNarrative}
       />
 
       {showChoices && passageChoices.length > 1 && (
