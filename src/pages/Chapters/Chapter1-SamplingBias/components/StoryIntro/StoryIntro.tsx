@@ -1,97 +1,59 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { forwardRef, useEffect, useMemo, useRef, useState } from "react";
+import type { MouseEvent, ReactNode } from "react";
+import HTMLFlipBook from "react-pageflip";
 import styles from "./StoryIntro.module.css";
-import scene1 from "../../../../../assets/image/Scene1.png";
-import scene2 from "../../../../../assets/image/Scene2.png";
-import scene3 from "../../../../../assets/image/Scene3.png";
-import scene4 from "../../../../../assets/image/Scene4.png";
-import scene5 from "../../../../../assets/image/Scene5.png";
-import scene6 from "../../../../../assets/image/Scene6.png";
-import scene7 from "../../../../../assets/image/Scene7.png";
-import scene8 from "../../../../../assets/image/Scene8.png";
-import scene9 from "../../../../../assets/image/Scene9.png";
-import scene1Audio from "../../../../../assets/audio/Scene1.mp3";
-import scene2Audio from "../../../../../assets/audio/Scene2.mp3";
-import scene3Audio from "../../../../../assets/audio/Scene3.mp3";
-import scene4Audio from "../../../../../assets/audio/Scene4.mp3";
-import scene5Audio from "../../../../../assets/audio/Scene5.mp3";
-import scene6Audio from "../../../../../assets/audio/Scene6.mp3";
-import scene7Audio from "../../../../../assets/audio/Scene7.mp3";
-import scene8Audio from "../../../../../assets/audio/Scene8.mp3";
+import { STORY_SCENES } from "./storyIntroScenes";
 
 type StoryIntroProps = {
   onStart: () => void;
 };
 
-const SCENES = [
-  {
-    image: scene1,
-    title: "Scene 1",
-    text: "In the future city of Nova, humanity has handed its hardest choices to AI. It decides who receives a loan, who gets a job, who enters school, and who is found guilty. People believe it never gets tired, never takes sides, and is never influenced by emotion. In this city, AI is known as 'the fairest judge'.",
-  },
-  {
-    image: scene2,
-    title: "Scene 2",
-    text: "In one quiet corner of the city, a private detective lives a peaceful life. By his side are only a loyal dog and a young apprentice. They do not have a luxurious office or world-shaking cases. But in an age ruled by machines, this small home still holds a little warmth.",
-  },
-  {
-    image: scene3,
-    title: "Scene 3",
-    text: "Until one ordinary morning, the doorbell rings. The sound is short and cold, as if fate itself is knocking. Police officers are standing outside. They offer little explanation and say only one thing: the apprentice has been accused of helping steal confidential government documents.",
-  },
-  {
-    image: scene4,
-    title: "Scene 4",
-    text: "The apprentice says he knows nothing. A stranger simply gave him a little money and asked him to slip a small device into a businessman's pocket. He thought it was just a strange errand, a harmless little task. But he did not know he had already been pulled into a much larger conspiracy.",
-  },
-  {
-    image: scene5,
-    title: "Scene 5",
-    text: "The AI does not see his panic. It does not see that he was used, nor the truth hidden behind the incident. It sees only data: his background, his neighborhood, and people from similar past cases. Then the system delivers a cold conclusion: High risk.",
-  },
-  {
-    image: scene6,
-    title: "Scene 6",
-    text: "In court, the detective desperately tries to explain. He presents evidence, tells the story, and tries to make people see what happened. But before the judge, a human voice seems too slow, too fragile. The AI's judgment is clean, fast, and certain. At last, the gavel falls. Not because the truth has been seen, but because the machine has made its decision.",
-  },
-  {
-    image: scene7,
-    title: "Scene 7",
-    text: "The days that follow become long and silent. The case files pile higher on the desk, and the clues on the wall grow more tangled. Every page points to doubt. Every clue proves that some truth is still unseen. But the city has already moved on. Only the detective remains trapped in that day, unable to move forward.",
-  },
-  {
-    image: scene8,
-    title: "Scene 8",
-    text: "Just as he is about to give up, a stranger appears at the door. He carries a machine that should not exist, and a hope that sounds almost impossible. 'I cannot change the verdict now,' he says. 'But I can send you back to before it all happened.' Back to before the AI was deployed. Back to before bias became a verdict. Back to the moment when the future can still be changed.",
-  },
-  {
-    image: scene9,
-    title: "Scene 9",
-    text: "",
-  },
-] as const;
+type FlipCorner = "top" | "bottom";
 
-const SCENE_AUDIO_BY_INDEX: Partial<Record<number, string>> = {
-  0: scene1Audio,
-  1: scene2Audio,
-  2: scene3Audio,
-  3: scene4Audio,
-  4: scene5Audio,
-  5: scene6Audio,
-  6: scene7Audio,
-  7: scene8Audio,
+type FlipBookHandle = {
+  pageFlip: () => {
+    flipNext: (corner?: FlipCorner) => void;
+    flipPrev: (corner?: FlipCorner) => void;
+    turnToPage: (page: number) => void;
+  };
 };
+
+type BookPageProps = {
+  className: string;
+  children: ReactNode;
+};
+
+const BookPage = forwardRef<HTMLDivElement, BookPageProps>(({ className, children }, ref) => (
+  <div className={className} ref={ref}>
+    {children}
+  </div>
+));
+
+BookPage.displayName = "BookPage";
 
 export default function StoryIntro({ onStart }: StoryIntroProps) {
   const [sceneIndex, setSceneIndex] = useState(0);
   const [typedText, setTypedText] = useState("");
-  const [turning, setTurning] = useState(false);
-  const [bookPageHeight, setBookPageHeight] = useState<number | null>(null);
-  const leftPageRef = useRef<HTMLDivElement | null>(null);
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [isNarrating, setIsNarrating] = useState(false);
+  const flipBookRef = useRef<FlipBookHandle | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const turnTimeoutRef = useRef<number | null>(null);
   const audioStartTokenRef = useRef(0);
-  const scene = SCENES[sceneIndex];
-  const isLast = sceneIndex === SCENES.length - 1;
+  const typewriterTimerRef = useRef<number | null>(null);
+  const fallbackTimerRef = useRef<number | null>(null);
+  const scene = STORY_SCENES[sceneIndex];
+  const isLast = sceneIndex === STORY_SCENES.length - 1;
+
+  const clearSceneTimers = () => {
+    if (typewriterTimerRef.current !== null) {
+      window.clearInterval(typewriterTimerRef.current);
+      typewriterTimerRef.current = null;
+    }
+    if (fallbackTimerRef.current !== null) {
+      window.clearTimeout(fallbackTimerRef.current);
+      fallbackTimerRef.current = null;
+    }
+  };
 
   const stopCurrentAudio = () => {
     audioStartTokenRef.current += 1;
@@ -112,6 +74,8 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
 
   useEffect(() => {
     setTypedText("");
+    setIsNarrating(false);
+    clearSceneTimers();
     stopCurrentAudio();
     if (isLast) return;
     const startToken = audioStartTokenRef.current;
@@ -124,17 +88,21 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
       if (started) return;
       started = true;
       timer = window.setInterval(() => {
+        typewriterTimerRef.current = timer;
         i += 1;
         setTypedText(formattedText.slice(0, i));
         if (i >= formattedText.length && timer !== null) {
           window.clearInterval(timer);
+          typewriterTimerRef.current = null;
           timer = null;
         }
       }, tickMs);
+      typewriterTimerRef.current = timer;
     };
 
-    const sceneAudioSrc = SCENE_AUDIO_BY_INDEX[sceneIndex];
+    const sceneAudioSrc = scene.audio;
     if (sceneAudioSrc) {
+      setIsNarrating(true);
       const sceneAudio = new Audio(sceneAudioSrc);
       audioRef.current = sceneAudio;
       sceneAudio.preload = "auto";
@@ -143,12 +111,20 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
         if (startToken !== audioStartTokenRef.current) return;
         if (fallbackTimer !== null) {
           window.clearTimeout(fallbackTimer);
+          fallbackTimerRef.current = null;
           fallbackTimer = null;
         }
         startTypewriter(tickMs);
         void sceneAudio?.play().catch(() => {
           // Ignore autoplay blocks; typewriter still runs.
+          setIsNarrating(false);
         });
+      };
+
+      const handleAudioEnded = () => {
+        if (startToken === audioStartTokenRef.current) {
+          setIsNarrating(false);
+        }
       };
 
       const handleLoadedMetadata = () => {
@@ -164,8 +140,10 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
       };
 
       sceneAudio.addEventListener("loadedmetadata", handleLoadedMetadata, { once: true });
+      sceneAudio.addEventListener("ended", handleAudioEnded, { once: true });
       sceneAudio.load();
       fallbackTimer = window.setTimeout(() => startScene(18), 300);
+      fallbackTimerRef.current = fallbackTimer;
     } else {
       startTypewriter(18);
     }
@@ -173,89 +151,160 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
     return () => {
       if (timer !== null) window.clearInterval(timer);
       if (fallbackTimer !== null) window.clearTimeout(fallbackTimer);
+      if (typewriterTimerRef.current === timer) typewriterTimerRef.current = null;
+      if (fallbackTimerRef.current === fallbackTimer) fallbackTimerRef.current = null;
       stopCurrentAudio();
     };
-  }, [formattedText, isLast, sceneIndex]);
+  }, [formattedText, isLast, scene.audio, sceneIndex]);
 
   useEffect(() => {
     return () => {
-      if (turnTimeoutRef.current !== null) {
-        window.clearTimeout(turnTimeoutRef.current);
-      }
+      clearSceneTimers();
       stopCurrentAudio();
     };
   }, []);
 
-  useEffect(() => {
-    if (isLast || !leftPageRef.current) return;
-    const el = leftPageRef.current;
-    const update = () => setBookPageHeight(Math.round(el.getBoundingClientRect().height));
-    update();
+  const isCurrentPageComplete = typedText.length >= formattedText.length && !isNarrating;
+  const canTurnPage = !isLast && !isFlipping && isCurrentPageComplete;
+  const canFinishCurrentPage = !isLast && !isFlipping && !isCurrentPageComplete;
 
-    const ro = new ResizeObserver(update);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [isLast, sceneIndex]);
-
-  const canTurnPage = !isLast && !turning && typedText.length >= formattedText.length;
+  const finishCurrentPage = () => {
+    clearSceneTimers();
+    stopCurrentAudio();
+    setIsNarrating(false);
+    setTypedText(formattedText);
+  };
 
   const skipToFinalScene = () => {
-    if (turnTimeoutRef.current !== null) {
-      window.clearTimeout(turnTimeoutRef.current);
-      turnTimeoutRef.current = null;
-    }
-    setTurning(false);
+    setIsFlipping(false);
     stopCurrentAudio();
-    setSceneIndex(SCENES.length - 1);
+    flipBookRef.current?.pageFlip().turnToPage((STORY_SCENES.length - 1) * 2);
+    setSceneIndex(STORY_SCENES.length - 1);
   };
 
   const startChapter = () => {
-    if (turnTimeoutRef.current !== null) {
-      window.clearTimeout(turnTimeoutRef.current);
-      turnTimeoutRef.current = null;
-    }
     stopCurrentAudio();
     onStart();
   };
 
-  const goNextPage = () => {
-    if (!canTurnPage) return;
+  const goPrevPage = () => {
     stopCurrentAudio();
-    setTurning(true);
-    turnTimeoutRef.current = window.setTimeout(() => {
-      setSceneIndex((v) => Math.min(SCENES.length - 1, v + 1));
-      setTurning(false);
-      turnTimeoutRef.current = null;
-    }, 520);
+    setIsFlipping(true);
+    flipBookRef.current?.pageFlip().flipPrev("bottom");
+  };
+
+  const goNextPage = () => {
+    stopCurrentAudio();
+    setIsFlipping(true);
+    flipBookRef.current?.pageFlip().flipNext("bottom");
+  };
+
+  const handleOverlayClick = (e: MouseEvent<HTMLDivElement>) => {
+    if (canFinishCurrentPage) {
+      finishCurrentPage();
+      return;
+    }
+    if (isFlipping) return;
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const isLeftHalf = e.clientX < rect.left + rect.width / 2;
+
+    if (isLeftHalf && sceneIndex > 0) {
+      goPrevPage();
+      return;
+    }
+
+    if (!isLeftHalf && canTurnPage) {
+      goNextPage();
+    }
+  };
+
+  const handleFlip = (event: { data: number }) => {
+    const nextSceneIndex = Math.min(Math.floor(event.data / 2), STORY_SCENES.length - 1);
+    setSceneIndex(nextSceneIndex);
+    setIsFlipping(false);
   };
 
   return (
     <section className={styles.root}>
       {!isLast ? (
         <div className={styles.bookShell}>
-          <button type="button" className={styles.skipBtn} onClick={skipToFinalScene}>
-            Skip
-          </button>
+          <div className={styles.storyControls}>
+            <div className={styles.progressDots} aria-label={`Scene ${sceneIndex + 1} of ${STORY_SCENES.length}`}>
+              {STORY_SCENES.map((_, index) => (
+                <span
+                  key={index}
+                  className={`${styles.progressDot} ${index === sceneIndex ? styles.progressDotActive : ""}`}
+                  aria-hidden="true"
+                />
+              ))}
+            </div>
+            <button type="button" className={styles.skipBtn} onClick={skipToFinalScene}>
+              Skip
+            </button>
+          </div>
 
           <div className={styles.bookPageSpread}>
-            <div className={styles.leftPage} ref={leftPageRef}>
-              <img src={scene.image} alt={scene.title} className={styles.image} />
-            </div>
-
-            <button
-              type="button"
-              className={`${styles.rightPage} ${turning ? styles.rightPageTurning : ""}`}
-              onClick={goNextPage}
-              disabled={!canTurnPage}
-              aria-label="Turn to next page"
-              style={bookPageHeight ? { height: `${bookPageHeight}px` } : undefined}
+            <div className={styles.clickOverlay} onClick={handleOverlayClick} aria-hidden="true" />
+            <HTMLFlipBook
+              ref={flipBookRef}
+              className={styles.flipBook}
+              style={{}}
+              width={560}
+              height={620}
+              minWidth={300}
+              maxWidth={620}
+              minHeight={360}
+              maxHeight={720}
+              size="stretch"
+              startPage={0}
+              drawShadow
+              flippingTime={950}
+              usePortrait={false}
+              startZIndex={2}
+              autoSize
+              maxShadowOpacity={0.46}
+              showCover={false}
+              mobileScrollSupport
+              clickEventForward
+              useMouseEvents={false}
+              swipeDistance={24}
+              showPageCorners
+              disableFlipByClick
+              renderOnlyPageLengthChange={false}
+              onFlip={handleFlip}
+              onChangeState={(event: { data: string }) => {
+                if (event.data === "flipping") setIsFlipping(true);
+                if (event.data === "read") setIsFlipping(false);
+              }}
             >
-              <div className={styles.textViewport}>
-                <p className={styles.captionTextGhost}>{formattedText}</p>
-                <p className={styles.captionTextTyped}>{typedText}</p>
-              </div>
-              {canTurnPage && <span className={styles.sparkleHint} aria-hidden="true">✦</span>}
-            </button>
+              {STORY_SCENES.flatMap((item, index) => {
+                const text = item.text
+                  .split(/(?<=[.!?])\s+/)
+                  .map((line) => line.trim())
+                  .filter(Boolean)
+                  .join("\n");
+                const textToShow = index === sceneIndex ? typedText : text;
+
+                return [
+                  <BookPage key={`${item.title}-image`} className={`${styles.flipPage} ${styles.leftPage}`}>
+                    <img src={item.image} alt={item.title} className={styles.image} />
+                  </BookPage>,
+                  <BookPage key={`${item.title}-text`} className={`${styles.flipPage} ${styles.rightPage}`}>
+                    <span className={styles.sceneKicker}>{item.title}</span>
+                    <div className={styles.textViewport}>
+                      <p className={styles.captionTextTyped}>{textToShow}</p>
+                    </div>
+                    {index === sceneIndex && (
+                      <span className={`${styles.pageTurnCue} ${canTurnPage ? styles.pageTurnCueReady : ""}`} aria-hidden="true">
+                        <span className={styles.pageTurnLine} />
+                        <span className={styles.pageTurnArrow}>→</span>
+                      </span>
+                    )}
+                  </BookPage>,
+                ];
+              })}
+            </HTMLFlipBook>
           </div>
         </div>
       ) : (

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { ZONE_VISUALS } from "../../../../../assets/image/zoneVisuals";
+import { ZONE_VISUALS } from "../../../../../assets/image/image";
 import { REGIONS } from "../../chapterData";
 import styles from "./DayReportPanel.module.css";
 

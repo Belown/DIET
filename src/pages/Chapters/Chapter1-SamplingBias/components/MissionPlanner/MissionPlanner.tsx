@@ -1,15 +1,6 @@
 import styles from "./MissionPlanner.module.css";
 import shared from "../../../../../styles/shared.module.css";
-import { ZONE_VISUALS } from "../../../../../assets/image/zoneVisuals";
-import budgetIcon from "../../../../../assets/image/Budget.png";
-import spentIcon from "../../../../../assets/image/Spend.png";
-import draftIcon from "../../../../../assets/image/Draft.png";
-import p100 from "../../../../../assets/image/P100.png";
-import p500 from "../../../../../assets/image/P500.png";
-import p1000 from "../../../../../assets/image/P1000.png";
-import routineIcon from "../../../../../assets/image/routine.png";
-import phoneIcon from "../../../../../assets/image/phone.png";
-import policeIcon from "../../../../../assets/image/police.png";
+import { BUDGET_VISUALS, POPULATION_IMAGES, QUESTION_IMAGES, ZONE_VISUALS } from "../../../../../assets/image/image";
 import { DAILY_BUDGET, QUESTION_OPTIONS, REGIONS } from "../../chapterData";
 import type { MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "../../types";
 
@@ -68,16 +59,10 @@ const DAY_COPY = [
   },
 ] as const;
 
-const POP_IMAGES: Record<PopulationOption, string> = {
-  100: p100,
-  500: p500,
-  1000: p1000,
-};
-
 const QUESTION_VISUALS: Record<QuestionKey, { icon: string; tag: string }> = {
-  "daily-routine": { icon: routineIcon, tag: "Useful context" },
-  "phone-model": { icon: phoneIcon, tag: "Useless noise" },
-  "past-police-stops": { icon: policeIcon, tag: "Bias trap" },
+  "daily-routine": { icon: QUESTION_IMAGES["daily-routine"], tag: "Useful context" },
+  "phone-model": { icon: QUESTION_IMAGES["phone-model"], tag: "Useless noise" },
+  "past-police-stops": { icon: QUESTION_IMAGES["past-police-stops"], tag: "Bias trap" },
 };
 
 export default function MissionPlanner({
@@ -145,9 +130,9 @@ export default function MissionPlanner({
           </div>
           <div className={styles.budgetStats}>
             <strong>Readiness {readinessScore}%</strong>
-            <span><img src={budgetIcon} alt="" aria-hidden="true" /> Budget {DAILY_BUDGET}</span>
-            <span><img src={spentIcon} alt="" aria-hidden="true" /> Spent {spentToday}</span>
-            <span><img src={draftIcon} alt="" aria-hidden="true" /> Draft {draftCost}</span>
+            <span><img src={BUDGET_VISUALS.budget} alt="" aria-hidden="true" /> Budget {DAILY_BUDGET}</span>
+            <span><img src={BUDGET_VISUALS.spent} alt="" aria-hidden="true" /> Spent {spentToday}</span>
+            <span><img src={BUDGET_VISUALS.draft} alt="" aria-hidden="true" /> Draft {draftCost}</span>
           </div>
         </div>
       </section>
@@ -205,7 +190,7 @@ export default function MissionPlanner({
                 onClick={() => setPlanPopulation(tier.value)}
                 disabled={locked}
               >
-                <img src={POP_IMAGES[tier.value]} alt="" aria-hidden="true" className={styles.sampleTierIcon} />
+                <img src={POPULATION_IMAGES[tier.value]} alt="" aria-hidden="true" className={styles.sampleTierIcon} />
                 <span className={styles.sampleTierKicker}>Level {index + 1}</span>
                 <strong>{tier.value}</strong>
                 <span>{tier.title}</span>
