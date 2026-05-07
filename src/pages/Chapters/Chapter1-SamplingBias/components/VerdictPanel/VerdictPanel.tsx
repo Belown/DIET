@@ -12,6 +12,7 @@ type VerdictPanelProps = {
   committedCount: number;
   pct: (value: number) => string;
   onRestart: () => void;
+  onNextChapter: () => void;
 };
 
 type AccBarProps = {
@@ -52,6 +53,7 @@ export default function VerdictPanel({
   committedCount,
   pct,
   onRestart,
+  onNextChapter,
 }: VerdictPanelProps) {
   const riskLevel = overallAcc >= 0.8 ? "Low Risk" : overallAcc >= 0.6 ? "Medium Risk" : "High Risk";
 
@@ -144,9 +146,14 @@ export default function VerdictPanel({
 
       <div className={styles.continueRow}>
         <p className={shared.continueHint}>Case closed for this timeline. Reopen with a different strategy?</p>
-        <button type="button" className={shared.continueBtn} onClick={onRestart}>
-          Restart from Day 1
-        </button>
+        <div className={styles.actionRow}>
+          <button type="button" className={shared.continueBtn} onClick={onRestart}>
+            Restart from Day 1
+          </button>
+          <button type="button" className={shared.continueBtn} onClick={onNextChapter}>
+            Go to Chapter 2
+          </button>
+        </div>
       </div>
     </>
   );

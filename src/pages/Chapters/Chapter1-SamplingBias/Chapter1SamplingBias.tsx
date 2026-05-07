@@ -1,10 +1,11 @@
-﻿import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import styles from "./Chapter1SamplingBias.module.css";
 import { BoundaryExercise, BoundaryReveal, ChoiceList, DayReportPanel, MissionPlanner, NarrativeBox, StoryIntro, VerdictPanel } from "./components";
 import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
 import { portraits } from "../../../assets/detective/portraits";
 import type { PassageId, Choice } from "./passages";
-import { PASSAGES } from "./passages";
+import { getAdaptivePassage } from "./adaptivePassages";
 import { accOf, calcMissionCost, DEMO_BOUNDARY_START, DEMO_FULL, DEMO_INIT, summarizeStrategy } from "./simulation";
 import type { DemoBoundary, MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "./types";
 
@@ -50,6 +51,7 @@ const getPortraitForText = (text: string) => {
 };
 
 export default function Chapter1SamplingBias() {
+  const [, setSearchParams] = useSearchParams();
   const [showStoryIntro, setShowStoryIntro] = useState(true);
   const [passage, setPassage] = useState<PassageId>("intro");
   const [chunkIndex, setChunkIndex] = useState(0);
@@ -203,21 +205,21 @@ export default function Chapter1SamplingBias() {
   }, [passage]);
 
   const passageChoices = useMemo((): Choice[] => {
-    return PASSAGES[passage].choices ?? [];
-  }, [passage]);
+    return getAdaptivePassage(passage, strategy).choices ?? [];
+  }, [passage, strategy]);
 
   const passageText = useMemo(() => {
-    const currentPassage = PASSAGES[passage];
+    const currentPassage = getAdaptivePassage(passage, strategy);
     return currentPassage.chunks?.[chunkIndex] ?? currentPassage.text ?? "";
-  }, [passage, chunkIndex]);
+  }, [passage, chunkIndex, strategy]);
   const portraitSrc = useMemo(() => getPortraitForText(passageText), [passageText]);
 
   const hasMoreChunks = useMemo(() => {
-    const chunks = PASSAGES[passage].chunks;
+    const chunks = getAdaptivePassage(passage, strategy).chunks;
     return Boolean(chunks && chunkIndex < chunks.length - 1);
-  }, [passage, chunkIndex]);
+  }, [passage, chunkIndex, strategy]);
   const isSheetPopupOpen = isBoundarySheetOpen || revealSheetMode === "spotlight";
-  const chatboxBehavior = PASSAGES[passage].chatbox;
+  const chatboxBehavior = getAdaptivePassage(passage, strategy).chatbox;
   const shouldAutoHidePlannerNarrative = chatboxBehavior === "close" && !hasMoreChunks;
   const shouldForceOpenNarrative = chatboxBehavior === "open";
 
@@ -427,6 +429,9 @@ export default function Chapter1SamplingBias() {
             onRestart={() => {
               resetInvestigation();
               setPassage("day1-brief");
+            }}
+            onNextChapter={() => {
+              setSearchParams({ chapter: "ch2" });
             }}
           />
         );

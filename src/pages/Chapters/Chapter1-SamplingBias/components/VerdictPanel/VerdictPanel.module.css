@@ -94,6 +94,13 @@
   border-radius: var(--radius-card);
 }
 
+.actionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .accGrid {
   display: grid;
   gap: 12px;
