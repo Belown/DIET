@@ -1,0 +1,116 @@
+.cycle {
+  width: min(1000px, 100%);
+  margin: 0 auto;
+  border: 1px solid rgba(25, 28, 31, 0.2);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.94);
+  padding: 18px;
+}
+
+.ring {
+  position: relative;
+  min-height: 410px;
+}
+
+.node {
+  position: absolute;
+  width: min(40vw, 260px);
+  border: 1px solid rgba(25, 28, 31, 0.16);
+  border-radius: 10px;
+  background: rgba(242, 246, 255, 0.92);
+  padding: 10px;
+  opacity: 0;
+  transform: scale(0.9);
+}
+
+.node h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--rui-dark);
+  font-size: 15px;
+}
+
+.node p {
+  margin: 6px 0 0;
+  font-family: var(--font-body);
+  color: var(--rui-dark);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.nodeVisible {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.node1 { top: 14px; left: 50%; transform: translateX(-50%) scale(0.9); }
+.node2 { top: 130px; right: 10px; }
+.node3 { bottom: 16px; left: 50%; transform: translateX(-50%) scale(0.9); }
+.node4 { top: 130px; left: 10px; }
+
+.nodeVisible.node1,
+.nodeVisible.node3 {
+  transform: translateX(-50%) scale(1);
+}
+
+.loopArrow {
+  position: absolute;
+  top: 145px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 66px;
+  color: var(--rui-blue);
+  opacity: 0;
+  animation: closeLoop 0.6s ease-out forwards;
+}
+
+.next {
+  margin-top: 8px;
+  appearance: none;
+  border: 1px solid rgba(25, 28, 31, 0.2);
+  border-radius: 8px;
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  font-family: var(--font-display);
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.finalText {
+  margin: 14px 0 0;
+  font-family: var(--font-body);
+  color: var(--rui-dark);
+}
+
+@keyframes closeLoop {
+  from { opacity: 0; transform: translateX(-50%) scale(0.4); }
+  to { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+@media (max-width: 820px) {
+  .ring {
+    min-height: unset;
+    display: grid;
+    gap: 10px;
+  }
+
+  .node {
+    position: static;
+    width: 100%;
+    transform: scale(0.95);
+  }
+
+  .nodeVisible,
+  .nodeVisible.node1,
+  .nodeVisible.node3 {
+    transform: scale(1);
+  }
+
+  .loopArrow {
+    position: static;
+    transform: none;
+    text-align: center;
+    display: block;
+  }
+}
