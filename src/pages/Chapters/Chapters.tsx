@@ -91,7 +91,7 @@ export default function Chapters() {
             </button>
           </div>
           <Link to="/" className={styles.backLink}>
-            ← Back to landing
+            Back to case board
           </Link>
         </header>
 
@@ -131,7 +131,7 @@ export default function Chapters() {
                         <span className={styles.timelineHint}>{c.hint}</span>
                       </span>
                       {c.status === "draft" && (
-                        <span className={styles.timelineBadge}>Soon</span>
+                        <span className={styles.timelineBadge}>Classified</span>
                       )}
                     </button>
                   </li>

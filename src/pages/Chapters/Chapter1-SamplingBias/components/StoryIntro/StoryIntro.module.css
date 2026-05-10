@@ -6,8 +6,7 @@
 
 .bookShell {
   position: relative;
-  width: 100%;
-  max-width: 1240px;
+  width: 75em;
   margin: 0 auto;
   padding: clamp(18px, 2.4vw, 30px);
   border: 1px solid rgba(28, 43, 64, 0.12);
@@ -26,6 +25,7 @@
   content: "";
   position: absolute;
   inset: 10px;
+  z-index: 0;
   border: 1px solid rgba(75, 58, 38, 0.11);
   border-radius: 6px;
   pointer-events: none;
@@ -35,6 +35,7 @@
   content: "";
   position: absolute;
   inset: 0;
+  z-index: 1;
   pointer-events: none;
   background:
     linear-gradient(90deg, transparent 0 49.5%, rgba(65, 45, 28, 0.14) 49.86%, rgba(255, 255, 255, 0.34) 50.18%, transparent 50.55%),
@@ -98,11 +99,11 @@
 
 .bookPageSpread {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: flex;
   justify-content: center;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .clickOverlay {
@@ -113,7 +114,9 @@
 }
 
 .flipBook {
-  width: min(100%, 1120px);
+  position: relative;
+  z-index: 4;
+  width: min(100%, 1280px);
   margin: 0 auto;
   overflow: visible;
 }
@@ -136,9 +139,7 @@
 .leftPage {
   overflow: hidden;
   background:
-    radial-gradient(80% 80% at 50% 42%, rgba(37, 68, 118, 0.26), rgba(10, 17, 29, 0) 62%),
-    #101827;
-  border: 1px solid rgba(56, 42, 28, 0.14);
+    transparent;
   box-shadow: 0 16px 34px rgba(26, 31, 41, 0.12);
   display: grid;
   place-items: center;
@@ -148,8 +149,8 @@
   display: block;
   width: 100%;
   height: 100%;
-  min-height: 520px;
-  max-height: 660px;
+  min-height: 610px;
+  max-height: 760px;
   object-fit: contain;
   object-position: center;
 }
@@ -425,16 +426,21 @@
 
 .finalImageWrap {
   position: relative;
-  width: min(100%, 980px);
+  width: min(100%, 1120px);
+  min-height: clamp(560px, 68vh, 720px);
   border-radius: 0;
   overflow: hidden;
   border: 0;
+  cursor: pointer;
 }
 
 .finalImage {
   width: 100%;
-  height: auto;
+  height: 100%;
+  min-height: inherit;
   display: block;
+  object-fit: cover;
+  object-position: center;
   transform: scale(1.015);
   animation: finalImageDrift 7.5s ease-in-out infinite;
 }
@@ -444,11 +450,258 @@
   inset: 0;
   pointer-events: none;
   background:
+    linear-gradient(180deg, rgba(3, 7, 13, 0.78), rgba(3, 7, 13, 0.5) 42%, rgba(3, 7, 13, 0.74) 100%),
     radial-gradient(120% 90% at 50% 100%, rgba(3, 9, 20, 0.74) 0%, rgba(3, 9, 20, 0.28) 44%, rgba(3, 9, 20, 0) 70%),
     radial-gradient(70% 46% at 50% 4%, rgba(162, 213, 255, 0.45) 0%, rgba(162, 213, 255, 0.16) 36%, rgba(162, 213, 255, 0) 76%),
     linear-gradient(112deg, rgba(186, 209, 231, 0.2) 18%, rgba(186, 209, 231, 0) 38%),
     linear-gradient(248deg, rgba(103, 191, 255, 0.2) 20%, rgba(103, 191, 255, 0) 40%);
   mix-blend-mode: screen;
+}
+
+.openPickerBtn {
+  appearance: none;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(22px, 4vw, 44px);
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 12px 28px;
+  border: 1px solid rgba(77, 201, 246, 0.62);
+  border-radius: var(--diet-radius-document);
+  background: rgba(10, 14, 20, 0.78);
+  color: var(--diet-cold-white);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(77, 201, 246, 0.24), 0 14px 28px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.openPickerBtn:hover,
+.openPickerBtn:focus-visible {
+  transform: translateX(-50%) translateY(-2px);
+  background: rgba(20, 27, 34, 0.9);
+  box-shadow: 0 0 34px rgba(77, 201, 246, 0.36), 0 18px 34px rgba(0, 0, 0, 0.42);
+  outline: 0;
+}
+
+.chapterPickerBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  padding: clamp(28px, 6vh, 64px) clamp(18px, 3vw, 44px);
+  background: rgba(3, 7, 13, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: pickerFadeIn 0.22s ease-out both;
+}
+
+.portalPanel {
+  width: min(1040px, calc(100% - 44px));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: pickerRiseIn 0.34s cubic-bezier(0.18, 0.9, 0.24, 1.12) both;
+}
+
+.portalKicker {
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(77, 201, 246, 0.34);
+  background: rgba(10, 14, 20, 0.82);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--diet-neon-teal);
+}
+
+.portalTitle {
+  margin: 0 auto clamp(18px, 2.8vw, 32px);
+  max-width: 16ch;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--diet-cold-white);
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.78);
+}
+
+.portalGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: start;
+  gap: clamp(16px, 2.4vw, 28px);
+}
+
+.portalCard {
+  appearance: none;
+  position: relative;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid var(--portal-border);
+  border-radius: var(--diet-radius-sharp);
+  background: var(--portal-bg);
+  color: var(--portal-text);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 18px var(--portal-glow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform: translateY(var(--portal-offset, 0)) rotate(var(--portal-rotate, 0deg));
+  animation: chapterCardPop 0.52s cubic-bezier(0.18, 0.9, 0.24, 1.12) both;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, filter 0.22s ease;
+}
+
+.portalCard::before {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  border: 1px solid var(--portal-frame);
+  border-radius: var(--diet-radius-sharp);
+  pointer-events: none;
+}
+
+.portalCard::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 18px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--portal-ring), transparent);
+  opacity: 0.86;
+  pointer-events: none;
+}
+
+.portalCard:hover,
+.portalCard:focus-visible {
+  transform: translateY(calc(var(--portal-offset, 0) - 10px)) rotate(0deg) scale(1.025);
+  border-color: var(--portal-ring);
+  filter: saturate(1.1) brightness(1.06);
+  box-shadow:
+    0 0 0 2px var(--portal-ring),
+    0 30px 60px rgba(0, 0, 0, 0.56),
+    0 0 34px var(--portal-glow);
+  outline: 0;
+}
+
+.portalCard_warm {
+  --portal-bg:
+    linear-gradient(135deg, rgba(245, 240, 232, 0.97), rgba(212, 197, 169, 0.94)),
+    var(--diet-paper);
+  --portal-border: var(--diet-file-tab);
+  --portal-frame: rgba(92, 61, 46, 0.16);
+  --portal-ring: var(--diet-amber);
+  --portal-glow: rgba(199, 125, 32, 0.38);
+  --portal-text: var(--diet-ink);
+  --portal-offset: 10px;
+  --portal-rotate: -1.2deg;
+}
+
+.portalCard_mixed {
+  --portal-bg:
+    linear-gradient(135deg, rgba(92, 61, 46, 0.88), rgba(20, 27, 34, 0.96)),
+    var(--diet-steel);
+  --portal-border: rgba(180, 76, 240, 0.46);
+  --portal-frame: rgba(180, 76, 240, 0.18);
+  --portal-ring: var(--diet-glitch-purple);
+  --portal-glow: rgba(180, 76, 240, 0.34);
+  --portal-text: var(--diet-cold-white);
+  --portal-offset: -2px;
+  --portal-rotate: 0.4deg;
+}
+
+.portalCard_cold {
+  --portal-bg:
+    linear-gradient(135deg, rgba(10, 14, 20, 0.96), rgba(20, 27, 34, 0.96)),
+    var(--diet-steel);
+  --portal-border: var(--diet-grid-line);
+  --portal-frame: rgba(77, 201, 246, 0.16);
+  --portal-ring: var(--diet-holo-blue);
+  --portal-glow: rgba(77, 201, 246, 0.36);
+  --portal-text: var(--diet-cold-white);
+  --portal-offset: 10px;
+  --portal-rotate: 1.2deg;
+}
+
+.portalNum {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--portal-ring);
+  text-shadow: 0 0 10px var(--portal-glow);
+}
+
+.portalName {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-case-file);
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 600;
+  line-height: 1.12;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.42);
+}
+
+.portalBody {
+  position: relative;
+  z-index: 1;
+  max-width: 25ch;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.45;
+  color: currentColor;
+  opacity: 0.82;
+}
+
+@keyframes chapterCardPop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--portal-offset, 0) - 20px)) rotate(var(--portal-rotate, 0deg)) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(var(--portal-offset, 0)) rotate(var(--portal-rotate, 0deg)) scale(1);
+  }
+}
+
+@keyframes pickerFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pickerRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 
@@ -563,6 +816,31 @@
   .startBtn {
     font-size: 20px;
     padding: 11px 22px;
+  }
+
+  .portalPanel {
+    position: relative;
+    left: auto;
+    top: auto;
+    bottom: auto;
+    width: 100%;
+    transform: none;
+    margin-top: -2px;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .portalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .portalCard {
+    min-height: 160px;
+    transform: none;
+  }
+
+  .portalCard:hover {
+    transform: translateY(-4px);
   }
 }
 

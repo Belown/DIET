@@ -6,7 +6,7 @@
 }
 
 .sliderLabel {
-  font-family: var(--font-display);
+  font-family: var(--font-case-file);
   font-size: 13px;
   font-weight: 500;
   color: var(--rui-slate);
@@ -38,7 +38,7 @@
 }
 
 .sliderValue {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
   font-size: 13px;
   font-weight: 500;
   color: var(--rui-dark);
@@ -78,7 +78,7 @@
 }
 
 .continueHint {
-  font-family: var(--font-display);
+  font-family: var(--font-case-file);
   font-size: 16px;
   font-weight: 500;
   color: var(--rui-dark);
@@ -90,17 +90,19 @@
   padding: 12px 22px;
   background: var(--rui-dark);
   color: var(--rui-white);
-  font-family: var(--font-display);
+  font-family: var(--font-body);
   font-size: 13px;
-  font-weight: 500;
-  border-radius: 9999px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: var(--diet-radius-document);
   border: 0;
   cursor: pointer;
   transition: background 0.2s ease, transform 0.2s ease;
 }
 
 .continueBtn:hover {
-  background: var(--rui-blue);
+  background: #2a2018;
   transform: translateY(-1px);
 }
 

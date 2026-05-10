@@ -55,9 +55,9 @@
   font-family: var(--font-display);
   font-size: 13px;
   padding: 8px 12px;
-  border-radius: 999px;
-  background: rgba(73, 79, 223, 0.1);
-  color: var(--rui-blue);
+  border-radius: var(--diet-radius-document);
+  background: rgba(77, 201, 246, 0.08);
+  color: var(--diet-holo-blue);
 }
 
 .scorePill strong {

@@ -6,7 +6,32 @@ import { STORY_SCENES } from "./storyIntroScenes";
 
 type StoryIntroProps = {
   onStart: () => void;
+  onSelectChapter: (chapter: "ch1" | "ch2" | "ch3") => void;
 };
+
+const PORTALS = [
+  {
+    id: "ch1",
+    num: "01",
+    title: "Sampling Bias",
+    body: "Follow the evidence trail into Novus data collection.",
+    tone: "warm",
+  },
+  {
+    id: "ch2",
+    num: "02",
+    title: "Algorithmic Bias",
+    body: "Step into the courtroom where definitions decide outcomes.",
+    tone: "mixed",
+  },
+  {
+    id: "ch3",
+    num: "03",
+    title: "Human-in-the-Loop Bias",
+    body: "Enter the feedback chamber where people teach the machine.",
+    tone: "cold",
+  },
+] as const;
 
 type FlipCorner = "top" | "bottom";
 
@@ -31,18 +56,26 @@ const BookPage = forwardRef<HTMLDivElement, BookPageProps>(({ className, childre
 
 BookPage.displayName = "BookPage";
 
-export default function StoryIntro({ onStart }: StoryIntroProps) {
+const FINAL_SCENE_INDEX = STORY_SCENES.length - 1;
+const LAST_BOOK_SCENE_INDEX = FINAL_SCENE_INDEX - 1;
+const BOOK_SCENES = STORY_SCENES.slice(0, FINAL_SCENE_INDEX);
+const getBookPageForScene = (index: number) => index * 2;
+
+export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps) {
   const [sceneIndex, setSceneIndex] = useState(0);
   const [typedText, setTypedText] = useState("");
   const [isFlipping, setIsFlipping] = useState(false);
   const [isNarrating, setIsNarrating] = useState(false);
+  const [chapterPickerOpen, setChapterPickerOpen] = useState(false);
   const flipBookRef = useRef<FlipBookHandle | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioStartTokenRef = useRef(0);
   const typewriterTimerRef = useRef<number | null>(null);
   const fallbackTimerRef = useRef<number | null>(null);
+  const pendingBookPageRef = useRef<number | null>(null);
   const scene = STORY_SCENES[sceneIndex];
-  const isLast = sceneIndex === STORY_SCENES.length - 1;
+  const isLast = sceneIndex === FINAL_SCENE_INDEX;
+  const isLastBookScene = sceneIndex === LAST_BOOK_SCENE_INDEX;
 
   const clearSceneTimers = () => {
     if (typewriterTimerRef.current !== null) {
@@ -177,24 +210,40 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
 
   const skipToFinalScene = () => {
     setIsFlipping(false);
+    pendingBookPageRef.current = null;
     stopCurrentAudio();
-    flipBookRef.current?.pageFlip().turnToPage((STORY_SCENES.length - 1) * 2);
-    setSceneIndex(STORY_SCENES.length - 1);
+    setSceneIndex(FINAL_SCENE_INDEX);
   };
 
-  const startChapter = () => {
+  const enterPortal = (chapter: "ch1" | "ch2" | "ch3") => {
     stopCurrentAudio();
-    onStart();
+    if (chapter === "ch1") {
+      onStart();
+      return;
+    }
+    onSelectChapter(chapter);
+  };
+
+  const openChapterPicker = () => {
+    setChapterPickerOpen(true);
   };
 
   const goPrevPage = () => {
     stopCurrentAudio();
+    pendingBookPageRef.current = getBookPageForScene(Math.max(sceneIndex - 1, 0));
     setIsFlipping(true);
     flipBookRef.current?.pageFlip().flipPrev("bottom");
   };
 
   const goNextPage = () => {
     stopCurrentAudio();
+    if (isLastBookScene) {
+      setIsFlipping(false);
+      pendingBookPageRef.current = null;
+      setSceneIndex(FINAL_SCENE_INDEX);
+      return;
+    }
+    pendingBookPageRef.current = getBookPageForScene(sceneIndex + 1);
     setIsFlipping(true);
     flipBookRef.current?.pageFlip().flipNext("bottom");
   };
@@ -220,7 +269,17 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
   };
 
   const handleFlip = (event: { data: number }) => {
-    const nextSceneIndex = Math.min(Math.floor(event.data / 2), STORY_SCENES.length - 1);
+    const intendedPage = pendingBookPageRef.current;
+    const normalizedPage = intendedPage ?? event.data - (event.data % 2);
+    pendingBookPageRef.current = null;
+
+    if (normalizedPage !== event.data) {
+      window.requestAnimationFrame(() => {
+        flipBookRef.current?.pageFlip().turnToPage(normalizedPage);
+      });
+    }
+
+    const nextSceneIndex = Math.min(Math.floor(normalizedPage / 2), LAST_BOOK_SCENE_INDEX);
     setSceneIndex(nextSceneIndex);
     setIsFlipping(false);
   };
@@ -250,12 +309,12 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
               ref={flipBookRef}
               className={styles.flipBook}
               style={{}}
-              width={560}
-              height={620}
+              width={640}
+              height={710}
               minWidth={300}
-              maxWidth={620}
+              maxWidth={720}
               minHeight={360}
-              maxHeight={720}
+              maxHeight={820}
               size="stretch"
               startPage={0}
               drawShadow
@@ -278,7 +337,7 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
                 if (event.data === "read") setIsFlipping(false);
               }}
             >
-              {STORY_SCENES.flatMap((item, index) => {
+              {BOOK_SCENES.flatMap((item, index) => {
                 const text = item.text
                   .split(/(?<=[.!?])\s+/)
                   .map((line) => line.trim())
@@ -310,12 +369,55 @@ export default function StoryIntro({ onStart }: StoryIntroProps) {
       ) : (
         <>
           <div className={styles.finalStage}>
-            <div className={styles.finalImageWrap}>
+            <div className={styles.finalImageWrap} onClick={openChapterPicker}>
               <img src={scene.image} alt={scene.title} className={styles.finalImage} />
               <div className={styles.finalCinematicOverlay} aria-hidden="true" />
-              <button type="button" className={styles.startBtn} onClick={startChapter}>
-                Travel Back in Time
+              <button
+                type="button"
+                className={styles.openPickerBtn}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  openChapterPicker();
+                }}
+              >
+                Choose destination
               </button>
+
+              {chapterPickerOpen && (
+                <div
+                  className={styles.chapterPickerBackdrop}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    setChapterPickerOpen(false);
+                  }}
+                  role="presentation"
+                >
+                  <div
+                    className={styles.portalPanel}
+                    aria-label="Choose a chapter"
+                    role="dialog"
+                    aria-modal="true"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <p className={styles.portalKicker}>Time machine calibrated</p>
+                    <h2 className={styles.portalTitle}>Choose the case to enter.</h2>
+                    <div className={styles.portalGrid}>
+                      {PORTALS.map((portal) => (
+                        <button
+                          key={portal.id}
+                          type="button"
+                          className={`${styles.portalCard} ${styles[`portalCard_${portal.tone}`]}`}
+                          onClick={() => enterPortal(portal.id)}
+                        >
+                          <span className={styles.portalNum}>Chapter {portal.num}</span>
+                          <span className={styles.portalName}>{portal.title}</span>
+                          <span className={styles.portalBody}>{portal.body}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </>

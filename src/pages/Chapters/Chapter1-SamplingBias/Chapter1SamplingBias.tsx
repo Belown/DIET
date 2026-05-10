@@ -1,9 +1,11 @@
 import { useState, useMemo, useEffect } from "react";
+import type { CSSProperties } from "react";
 import { useSearchParams } from "react-router-dom";
 import styles from "./Chapter1SamplingBias.module.css";
 import { BoundaryExercise, BoundaryReveal, ChoiceList, DayReportPanel, MissionPlanner, NarrativeBox, StoryIntro, VerdictPanel } from "./components";
 import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
 import { portraits } from "../../../assets/detective/portraits";
+import { CHAPTER1_BACKGROUNDS} from "../../../assets/image/image";
 import type { PassageId, Choice } from "./passages";
 import { getAdaptivePassage } from "./adaptivePassages";
 import { accOf, calcMissionCost, DEMO_BOUNDARY_START, DEMO_FULL, DEMO_INIT, summarizeStrategy } from "./simulation";
@@ -39,7 +41,7 @@ const getPortraitForText = (text: string) => {
   if (lower.includes("collapsed") || lower.includes("wrong") || lower.includes("coin flip")) return portraits.shocked;
   if (lower.includes("blind spots") || lower.includes("gaps remain") || lower.includes("no going back")) return portraits.worried;
   if (lower.includes("did you") || lower.includes("why?") || lower.includes("what to ask")) return portraits.confused;
-  if (lower.includes("suspect") || lower.includes("threat") || lower.includes("police")) return portraits.suspicious;
+  if (lower.includes("suspect") || lower.includes("threat") || lower.includes("police") || lower.includes("sampling bias") || lower.includes("accuracy") || lower.includes("data")) return portraits.suspicious;
   if (lower.includes("stands down") || lower.includes("little better")) return portraits.sad;
   if (lower.includes("getting smarter") || lower.includes("sharpening") || lower.includes("made a difference")) return portraits.happy;
   if (lower.includes("pick where") || lower.includes("add more") || lower.includes("adjust") || lower.includes("plan")) return portraits.encouraging;
@@ -48,6 +50,27 @@ const getPortraitForText = (text: string) => {
   if (lower.includes("listen carefully") || lower.includes("read the sheet") || lower.includes("you have three days")) return portraits.serious;
 
   return portraits.neutral;
+};
+
+const getChapterBackground = (passage: PassageId) => {
+  switch (passage) {
+    case "day1-plan":
+    case "day2-plan":
+    case "day3-plan":
+      return CHAPTER1_BACKGROUNDS.cityMapTable;
+    case "day1-debrief":
+    case "day2-debrief":
+    case "day3-debrief":
+      return CHAPTER1_BACKGROUNDS.dayReport;
+    case "verdict":
+      return CHAPTER1_BACKGROUNDS.modelTraining;
+    case "intro":
+    case "day1-brief":
+    case "day2-brief":
+    case "day3-brief":
+    default:
+      return CHAPTER1_BACKGROUNDS.caseRoom;
+  }
 };
 
 export default function Chapter1SamplingBias() {
@@ -70,7 +93,8 @@ export default function Chapter1SamplingBias() {
     "past-police-stops": 0,
   });
   const [isBoundarySheetOpen, setIsBoundarySheetOpen] = useState(false);
-  const [revealSheetMode, setRevealSheetMode] = useState<"hidden" | "spotlight" | "inline">("hidden");
+  const [revealSheetMode, setRevealSheetMode] = useState<"hidden" | "spotlight">("hidden");
+  const [hasSeenRevealSheet, setHasSeenRevealSheet] = useState(false);
 
   const strategy = useMemo(() => summarizeStrategy(dayPlans, dayLocked), [dayPlans, dayLocked]);
   const regionAccs = strategy.regionAccs;
@@ -202,6 +226,9 @@ export default function Chapter1SamplingBias() {
     setShowChoices(false);
     setIsBoundarySheetOpen(false);
     setRevealSheetMode("hidden");
+    if (passage !== "demo-reveal") {
+      setHasSeenRevealSheet(false);
+    }
   }, [passage]);
 
   const passageChoices = useMemo((): Choice[] => {
@@ -222,6 +249,10 @@ export default function Chapter1SamplingBias() {
   const chatboxBehavior = getAdaptivePassage(passage, strategy).chatbox;
   const shouldAutoHidePlannerNarrative = chatboxBehavior === "close" && !hasMoreChunks;
   const shouldForceOpenNarrative = chatboxBehavior === "open";
+  const chapterBackground = getChapterBackground(passage);
+  const phaseStyle = {
+    "--chapter-bg": `url(${chapterBackground})`,
+  } as CSSProperties;
 
   const createInvestigationSnapshot = (): InvestigationSnapshot => ({
     currentDay,
@@ -304,7 +335,7 @@ export default function Chapter1SamplingBias() {
       return;
     }
 
-    if (passage === "demo-reveal" && revealSheetMode === "hidden") {
+    if (passage === "demo-reveal" && chunkIndex > 0 && !hasSeenRevealSheet && revealSheetMode === "hidden") {
       setRevealSheetMode("spotlight");
       return;
     }
@@ -326,9 +357,34 @@ export default function Chapter1SamplingBias() {
     }
   };
 
+  const closeRevealSheetAndAdvance = () => {
+    if (passage !== "demo-reveal") {
+      setRevealSheetMode("hidden");
+      return;
+    }
+
+    setRevealSheetMode("hidden");
+    setHasSeenRevealSheet(true);
+
+    if (hasMoreChunks) {
+      rememberCurrentChat();
+      setChunkIndex((idx) => idx + 1);
+      return;
+    }
+
+    if (passageChoices.length === 1) {
+      const c = passageChoices[0];
+      c.action?.();
+      rememberCurrentChat();
+      setPassage(c.nextPassage);
+      setChunkIndex(0);
+    }
+  };
+
   const submitBoundaryExercise = () => {
     if (passage !== "demo-intro") return;
     rememberCurrentChat();
+    setHasSeenRevealSheet(false);
     setPassage("demo-reveal");
     setChunkIndex(0);
   };
@@ -374,7 +430,7 @@ export default function Chapter1SamplingBias() {
           <BoundaryReveal
             boundary={demoBoundary}
             spotlight={revealSheetMode === "spotlight"}
-            onReturnToPage={() => setRevealSheetMode("inline")}
+            onReturnToPage={closeRevealSheetAndAdvance}
             realWorldAccuracy={pct(demoFullAcc)}
             trainingAccuracy={pct(demoTrainAcc)}
           />
@@ -446,7 +502,10 @@ export default function Chapter1SamplingBias() {
       <div className={styles.phase}>
         <div className={styles.scene}>
           <div className={styles.sceneInner}>
-            <StoryIntro onStart={() => setShowStoryIntro(false)} />
+            <StoryIntro
+              onStart={() => setShowStoryIntro(false)}
+              onSelectChapter={(chapter) => setSearchParams({ chapter })}
+            />
           </div>
         </div>
       </div>
@@ -454,7 +513,7 @@ export default function Chapter1SamplingBias() {
   }
 
   return (
-    <div className={styles.phase}>
+    <div className={`${styles.phase} ${styles.phaseWithBackground}`} style={phaseStyle}>
 
       <div className={styles.scene}>
         <div className={styles.sceneInner}>

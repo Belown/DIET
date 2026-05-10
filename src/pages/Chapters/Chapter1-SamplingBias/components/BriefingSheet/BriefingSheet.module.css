@@ -25,8 +25,8 @@
   inset: 0;
   z-index: 35;
   display: grid;
-  place-items: start center;
-  padding: clamp(18px, 3vh, 34px) clamp(12px, 2.5vw, 34px) 184px;
+  place-items: center;
+  padding: clamp(18px, 3vh, 34px) clamp(12px, 2.5vw, 34px);
   overflow-x: clip;
   background: rgba(25, 28, 31, 0.12);
 }
@@ -35,10 +35,13 @@
   box-sizing: border-box;
   width: min(1160px, calc(80vw - clamp(36px, 7vw, 92px)));
   height: min(760px, calc(100vh - 120px));
-  min-height: min(620px, calc(100vh - 220px));
+  min-height: 0;
   max-height: none;
   margin: 0;
-  overflow: visible;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   z-index: 1;
   outline: none;
   box-shadow:
@@ -48,17 +51,12 @@
   animation: sheetSpotlightIn 0.7s cubic-bezier(0.18, 0.9, 0.24, 1.12) both;
 }
 
-.caseSheetSpotlight .caseSheetLandscape {
-  grid-template-columns: 1fr;
-  max-height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+.caseSheetSpotlight::-webkit-scrollbar {
+  display: none;
 }
 
-.caseSheetSpotlight .caseSheetLandscape::-webkit-scrollbar {
-  display: none;
+.caseSheetSpotlight .caseSheetLandscape {
+  grid-template-columns: 1fr;
 }
 
 .caseSheetSpotlightSplit .caseSheetLandscape {

@@ -1,185 +1,465 @@
-# Design System Inspired by Revolut
+
+# Design System for "Detecting Bias: A Time-Travel Investigation"
 
 ## 1. Visual Theme & Atmosphere
 
-Revolut's website is fintech confidence distilled into pixels — a design system that communicates "your money is in capable hands" through massive typography, generous whitespace, and a disciplined neutral palette. The visual language is built on Aeonik Pro, a geometric grotesque that creates billboard-scale headlines at 136px with weight 500 and aggressive negative tracking (-2.72px). This isn't subtle branding; it's fintech at stadium scale.
+DIET is a noir detective story wrapped in a futuristic AI dystopia — a design system that communicates "the truth is buried, but you can uncover it" through deep shadows, warm case-file textures, and cold digital interfaces. The visual language is built on a duality: the warmth of human investigation (aged paper, typewriter ink, cork-board red string) versus the cold precision of AI systems (holographic blues, terminal greens, sterile data grids).
 
-The color system is built on a comprehensive `--rui-*` (Revolut UI) token architecture with semantic naming for every state: danger (`#e23b4a`), warning (`#ec7e00`), teal (`#00a87e`), blue (`#494fdf`), deep-pink (`#e61e49`), and more. But the marketing surface itself is remarkably restrained — near-black (`#191c1f`) and pure white (`#ffffff`) dominate, with the colorful semantic tokens reserved for the product interface, not the marketing page.
+The color system is built on `--diet-*` tokens organized across two worlds: the **Investigator** palette (warm earth tones, amber, deep brown, cream) for narrative and case-file surfaces, and the **Machine** palette (cold teals, electric blues, terminal greens, warning reds) for AI interfaces and data displays. The interplay between these two palettes creates tension — human intuition against algorithmic certainty.
 
-What distinguishes Revolut is its pill-everything button system. Every button uses 9999px radius — primary dark (`#191c1f`), secondary light (`#f4f4f4`), outlined (`transparent + 2px solid`), and ghost on dark (`rgba(244,244,244,0.1) + 2px solid`). The padding is generous (14px 32px–34px), creating large, confident touch targets. Combined with Inter for body text at various weights and positive letter-spacing (0.16px–0.24px), the result is a design that feels both premium and accessible — banking for the modern era.
+The city of Novus is a golden-age tech metropolis, but beneath its gleaming surface lies hidden bias. The design reflects this: sleek surfaces that reveal cracks of prejudice when investigated.
 
 **Key Characteristics:**
-- Aeonik Pro display at 136px weight 500 — billboard-scale fintech headlines
-- Near-black (`#191c1f`) + white binary with comprehensive `--rui-*` semantic tokens
-- Universal pill buttons (9999px radius) with generous padding (14px 32px)
-- Inter for body text with positive letter-spacing (0.16px–0.24px)
-- Rich semantic color system: blue, teal, pink, yellow, green, brown, danger, warning
-- Zero shadows detected — depth through color contrast only
-- Tight display line-heights (1.00) with relaxed body (1.50–1.56)
+
+- Noir atmosphere: deep shadows, dramatic contrast, moody lighting
+- Duality of warm investigator tones + cold AI interface colors
+- Evidence-board layouts: pinned cards, connected clues, red string paths
+- Typewriter/terminal typography split: serif for narrative, monospace for data
+- Glitch and scan-line effects for AI/holographic elements
+- Layered depth with shadows and elevation — opposite of flat design
+- Chapter transitions marked by color temperature shifts
+
+---
 
 ## 2. Color Palette & Roles
 
-### Primary
-- **Revolut Dark** (`#191c1f`): Primary dark surface, button background, near-black text
-- **Pure White** (`#ffffff`): `--rui-color-action-label`, primary light surface
-- **Light Surface** (`#f4f4f4`): Secondary button background, subtle surface
+### The Investigator (Warm / Human)
 
-### Brand / Interactive
-- **Revolut Blue** (`#494fdf`): `--rui-color-blue`, primary brand blue
-- **Action Blue** (`#4f55f1`): `--rui-color-action-photo-header-text`, header accent
-- **Blue Text** (`#376cd5`): `--website-color-blue-text`, link blue
+| Token                 | Hex         | Role                                           |
+| --------------------- | ----------- | ---------------------------------------------- |
+| `--diet-ink`        | `#1a1410` | Primary text, deepest shadow — aged ink black |
+| `--diet-paper`      | `#f5f0e8` | Primary light surface — warm aged paper       |
+| `--diet-paper-dark` | `#e8e0d0` | Secondary paper — slightly aged, for cards    |
+| `--diet-cream`      | `#faf7f0` | Background surface — off-white with warmth    |
+| `--diet-file-tab`   | `#d4c5a9` | Manila folder tan — file tabs, dividers       |
+| `--diet-amber`      | `#c77d20` | Warm accent — desk lamp glow, highlights      |
+| `--diet-copper`     | `#b85c1e` | Rich warm accent — important markers          |
+| `--diet-wood`       | `#5c3d2e` | Dark wood — navigation bars, frames           |
+| `--diet-red-string` | `#c0392b` | Evidence connection lines — critical paths    |
+| `--diet-ink-faded`  | `#6b5e53` | Secondary text — faded typewriter ink         |
+| `--diet-stamp-red`  | `#8b1a1a` | Case file stamps — "CLASSIFIED", "EVIDENCE"   |
 
-### Semantic
-- **Danger Red** (`#e23b4a`): `--rui-color-danger`, error/destructive
-- **Deep Pink** (`#e61e49`): `--rui-color-deep-pink`, critical accent
-- **Warning Orange** (`#ec7e00`): `--rui-color-warning`, warning states
-- **Yellow** (`#b09000`): `--rui-color-yellow`, attention
-- **Teal** (`#00a87e`): `--rui-color-teal`, success/positive
-- **Light Green** (`#428619`): `--rui-color-light-green`, secondary success
-- **Green Text** (`#006400`): `--website-color-green-text`, green text
-- **Light Blue** (`#007bc2`): `--rui-color-light-blue`, informational
-- **Brown** (`#936d62`): `--rui-color-brown`, warm neutral accent
-- **Red Text** (`#8b0000`): `--website-color-red-text`, dark red text
+### The Machine (Cold / AI)
 
-### Neutral Scale
-- **Mid Slate** (`#505a63`): Secondary text
-- **Cool Gray** (`#8d969e`): Muted text, tertiary
-- **Gray Tone** (`#c9c9cd`): `--rui-color-grey-tone-20`, borders/dividers
+| Token                     | Hex         | Role                                         |
+| ------------------------- | ----------- | -------------------------------------------- |
+| `--diet-void`           | `#0a0e14` | Deepest AI surface — terminal black         |
+| `--diet-steel`          | `#141b22` | AI panel background — dark steel blue       |
+| `--diet-holo-blue`      | `#4dc9f6` | Primary AI accent — holographic glow        |
+| `--diet-neon-teal`      | `#00f0b5` | Success/positive — AI certainty, verified   |
+| `--diet-terminal-green` | `#3fef6f` | Data display — terminal output, logs        |
+| `--diet-alert-red`      | `#ff3347` | AI danger/warning — HIGH RISK verdicts      |
+| `--diet-alert-amber`    | `#ff8c38` | AI caution — medium risk, bias detected     |
+| `--diet-grid-line`      | `#1c2836` | Data grid lines — subtle dividers           |
+| `--diet-data-blue`      | `#5b9bd5` | Data visualization — charts, stats          |
+| `--diet-glitch-purple`  | `#b44cf0` | Glitch/error — system anomalies, bias found |
+| `--diet-machine-text`   | `#8ba4b8` | AI secondary text — muted machine voice     |
+| `--diet-cold-white`     | `#dce6f0` | AI light text — cold precision              |
+
+### Neutral Bridge
+
+| Token                    | Hex                | Role                 |
+| ------------------------ | ------------------ | -------------------- |
+| `--diet-shadow`        | `#000000` at 40% | Box shadows — depth |
+| `--diet-overlay`       | `#000000` at 60% | Modal backdrops      |
+| `--diet-divider`       | `#2a2520`        | Dark mode dividers   |
+| `--diet-divider-light` | `#d9d0c0`        | Light mode dividers  |
+
+---
 
 ## 3. Typography Rules
 
 ### Font Families
-- **Display**: `Aeonik Pro` — geometric grotesque, no detected fallbacks
-- **Body / UI**: `Inter` — standard system sans
-- **Fallback**: `Arial` for specific button contexts
+
+- **Narrative / Display**: `Playfair Display` — elegant serif, evokes detective novels and aged case reports. Used for chapter titles, scene headings, dramatic quotes.
+- **Case File / Headings**: `IBM Plex Serif` — sturdy, authoritative serif. Used for evidence labels, file headers, investigation section titles.
+- **Body / UI**: `Source Sans 3` — clean, highly readable sans-serif. Used for dialogue, descriptions, UI labels.
+- **Terminal / Data**: `JetBrains Mono` — monospace for AI outputs, data tables, terminal readouts, code-like bias analysis.
+- **Fallbacks**: `Georgia, serif` for narrative; `system-ui, sans-serif` for body; `Consolas, monospace` for terminal.
 
 ### Hierarchy
 
-| Role | Font | Size | Weight | Line Height | Letter Spacing | Notes |
-|------|------|------|--------|-------------|----------------|-------|
-| Display Mega | Aeonik Pro | 136px (8.50rem) | 500 | 1.00 (tight) | -2.72px | Stadium-scale hero |
-| Display Hero | Aeonik Pro | 80px (5.00rem) | 500 | 1.00 (tight) | -0.8px | Primary hero |
-| Section Heading | Aeonik Pro | 48px (3.00rem) | 500 | 1.21 (tight) | -0.48px | Feature sections |
-| Sub-heading | Aeonik Pro | 40px (2.50rem) | 500 | 1.20 (tight) | -0.4px | Sub-sections |
-| Card Title | Aeonik Pro | 32px (2.00rem) | 500 | 1.19 (tight) | -0.32px | Card headings |
-| Feature Title | Aeonik Pro | 24px (1.50rem) | 400 | 1.33 | normal | Light headings |
-| Nav / UI | Aeonik Pro | 20px (1.25rem) | 500 | 1.40 | normal | Navigation, buttons |
-| Body Large | Inter | 18px (1.13rem) | 400 | 1.56 | -0.09px | Introductions |
-| Body | Inter | 16px (1.00rem) | 400 | 1.50 | 0.24px | Standard reading |
-| Body Semibold | Inter | 16px (1.00rem) | 600 | 1.50 | 0.16px | Emphasized body |
-| Body Bold Link | Inter | 16px (1.00rem) | 700 | 1.50 | 0.24px | Bold links |
+| Role            | Font             | Size           | Weight | Line Height | Letter Spacing | Notes                          |
+| --------------- | ---------------- | -------------- | ------ | ----------- | -------------- | ------------------------------ |
+| Chapter Title   | Playfair Display | 72px (4.50rem) | 700    | 1.10        | -0.5px         | Cinematic chapter openings     |
+| Scene Heading   | Playfair Display | 48px (3.00rem) | 600    | 1.15        | -0.3px         | Scene transitions              |
+| Case File Title | IBM Plex Serif   | 36px (2.25rem) | 600    | 1.20        | normal         | Investigation document headers |
+| Evidence Label  | IBM Plex Serif   | 24px (1.50rem) | 500    | 1.25        | 0.5px          | Card titles, clue names        |
+| Section Header  | IBM Plex Serif   | 20px (1.25rem) | 600    | 1.30        | 1px            | Sub-sections, tabs             |
+| AI Display      | JetBrains Mono   | 18px (1.13rem) | 400    | 1.40        | normal         | Terminal output, AI text       |
+| Body Intro      | Source Sans 3    | 18px (1.13rem) | 300    | 1.60        | normal         | Narrative introductions        |
+| Body Text       | Source Sans 3    | 16px (1.00rem) | 400    | 1.55        | normal         | Standard reading               |
+| Dialogue        | Source Sans 3    | 16px (1.00rem) | 400    | 1.55        | normal         | Character speech, italic       |
+| UI Label        | Source Sans 3    | 14px (0.88rem) | 600    | 1.40        | 0.5px          | Buttons, tabs, form labels     |
+| Data Small      | JetBrains Mono   | 13px (0.81rem) | 400    | 1.45        | normal         | Data tables, stats             |
+| Caption         | Source Sans 3    | 12px (0.75rem) | 400    | 1.40        | 0.5px          | Image captions, footnotes      |
 
 ### Principles
-- **Weight 500 as display default**: Aeonik Pro uses medium (500) for ALL headings — no bold. This creates authority through size and tracking, not weight.
-- **Billboard tracking**: -2.72px at 136px is extremely compressed — text designed to be read at a glance, like airport signage.
-- **Positive tracking on body**: Inter uses +0.16px to +0.24px, creating airy, well-spaced reading text that contrasts with the compressed headings.
+
+- **Serif for narrative authority**: Playfair Display and IBM Plex Serif ground the story in detective genre conventions — this is a mystery to be solved, not a product to be bought.
+- **Monospace for machine truth**: JetBrains Mono makes AI output feel like raw data — unadorned, potentially flawed, demanding human scrutiny.
+- **Generous body leading**: 1.55–1.60 line height gives narrative text room to breathe, inviting immersive reading.
+- **Tight display for impact**: Chapter titles at 1.10 create cinematic weight, like title cards in a noir film.
+- **Weight contrast over size contrast**: Chapter titles at 700 bold, body at 300–400 — drama comes from weight, not just scale.
+
+---
 
 ## 4. Component Stylings
 
+### Investigation Cards (Evidence / Clue Cards)
+
+**Base Evidence Card**
+
+- Background: `--diet-paper` or `--diet-paper-dark`
+- Border: `1px solid --diet-file-tab`
+- Padding: 24px
+- Radius: 4px (sharp, like a cut photograph or case file)
+- Shadow: `0 2px 8px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1)`
+- Hover: shadow deepens to `0 4px 16px rgba(0,0,0,0.2)`, slight lift `translateY(-2px)`
+- Pseudo-element: top-left folded corner effect (3D card illusion)
+
+**AI Data Card**
+
+- Background: `--diet-steel`
+- Border: `1px solid --diet-grid-line`
+- Padding: 20px
+- Radius: 2px (sharp, digital)
+- Shadow: `0 0 12px rgba(77, 201, 246, 0.08)` — subtle holographic glow
+- Text: `--diet-machine-text` with `--diet-holo-blue` highlights
+
 ### Buttons
 
-**Primary Dark Pill**
-- Background: `#191c1f`
-- Text: `#ffffff`
-- Padding: 14px 32px
-- Radius: 9999px (full pill)
-- Hover: opacity 0.85
-- Focus: `0 0 0 0.125rem` ring
+**Primary Investigate (Warm)**
 
-**Secondary Light Pill**
-- Background: `#f4f4f4`
-- Text: `#000000`
-- Padding: 14px 34px
-- Radius: 9999px
-- Hover: opacity 0.85
+- Background: `--diet-ink`
+- Text: `--diet-paper`
+- Padding: 12px 28px
+- Radius: 4px (sharp, document-like)
+- Font: `Source Sans 3 14px weight 600, letter-spacing 0.5px, uppercase`
+- Hover: background lightens to `#2a2018`, shadow `0 2px 8px rgba(0,0,0,0.3)`
+- Focus: `0 0 0 2px --diet-amber` outline
 
-**Outlined Pill**
-- Background: transparent
-- Text: `#191c1f`
-- Border: `2px solid #191c1f`
-- Padding: 14px 32px
-- Radius: 9999px
+**AI Action (Cold)**
 
-**Ghost on Dark**
-- Background: `rgba(244, 244, 244, 0.1)`
-- Text: `#f4f4f4`
-- Border: `2px solid #f4f4f4`
-- Padding: 14px 32px
-- Radius: 9999px
+- Background: `transparent`
+- Text: `--diet-holo-blue`
+- Border: `1px solid --diet-holo-blue`
+- Padding: 10px 24px
+- Radius: 2px
+- Font: `JetBrains Mono 13px weight 400`
+- Hover: background `rgba(77, 201, 246, 0.08)`, glow intensifies
+- Focus: `0 0 0 2px --diet-holo-blue`
 
-### Cards & Containers
-- Radius: 12px (small), 20px (cards)
-- No shadows — flat surfaces with color contrast
-- Dark and light section alternation
+**Danger / HIGH RISK**
+
+- Background: `--diet-alert-red`
+- Text: `--diet-cold-white`
+- Padding: 12px 28px
+- Radius: 2px
+- Font: `Source Sans 3 14px weight 700, uppercase`
+- Hover: background darkens to `#e02a3d`
+- Animation: subtle pulse glow on critical verdict screens
+
+**Ghost / Time Machine**
+
+- Background: `rgba(180, 76, 240, 0.08)`
+- Text: `--diet-glitch-purple`
+- Border: `1px solid --diet-glitch-purple`
+- Padding: 12px 28px
+- Radius: 9999px (the only pill — represents the impossible, time travel itself)
+- Font: `Source Sans 3 14px weight 400, italic`
+- Hover: glitch animation (brief horizontal displacement)
 
 ### Navigation
-- Aeonik Pro 20px weight 500
-- Clean header, hamburger toggle at 12px radius
-- Pill CTAs right-aligned
+
+**Investigation Progress Bar**
+
+- Background: `--diet-wood` or `--diet-void` (depending on context)
+- Progress indicator: `--diet-red-string` connected dots
+- Chapter markers: circular nodes, filled when complete
+- Current chapter: pulsing `--diet-amber` glow
+- Font: `IBM Plex Serif 14px weight 500`
+
+**Evidence Board (Chapter Select)**
+
+- Visual metaphor: physical cork/string board
+- Background: `--diet-paper-dark` with subtle cork texture
+- Connected nodes: `--diet-red-string` lines between related clues
+- Pinned cards: slight rotation (1–3°) for organic feel
+- Unlocked clues: full color; locked clues: desaturated + "CLASSIFIED" stamp overlay
+
+### Data Displays (AI Interfaces)
+
+**Terminal Output**
+
+- Background: `--diet-void`
+- Text: `JetBrains Mono 14px --diet-terminal-green`
+- Scan-line overlay: repeating linear-gradient at 3px intervals, 8% opacity
+- Cursor blink animation: `--diet-terminal-green` block, 1s blink cycle
+- Border: `1px solid --diet-grid-line`, inset shadow for screen depth
+
+**Risk Assessment Panel**
+
+- Background: `--diet-steel`
+- Header: `IBM Plex Serif 18px --diet-cold-white` on darker strip
+- Risk meter: horizontal bar, gradient from `--diet-neon-teal` → `--diet-alert-amber` → `--diet-alert-red`
+- Verdict text: `JetBrains Mono 24px`, color matches risk level
+- "HIGH RISK" = `--diet-alert-red` with subtle red ambient glow
+
+**Bias Detection Visualization**
+
+- Bias found: `--diet-glitch-purple` highlight on affected data points
+- Clean data: `--diet-data-blue`
+- Animated reveal: glitch effect when bias is discovered
+- Tooltip: `--diet-steel` card with `JetBrains Mono 12px`
+
+### Modals & Overlays
+
+**Case File Modal**
+
+- Background: `--diet-paper`
+- Shadow: `0 8px 40px rgba(0,0,0,0.4)` — dramatic depth
+- Border: none, but top accent bar `4px solid --diet-ink`
+- Close button: stamped circle, `--diet-stamp-red`
+- Content scroll: custom scrollbar matching `--diet-file-tab`
+
+**Time Travel Transition Overlay**
+
+- Fullscreen `--diet-void`
+- Central vortex: spinning radial gradient `--diet-holo-blue` → `--diet-glitch-purple`
+- Text: `Playfair Display 36px --diet-cold-white`, "Traveling to..." with typewriter reveal animation
+- Particles: small glowing dots streaking toward center
+
+### Chapters as Visual Zones
+
+Each chapter has a distinct visual identity matching its investigation focus:
+
+**Chapter 1 — Data Bias**
+
+- Dominant palette: Investigation warm tones
+- Key visuals: City maps, population charts, sampling diagrams
+- UI: Region selection cards, data collection forms
+- Discovery moment: Glitch reveal when sampling gaps found
+
+**Chapter 2 — Algorithmic Bias**
+
+- Dominant palette: Mixed warm/cold — the tension peak
+- Key visuals: Defendant profiles, fairness definition comparisons, gavel imagery
+- UI: Side-by-side comparison panels, definition selection, courtroom layouts
+- Discovery moment: Data nodes glow `--diet-glitch-purple` when human cycle discovered
+
+**Chapter 3 — Human-in-the-Loop Bias**
+
+- Dominant palette: Machine cold tones with human warmth bleeding in
+- Key visuals: LLM input/output pairs, labeling interfaces, feedback loops
+- UI: Question card stacks, before/after AI response comparisons
+- Discovery moment: Player's own biased labels echoed back by the AI
+
+---
 
 ## 5. Layout Principles
 
 ### Spacing System
+
 - Base unit: 8px
-- Scale: 4px, 6px, 8px, 14px, 16px, 20px, 24px, 32px, 40px, 48px, 80px, 88px, 120px
-- Large section spacing: 80px–120px
+- Scale: 4px, 8px, 12px, 16px, 20px, 24px, 32px, 40px, 48px, 64px, 80px, 120px
+- Section spacing: 80px (standard), 120px (chapter breaks)
+- Card gaps: 20px (evidence grid), 16px (data grid)
+
+### Grid System
+
+- Evidence Board layout: CSS Grid, auto-fill with minmax(280px, 1fr) — cards find their place organically
+- Data/AI panels: rigid 2-column or 3-column grid with `--diet-grid-line` borders
+- Narrative sections: single column, max-width 720px, centered — like reading a case file
+- Chapter transitions: full-bleed dark sections
 
 ### Border Radius Scale
-- Standard (12px): Navigation, small buttons
-- Card (20px): Feature cards
-- Pill (9999px): All buttons
+
+- Sharp (2px): AI panels, data cards, terminal windows — machine precision
+- Document (4px): Evidence cards, case files, buttons — slightly softened paper
+- Stamp (50%): Badge indicators, "CLASSIFIED" markers
+- Impossible (9999px): Time machine elements only — the single pill in a sharp world
+
+---
 
 ## 6. Depth & Elevation
 
-| Level | Treatment | Use |
-|-------|-----------|-----|
-| Flat (Level 0) | No shadow | Everything — Revolut uses zero shadows |
-| Focus | `0 0 0 0.125rem` ring | Accessibility focus |
+Unlike Revolut's flat philosophy, DIET uses strategic depth to create atmosphere.
 
-**Shadow Philosophy**: Revolut uses ZERO shadows. Depth comes entirely from the dark/light section contrast and the generous whitespace between elements.
+| Level        | Shadow                           | Use                                                       |
+| ------------ | -------------------------------- | --------------------------------------------------------- |
+| Flat (0)     | None                             | AI terminal surfaces, data grids — machine world is flat |
+| Paper (1)    | `0 1px 3px rgba(0,0,0,0.12)`   | Evidence cards at rest                                    |
+| Lifted (2)   | `0 4px 12px rgba(0,0,0,0.15)`  | Cards on hover, active clues                              |
+| Floating (3) | `0 8px 30px rgba(0,0,0,0.25)`  | Modals, case file overlays                                |
+| Dramatic (4) | `0 16px 48px rgba(0,0,0,0.35)` | Chapter title cards, critical reveals                     |
 
-## 7. Do's and Don'ts
+**Shadow Philosophy**: The human/investigator surfaces use warm shadows (black with slight brown tint). The AI surfaces use cold shadows (black with slight blue tint, or glowing edges). This creates a visual language where shadow color communicates which "world" an element belongs to.
 
-### Do
-- Use Aeonik Pro weight 500 for all display headings
-- Apply 9999px radius to all buttons — pill shape is universal
-- Use generous button padding (14px 32px)
-- Keep the palette to near-black + white for marketing surfaces
-- Apply positive letter-spacing on Inter body text
+**Glow for AI**: AI surfaces may use an ambient glow instead of shadow — `box-shadow: 0 0 20px rgba(77, 201, 246, 0.06)` — creating a holographic floating effect.
 
-### Don't
-- Don't use shadows — Revolut is flat by design
-- Don't use bold (700) for Aeonik Pro headings — 500 is the weight
-- Don't use small buttons — the generous padding is intentional
-- Don't apply semantic colors to marketing surfaces — they're for the product
+---
+
+## 7. Motion & Transitions
+
+### Chapter Transitions
+
+- Typewriter reveal for chapter titles (character-by-character, 80ms per char)
+- Fade through black (400ms) between major sections
+- Ink-bleed effect: warm brown spreading on paper texture for investigation discoveries
+
+### Investigation Interactions
+
+- Card hover: gentle lift (translateY -2px) + shadow deepen (200ms ease-out)
+- Clue connection: red string draws itself (SVG stroke-dashoffset animation, 600ms)
+- Evidence unlock: "CLASSIFIED" stamp fades out, card saturates (400ms)
+
+### AI / Machine Interactions
+
+- Terminal text: character-by-character reveal (30ms per char) with scan-line effect
+- Glitch on bias discovery: random horizontal displacement (3 frames), chromatic aberration shift
+- Data highlight: `--diet-glitch-purple` pulse on affected data points (2s infinite, subtle)
+
+### Time Travel
+
+- Full screen overlay: vortex animation (CSS radial-gradient rotation)
+- Particles streak toward center
+- Audio cue suggestion: low hum building to silence
+- Exit: reverse animation into new time period
+
+---
 
 ## 8. Responsive Behavior
 
-### Breakpoints
-| Name | Width | Key Changes |
-|------|-------|-------------|
-| Mobile Small | <400px | Compact, single column |
-| Mobile | 400–720px | Standard mobile |
-| Tablet | 720–1024px | 2-column layouts |
-| Desktop | 1024–1280px | Standard desktop |
-| Large | 1280–1920px | Full layout |
+| Name         | Width        | Key Changes                                                    |
+| ------------ | ------------ | -------------------------------------------------------------- |
+| Mobile Small | <400px       | Single column, cards full width, simplified evidence board     |
+| Mobile       | 400–720px   | Single column, larger touch targets, collapsed navigation      |
+| Tablet       | 720–1024px  | 2-column evidence grid, side navigation appears                |
+| Desktop      | 1024–1440px | Full evidence board, multi-column data panels                  |
+| Wide         | >1440px      | Max-width 1440px centered, ambient background patterns visible |
 
-## 9. Agent Prompt Guide
+### Mobile Adaptations
 
-### Quick Color Reference
-- Dark: Revolut Dark (`#191c1f`)
-- Light: White (`#ffffff`)
-- Surface: Light (`#f4f4f4`)
-- Blue: Revolut Blue (`#494fdf`)
-- Danger: Red (`#e23b4a`)
-- Success: Teal (`#00a87e`)
+- Evidence board becomes vertical scroll with horizontal swipe for connected clues
+- AI panels collapse into accordion sections
+- Terminal font size increases to 16px for readability
+- Buttons go full-width with 56px height for thumb reach
+- Chapter navigation becomes a bottom sheet
+
+---
+
+## 9. Do's and Don'ts
+
+### Do
+
+- Use warm tones for narrative, cold tones for AI — maintain the duality
+- Apply shadows to human-world elements (cards, files) to create physicality
+- Keep AI surfaces flat with glow borders — machines are interfaces, not objects
+- Use Playfair Display for emotional/cinematic moments only
+- Use JetBrains Mono exclusively for data, terminal output, and AI speech
+- Animate red string connections when clues are linked
+- Preserve the 4px document radius for investigation elements
+- Use the 9999px pill radius ONLY for time-travel related elements
+
+### Don't
+
+- Don't mix warm and cold palettes in the same component without intention — the boundary matters
+- Don't use pill-shaped buttons (9999px) for standard actions — they're for the impossible
+- Don't apply shadows to AI terminal surfaces — machines live on screens
+- Don't use Playfair Display for UI labels or data — it loses its dramatic impact
+- Don't make everything dark — the contrast between warm paper light and machine void is essential
+- Don't use pure black (#000) or pure white (#fff) — always tint toward warm or cold
+- Don't animate for the sake of it — motion should reveal information or signal chapter shifts
+
+---
+
+## 10. CSS Custom Properties Reference
+
+```css
+:root {
+  /* === THE INVESTIGATOR (Warm / Human) === */
+  --diet-ink: #1a1410;
+  --diet-paper: #f5f0e8;
+  --diet-paper-dark: #e8e0d0;
+  --diet-cream: #faf7f0;
+  --diet-file-tab: #d4c5a9;
+  --diet-amber: #c77d20;
+  --diet-copper: #b85c1e;
+  --diet-wood: #5c3d2e;
+  --diet-red-string: #c0392b;
+  --diet-ink-faded: #6b5e53;
+  --diet-stamp-red: #8b1a1a;
+
+  /* === THE MACHINE (Cold / AI) === */
+  --diet-void: #0a0e14;
+  --diet-steel: #141b22;
+  --diet-holo-blue: #4dc9f6;
+  --diet-neon-teal: #00f0b5;
+  --diet-terminal-green: #3fef6f;
+  --diet-alert-red: #ff3347;
+  --diet-alert-amber: #ff8c38;
+  --diet-grid-line: #1c2836;
+  --diet-data-blue: #5b9bd5;
+  --diet-glitch-purple: #b44cf0;
+  --diet-machine-text: #8ba4b8;
+  --diet-cold-white: #dce6f0;
+
+  /* === NEUTRAL BRIDGE === */
+  --diet-shadow: rgba(0, 0, 0, 0.4);
+  --diet-overlay: rgba(0, 0, 0, 0.6);
+  --diet-divider: #2a2520;
+  --diet-divider-light: #d9d0c0;
+
+  /* === TYPOGRAPHY === */
+  --diet-font-display: 'Playfair Display', Georgia, serif;
+  --diet-font-case-file: 'IBM Plex Serif', Georgia, serif;
+  --diet-font-body: 'Source Sans 3', system-ui, sans-serif;
+  --diet-font-terminal: 'JetBrains Mono', Consolas, monospace;
+
+  /* === SPACING === */
+  --diet-space-unit: 8px;
+
+  /* === RADIUS === */
+  --diet-radius-sharp: 2px;
+  --diet-radius-document: 4px;
+  --diet-radius-stamp: 50%;
+  --diet-radius-impossible: 9999px;
+
+  /* === SHADOWS === */
+  --diet-shadow-paper: 0 1px 3px rgba(0, 0, 0, 0.12);
+  --diet-shadow-lift: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --diet-shadow-float: 0 8px 30px rgba(0, 0, 0, 0.25);
+  --diet-shadow-dramatic: 0 16px 48px rgba(0, 0, 0, 0.35);
+  --diet-glow-holo: 0 0 20px rgba(77, 201, 246, 0.06);
+  --diet-glow-alert: 0 0 16px rgba(255, 51, 71, 0.1);
+}
+```
+
+---
+
+## 11. Agent Prompt Guide
+
+### Quick Reference
+
+- **Narrative surfaces**: `--diet-paper`, `--diet-ink`, Playfair Display, shadows
+- **AI surfaces**: `--diet-void`, `--diet-steel`, `--diet-holo-blue`, JetBrains Mono, flat with glow
+- **Investigation**: `--diet-red-string`, `--diet-amber`, evidence cards with 4px radius
+- **Danger**: `--diet-alert-red` with glow, uppercase JetBrains Mono
+- **Time travel**: `--diet-glitch-purple`, 9999px radius, glitch animations
 
 ### Example Component Prompts
-- "Create a hero: white background. Headline at 136px Aeonik Pro weight 500, line-height 1.00, letter-spacing -2.72px, #191c1f text. Dark pill CTA (#191c1f, 9999px, 14px 32px). Outlined pill secondary (transparent, 2px solid #191c1f)."
-- "Build a pill button: #191c1f background, white text, 9999px radius, 14px 32px padding, 20px Aeonik Pro weight 500. Hover: opacity 0.85."
+
+- "Create a chapter title card: `--diet-ink` background. Title at 72px Playfair Display weight 700, line-height 1.10, `--diet-paper` text, letter-spacing -0.5px. Dramatic shadow (`--diet-shadow-dramatic`). Typewriter reveal animation. Scene number in `--diet-amber` IBM Plex Serif above."
+- "Create an evidence card: `--diet-paper` background, 1px `--diet-file-tab` border, 4px radius, 24px padding. Title in IBM Plex Serif 24px `--diet-ink`. Body in Source Sans 3 16px. Shadow `--diet-shadow-paper`. Hover: lift to `--diet-shadow-lift`, translateY -2px. Top-left pseudo-element folded corner in `--diet-paper-dark`."
+- "Create an AI terminal panel: `--diet-void` background. Scan-line overlay (repeating gradient 3px, 8% opacity). Text in JetBrains Mono 14px `--diet-terminal-green`. Blinking block cursor. `--diet-grid-line` inset border. No shadow — flat screen surface."
+- "Create a HIGH RISK verdict display: `--diet-steel` panel. Verdict text 'HIGH RISK' in JetBrains Mono 24px weight 700 `--diet-alert-red`. Subtle red ambient glow (`--diet-glow-alert`). Risk meter bar: gradient from `--diet-neon-teal` → `--diet-alert-amber` → `--diet-alert-red` with marker at current position."
+- "Create a time travel button: transparent background, `--diet-glitch-purple` text, 1px `--diet-glitch-purple` border, 9999px radius. Text 'TRAVEL BACK' in Source Sans 3 14px italic. Hover: glitch animation (3-frame horizontal displacement, chromatic aberration)."
 
 ### Iteration Guide
-1. Aeonik Pro 500 for headings — never bold
-2. All buttons are pills (9999px) with generous padding
-3. Zero shadows — flat is the Revolut identity
-4. Near-black + white for marketing, semantic colors for product
+
+1. Every component belongs to either the Investigator world (warm, shadowed, organic) or the Machine world (cold, flat, digital) — identify which before building
+2. Playfair Display for drama, IBM Plex Serif for authority, Source Sans 3 for clarity, JetBrains Mono for data — never cross contexts
+3. Shadows on human surfaces, glow on AI surfaces — depth communicates origin
+4. 4px document radius standard; 9999px only for time travel — the shape language has meaning
+5. Color temperature must shift between chapters — Data (warm dominant) → Algorithm (balanced tension) → Humans (cold dominant with warmth bleeding through)

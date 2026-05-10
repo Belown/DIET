@@ -2,23 +2,26 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--rui-white);
+  background:
+    radial-gradient(circle at 90% 6%, rgba(77, 201, 246, 0.08), transparent 24rem),
+    var(--diet-cream);
 }
 
 .chrome {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: var(--rui-white);
+  background: var(--diet-paper);
+  box-shadow: var(--diet-shadow-paper);
 }
 
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px clamp(24px, 4vw, 56px);
-  border-bottom: 1px solid var(--rui-border);
-  background: var(--rui-white);
+  padding: 18px clamp(24px, 4vw, 56px);
+  border-bottom: 1px solid var(--diet-file-tab);
+  background: var(--diet-paper);
 }
 
 .topbarLeft {
@@ -29,15 +32,15 @@
 
 .timelineToggle {
   appearance: none;
-  border: 1px solid var(--rui-border);
-  background: var(--rui-white);
-  color: var(--rui-dark);
-  font-family: var(--font-display);
+  border: 1px solid var(--diet-file-tab);
+  background: var(--diet-paper-dark);
+  color: var(--diet-ink);
+  font-family: var(--font-case-file);
   font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   padding: 8px 18px;
-  border-radius: var(--radius-pill);
+  border-radius: var(--diet-radius-document);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -46,8 +49,8 @@
 }
 
 .timelineToggle:hover {
-  background: var(--rui-surface);
-  border-color: var(--rui-dark);
+  background: var(--diet-file-tab);
+  border-color: var(--diet-ink);
 }
 
 .timelineToggleIcon {
@@ -65,42 +68,27 @@
   left: 2px;
   right: 2px;
   height: 2px;
-  background: var(--rui-dark);
+  background: var(--diet-ink);
   border-radius: 1px;
   transition: transform 0.25s ease, top 0.25s ease;
 }
 
-.timelineToggleIcon::before {
-  top: 4px;
-}
-
-.timelineToggleIcon::after {
-  top: 10px;
-}
-
-.timelineToggleIconOpen::before {
-  top: 7px;
-  transform: rotate(45deg);
-}
-
-.timelineToggleIconOpen::after {
-  top: 7px;
-  transform: rotate(-45deg);
-}
+.timelineToggleIcon::before { top: 4px; }
+.timelineToggleIcon::after { top: 10px; }
+.timelineToggleIconOpen::before { top: 7px; transform: rotate(45deg); }
+.timelineToggleIconOpen::after { top: 7px; transform: rotate(-45deg); }
 
 .backLink {
-  font-family: var(--font-display);
+  font-family: var(--font-case-file);
   font-size: 13px;
   font-weight: 500;
-  color: var(--rui-slate);
+  color: var(--diet-ink-faded);
   transition: color 0.15s ease;
 }
 
 .backLink:hover {
-  color: var(--rui-dark);
+  color: var(--diet-ink);
 }
-
-/* ─── Timeline ─────────────────────────────────────────────────────────── */
 
 .timelineWrapper {
   position: absolute;
@@ -109,23 +97,26 @@
   top: 100%;
   max-height: 0;
   overflow: hidden;
-  background: var(--rui-white);
-  transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--diet-paper-dark);
   border-bottom: 1px solid transparent;
   transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     border-color 0.35s ease, box-shadow 0.35s ease;
 }
 
 .timelineWrapperOpen {
-  max-height: 300px;
-  border-bottom-color: var(--rui-border);
-  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.08);
+  max-height: 320px;
+  border-bottom-color: var(--diet-file-tab);
+  box-shadow: var(--diet-shadow-float);
 }
 
 .timeline {
   position: relative;
   padding: 44px clamp(24px, 4vw, 56px) 32px;
-  background: var(--rui-white);
+  background:
+    linear-gradient(90deg, rgba(92, 61, 46, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(92, 61, 46, 0.06) 1px, transparent 1px),
+    var(--diet-paper-dark);
+  background-size: 28px 28px;
 }
 
 .timelineTrack {
@@ -134,7 +125,7 @@
   right: clamp(40px, 6vw, 72px);
   top: calc(44px + 20px);
   height: 3px;
-  background: var(--rui-border);
+  background: var(--diet-file-tab);
   z-index: 0;
   border-radius: 2px;
 }
@@ -145,7 +136,7 @@
   top: 0;
   height: 100%;
   width: var(--progress, 0%);
-  background: var(--rui-dark);
+  background: var(--diet-red-string);
   border-radius: 2px;
   transition: width 0.55s cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
@@ -180,56 +171,38 @@
   width: 100%;
   max-width: 280px;
   text-align: center;
-  color: var(--rui-slate);
+  color: var(--diet-ink-faded);
   transition: color 0.25s ease;
   position: relative;
 }
 
-.timelineNode:hover {
-  color: var(--rui-dark);
-}
-
+.timelineNode:hover,
 .timelineNodeActive {
-  color: var(--rui-dark);
+  color: var(--diet-ink);
 }
 
 .timelineDot {
   width: 36px;
   height: 36px;
-  border-radius: 50%;
-  background: var(--rui-white);
-  border: 2px solid var(--rui-border);
+  border-radius: var(--diet-radius-stamp);
+  background: var(--diet-paper);
+  border: 2px solid var(--diet-file-tab);
   flex-shrink: 0;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--rui-gray);
-  user-select: none;
 }
 
 .timelineNode:hover .timelineDot {
-  border-color: var(--rui-dark);
-  color: var(--rui-dark);
+  border-color: var(--diet-ink);
 }
 
 .timelineNodePast .timelineDot {
-  background: var(--rui-surface);
-  border-color: var(--rui-border);
-  color: var(--rui-gray);
+  background: var(--diet-file-tab);
 }
 
 .timelineNodeActive .timelineDot {
-  background: var(--rui-dark);
-  border-color: var(--rui-dark);
-  color: var(--rui-white);
-  transform: scale(1.1);
-}
-
-.timelineNodeActive:hover .timelineDot {
+  background: var(--diet-amber);
+  border-color: var(--diet-amber);
+  box-shadow: 0 0 0 5px rgba(199, 125, 32, 0.2);
   transform: scale(1.1);
 }
 
@@ -241,22 +214,18 @@
 }
 
 .timelineNum {
-  font-family: var(--font-display);
+  font-family: var(--font-case-file);
   font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0.16px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--rui-gray);
-}
-
-.timelineNodeActive .timelineNum {
-  color: var(--rui-dark);
+  color: #817468;
 }
 
 .timelineTitle {
-  font-family: var(--font-display);
+  font-family: var(--font-case-file);
   font-size: 16px;
-  font-weight: 500;
+  font-weight: 600;
   color: inherit;
   line-height: 1.4;
 }
@@ -264,33 +233,43 @@
 .timelineHint {
   font-family: var(--font-body);
   font-size: 13px;
-  color: var(--rui-gray);
+  color: var(--diet-ink-faded);
   line-height: 1.5;
-  letter-spacing: 0.16px;
   max-width: 220px;
 }
 
 .timelineBadge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
   margin-top: 6px;
-  padding: 4px 14px;
-  border-radius: var(--radius-pill);
-  background: var(--rui-surface);
-  border: 1px solid var(--rui-border);
-  font-family: var(--font-display);
+  padding: 4px 10px;
+  border-radius: var(--diet-radius-document);
+  background: rgba(139, 26, 26, 0.08);
+  border: 1px solid var(--diet-stamp-red);
+  font-family: var(--font-case-file);
   font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0.16px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: var(--rui-gray);
-  transition: all 0.25s ease;
+  color: var(--diet-stamp-red);
+  transform: rotate(-2deg);
 }
 
-.timelineNode:hover .timelineBadge {
-  border-color: var(--rui-dark);
-  color: var(--rui-dark);
+.canvas {
+  padding: 48px clamp(24px, 4vw, 56px) 0;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+  overflow-y: hidden;
+}
+
+.canvasBody {
+  animation: phaseEnter 0.35s ease-out both;
+}
+
+@keyframes phaseEnter {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (max-width: 720px) {
@@ -318,7 +297,6 @@
     width: 100% !important;
     height: var(--progress, 0%);
     transition: height 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-    background: var(--rui-dark);
   }
 
   .timelineNode {
@@ -335,32 +313,4 @@
   .timelineHint {
     max-width: none;
   }
-
-  .timelineDot {
-    width: 32px;
-    height: 32px;
-    font-size: 12px;
-  }
-
-  .timelineNodeActive .timelineDot {
-    transform: scale(1.1);
-  }
-}
-
-/* ─── Canvas ───────────────────────────────────────────────────────────── */
-
-.canvas {
-  padding: 48px clamp(24px, 4vw, 56px) 0;
-  max-width: 1200px;
-  width: 100%;
-  margin: 0 auto;
-}
-
-.canvasBody {
-  animation: phaseEnter 0.35s ease-out both;
-}
-
-@keyframes phaseEnter {
-  from { opacity: 0; }
-  to   { opacity: 1; }
 }

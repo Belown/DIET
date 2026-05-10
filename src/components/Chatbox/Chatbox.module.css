@@ -1,5 +1,5 @@
 .chatbox {
-  --chatbox-bottom: 16px;
+  --chatbox-bottom: 0px;
   --chatbox-open-padding-top: 34px;
   --chatbox-open-padding-bottom: 30px;
   --chatbox-open-padding: 34px clamp(28px, 3.5vw, 48px) 30px;
@@ -543,7 +543,7 @@
 
 @media (max-width: 640px) {
   .chatbox {
-    --chatbox-bottom: 12px;
+    --chatbox-bottom: 0px;
     --chatbox-open-padding-top: 30px;
     --chatbox-open-padding-bottom: 22px;
     --chatbox-open-padding: 30px 18px 22px;

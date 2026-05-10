@@ -7,7 +7,7 @@
 }
 
 .panelEyebrow {
-  font-family: var(--font-display);
+  font-family: var(--font-case-file);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.6px;
@@ -17,7 +17,7 @@
 }
 
 .h2 {
-  font-family: var(--font-display);
+  font-family: var(--font-case-file);
   font-size: 22px;
   font-weight: 500;
   letter-spacing: -0.01em;
@@ -58,13 +58,14 @@
   display: inline-block;
   margin-top: 12px;
   padding: 6px 14px;
-  border-radius: 9999px;
-  background: var(--rui-white);
-  border: 1px solid var(--rui-border);
-  font-family: var(--font-display);
+  border-radius: var(--diet-radius-document);
+  background: rgba(139, 26, 26, 0.08);
+  border: 1px solid var(--diet-stamp-red);
+  font-family: var(--font-case-file);
   font-size: 12px;
   font-weight: 500;
   letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: var(--rui-slate);
+  color: var(--diet-stamp-red);
+  transform: rotate(-2deg);
 }
