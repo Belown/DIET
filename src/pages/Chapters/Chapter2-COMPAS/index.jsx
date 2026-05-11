@@ -7,9 +7,18 @@ import StatsMonitor from "./components/StatsMonitor";
 import CharacterActivity from "./components/CharacterActivity";
 import FairnessPoll from "./components/FairnessPoll";
 import CycleDiagram from "./components/CycleDiagram";
+import RecidivismGame from "./components/RecidivismGame";
 import styles from "./Chapter2COMPAS.module.css";
 
 const DIALOGUES = [
+  {
+    text: "Our task is to classify all these profiles as reoffended or not, but we have really little time so we must be quick !",
+    portrait: portraits.neutral,
+  },
+  {
+    text: "Interesting — how did your gut instincts compare to what you'd expect from an algorithm? Keep exploring the next two activities, then we'll see what COMPAS actually predicted.",
+    portrait: portraits.thoughtful,
+  },
   {
     text: "Let's look at the results from our COMPAS algorithm…",
     portrait: portraits.neutral,
@@ -58,6 +67,7 @@ export default function Chapter2COMPAS() {
   const [resultsLoaded, setResultsLoaded] = useState(false);
   const [fieryReady, setFieryReady] = useState(false);
   const [activityClosed, setActivityClosed] = useState(false);
+  const [activitiesDone, setActivitiesDone] = useState(false);
   const [fairnessConfirmed, setFairnessConfirmed] = useState(false);
 
   const dialogue = DIALOGUES[step];
@@ -69,12 +79,14 @@ export default function Chapter2COMPAS() {
   }, [history, step]);
 
   const canAdvance = useMemo(() => {
-    if (step === 0) return resultsLoaded;
-    if (step === 1) return fieryReady;
-    if (step === 7) return activityClosed;
-    if (step === 8) return fairnessConfirmed;
+    if (step === 0) return false;
+    if (step === 1) return activitiesDone;
+    if (step === 2) return resultsLoaded;
+    if (step === 3) return fieryReady;
+    if (step === 9) return activityClosed;
+    if (step === 10) return fairnessConfirmed;
     return true;
-  }, [activityClosed, fairnessConfirmed, fieryReady, resultsLoaded, step]);
+  }, [activitiesDone, activityClosed, fairnessConfirmed, fieryReady, resultsLoaded, step]);
 
   const rememberStep = (nextStep) => {
     setHistory((prev) => (prev.includes(nextStep) ? prev : [...prev, nextStep]));
@@ -98,33 +110,43 @@ export default function Chapter2COMPAS() {
     <div className={styles.phase}>
       <div className={styles.scene}>
         <div className={styles.sceneInner}>
-          {!resultsLoaded && step === 0 && (
+          {(step === 0 || step === 1) && !activitiesDone && (
+            <RecidivismGame
+              onComplete={() => setActivitiesDone(true)}
+              onActivity1Complete={() => {
+                setHistory(prev => prev.includes(1) ? prev : [...prev, 1]);
+                setStep(1);
+              }}
+            />
+          )}
+
+          {!resultsLoaded && step === 2 && (
             <button type="button" className={styles.loadButton} onClick={() => setResultsLoaded(true)}>
               Load Results
             </button>
           )}
 
-          {resultsLoaded && (
+          {step >= 2 && resultsLoaded && (
             <ReportCard />
           )}
 
-          {step >= 1 && (
+          {step >= 3 && (
             <FieryReport onReady={() => setFieryReady(true)} />
           )}
 
-          {step >= 3 && (
+          {step >= 5 && (
             <StatsMonitor />
           )}
 
-          {step >= 7 && !activityClosed && (
+          {step >= 9 && !activityClosed && (
             <CharacterActivity onClose={() => setActivityClosed(true)} />
           )}
 
-          {step >= 8 && !fairnessConfirmed && (
+          {step >= 10 && !fairnessConfirmed && (
             <FairnessPoll onConfirm={() => setFairnessConfirmed(true)} />
           )}
 
-          {step >= 9 && (
+          {step >= 11 && (
             <CycleDiagram />
           )}
         </div>
