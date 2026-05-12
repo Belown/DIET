@@ -10,7 +10,6 @@ export interface ChatboxProps {
   onAdvance?: () => void;
   onTextComplete?: () => void;
   autoCollapseOnTextComplete?: boolean;
-  autoCollapseDelayMs?: number;
   speakerName?: string;
   disableKeyboardAdvance?: boolean;
   disablePreviousNavigation?: boolean;
@@ -34,7 +33,6 @@ export default function Chatbox({
   onAdvance,
   onTextComplete,
   autoCollapseOnTextComplete = false,
-  autoCollapseDelayMs = 0,
   speakerName = "Detective",
   disableKeyboardAdvance = false,
   disablePreviousNavigation = false,
@@ -46,7 +44,6 @@ export default function Chatbox({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openHistoryGroups, setOpenHistoryGroups] = useState<Record<string, boolean>>({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const collapseDelayRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasReportedCompleteRef = useRef(false);
   const wasAutoCollapsedRef = useRef(false);
   const historyGroupRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -102,17 +99,7 @@ export default function Chatbox({
     if (hasReportedCompleteRef.current) return;
     hasReportedCompleteRef.current = true;
     onTextComplete?.();
-    if (autoCollapseOnTextComplete) {
-      if (collapseDelayRef.current) {
-        clearTimeout(collapseDelayRef.current);
-      }
-      collapseDelayRef.current = setTimeout(() => {
-        wasAutoCollapsedRef.current = true;
-        setIsCollapsed(true);
-        collapseDelayRef.current = null;
-      }, autoCollapseDelayMs);
-    }
-  }, [autoCollapseDelayMs, autoCollapseOnTextComplete, onTextComplete]);
+  }, [onTextComplete]);
 
   const complete = useCallback(() => {
     if (timerRef.current) {
@@ -129,10 +116,6 @@ export default function Chatbox({
     setIsComplete(false);
     setIsHistoryOpen(false);
     hasReportedCompleteRef.current = false;
-    if (collapseDelayRef.current) {
-      clearTimeout(collapseDelayRef.current);
-      collapseDelayRef.current = null;
-    }
     if (wasAutoCollapsedRef.current && !autoCollapseOnTextComplete) {
       wasAutoCollapsedRef.current = false;
       setIsCollapsed(false);
@@ -165,28 +148,38 @@ export default function Chatbox({
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      if (collapseDelayRef.current) {
-        clearTimeout(collapseDelayRef.current);
-        collapseDelayRef.current = null;
-      }
     };
   }, [reportComplete, text]);
 
   useEffect(() => {
     if (!forceOpen) return;
-    if (collapseDelayRef.current) {
-      clearTimeout(collapseDelayRef.current);
-      collapseDelayRef.current = null;
-    }
     wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
   }, [forceOpen, text]);
+
+  useEffect(() => {
+    if (!autoCollapseOnTextComplete || !isComplete || isCollapsed || forceOpen) return;
+
+    const handleWindowClick = () => {
+      wasAutoCollapsedRef.current = true;
+      setIsCollapsed(true);
+    };
+
+    window.addEventListener("click", handleWindowClick);
+    return () => window.removeEventListener("click", handleWindowClick);
+  }, [autoCollapseOnTextComplete, forceOpen, isCollapsed, isComplete, text]);
 
   const handleClick = () => {
     if (isCollapsed) return;
 
     if (!isComplete) {
       complete();
+      return;
+    }
+
+    if (autoCollapseOnTextComplete) {
+      wasAutoCollapsedRef.current = true;
+      setIsCollapsed(true);
     } else {
       onAdvance?.();
     }

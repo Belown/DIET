@@ -528,7 +528,6 @@ export default function Chapter1SamplingBias() {
         onHistorySelect={handleHistorySelect}
         onAdvance={handleAdvance}
         autoCollapseOnTextComplete={shouldAutoHidePlannerNarrative}
-        autoCollapseDelayMs={2000}
         disableKeyboardAdvance={isSheetPopupOpen}
         forceOpen={shouldForceOpenNarrative}
       />
