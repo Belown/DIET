@@ -3,11 +3,45 @@
   width: 100%;
   min-height: 100%;
   padding-top: 12px;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.phaseWithBackground::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--chapter-bg);
+  background-size: min(85vw, 2000px) auto;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.02);
+}
+
+.phaseWithBackground::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(180deg, rgba(250, 247, 240, 0.2), rgba(10, 14, 20, 0.34)),
+    radial-gradient(circle at 50% 18%, rgba(250, 247, 240, 0.1), transparent 42%),
+    var(--chapter-overlay);
+  background-size: auto, auto, min(44vw, 520px) auto;
+  background-position: center, center, right 8% top 12%;
+  background-repeat: no-repeat;
+}
+
+.phaseWithBackground .sceneInner {
+  position: relative;
+  z-index: 1;
 }
 
 .scene {
-  padding: 20px clamp(20px, 4vw, 48px) 232px;
-  max-width: 1200px;
+  padding: 20px clamp(12px, 2vw, 28px) 0px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
@@ -51,44 +85,6 @@
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
-.chapterTitle {
-  position: absolute;
-  top: 0;
-  left: clamp(20px, 4vw, 48px);
-  z-index: 3;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 12px;
-  max-width: calc(100% - 40px);
-  padding: 10px 16px 11px;
-  background: var(--rui-white);
-  border: 1px solid var(--rui-border);
-  border-radius: 8px;
-  box-shadow: 0 10px 24px rgba(25, 28, 31, 0.08);
-}
-
-.chapterKicker {
-  font-family: var(--font-display);
-  font-size: 12px;
-  font-weight: 500;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  color: var(--rui-blue);
-  white-space: nowrap;
-}
-
-.chapterName {
-  font-family: var(--font-display);
-  font-size: clamp(17px, 2vw, 24px);
-  font-weight: 500;
-  letter-spacing: 0;
-  line-height: 1.1;
-  color: var(--rui-dark);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 @media (max-width: 640px) {
   .phase {
     padding-top: 16px;
@@ -104,13 +100,6 @@
     width: calc(100vw - 24px);
     padding-inline: 0;
   }
-
-  .chapterTitle {
-    left: 12px;
-    right: 12px;
-    max-width: none;
-    justify-content: flex-start;
-    gap: 10px;
-    padding-inline: 12px;
-  }
 }
+
+

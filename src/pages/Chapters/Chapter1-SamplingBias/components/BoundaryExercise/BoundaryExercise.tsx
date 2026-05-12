@@ -1,5 +1,6 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import styles from "./BoundaryExercise.module.css";
+import shared from "../../../../../styles/shared.module.css";
 import { BRIEFING_SHEETS } from "../../chapterData";
 import { DEMO_INIT } from "../../simulation";
 import type { DemoBoundary } from "../../types";
@@ -69,8 +70,8 @@ export default function BoundaryExercise({
 
           <div className={styles.boundarySidePanel}>
             <div className={styles.boundaryControls}>
-              <div className={styles.sliderRow}>
-                <span className={styles.sliderLabel}>Slope</span>
+              <div className={shared.sliderRow}>
+                <span className={shared.sliderLabel}>Slope</span>
                 <input
                   type="range"
                   min={-1.5}
@@ -81,12 +82,12 @@ export default function BoundaryExercise({
                     const slope = parseFloat(e.target.value);
                     setBoundary((b) => ({ ...b, slope, intercept: -slope * boundaryShift }));
                   }}
-                  className={styles.sliderInput}
+                  className={shared.sliderInput}
                 />
-                <span className={styles.sliderValue}>{boundary.slope.toFixed(2)}</span>
+                <span className={shared.sliderValue}>{boundary.slope.toFixed(2)}</span>
               </div>
-              <div className={styles.sliderRow}>
-                <span className={styles.sliderLabel}>X-shift</span>
+              <div className={shared.sliderRow}>
+                <span className={shared.sliderLabel}>X-shift</span>
                 <input
                   type="range"
                   min={-40}
@@ -97,24 +98,24 @@ export default function BoundaryExercise({
                     const shift = parseFloat(e.target.value);
                     setBoundary((b) => ({ ...b, intercept: -b.slope * shift }));
                   }}
-                  className={styles.sliderInput}
+                  className={shared.sliderInput}
                 />
-                <span className={styles.sliderValue}>{boundaryShift.toFixed(0)}</span>
+                <span className={shared.sliderValue}>{boundaryShift.toFixed(0)}</span>
               </div>
             </div>
 
             <div className={styles.boundaryFooter}>
-              <div className={styles.scatterLegend}>
-                <span className={styles.scatterLegendItem}>
-                  <span className={styles.scatterSwatch} style={{ background: "#16a34a" }} />
+              <div className={shared.scatterLegend}>
+                <span className={shared.scatterLegendItem}>
+                  <span className={shared.scatterSwatch} style={{ background: "#16a34a" }} />
                   Safe
                 </span>
-                <span className={styles.scatterLegendItem}>
-                  <span className={styles.scatterSwatch} style={{ background: "#dc2626" }} />
+                <span className={shared.scatterLegendItem}>
+                  <span className={shared.scatterSwatch} style={{ background: "#dc2626" }} />
                   Threat
                 </span>
-                <span className={styles.scatterLegendItem}>
-                  <span className={styles.scatterSwatchOutline} />
+                <span className={shared.scatterLegendItem}>
+                  <span className={shared.scatterSwatchOutline} />
                   Misclassified
                 </span>
               </div>

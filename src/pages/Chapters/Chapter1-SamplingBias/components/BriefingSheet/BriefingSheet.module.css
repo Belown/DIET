@@ -25,9 +25,9 @@
   inset: 0;
   z-index: 35;
   display: grid;
-  place-items: start center;
-  padding: clamp(18px, 3vh, 34px) clamp(12px, 2.5vw, 34px) 184px;
-  overflow-y: auto;
+  place-items: center;
+  padding: clamp(18px, 3vh, 34px) clamp(12px, 2.5vw, 34px);
+  overflow-x: clip;
   background: rgba(25, 28, 31, 0.12);
 }
 
@@ -35,10 +35,13 @@
   box-sizing: border-box;
   width: min(1160px, calc(80vw - clamp(36px, 7vw, 92px)));
   height: min(760px, calc(100vh - 120px));
-  min-height: min(620px, calc(100vh - 220px));
+  min-height: 0;
   max-height: none;
   margin: 0;
-  overflow: visible;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   z-index: 1;
   outline: none;
   box-shadow:
@@ -48,21 +51,20 @@
   animation: sheetSpotlightIn 0.7s cubic-bezier(0.18, 0.9, 0.24, 1.12) both;
 }
 
-.caseSheetSpotlight .caseSheetLandscape {
-  grid-template-columns: 1fr;
-  max-height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-
-.caseSheetSpotlight .caseSheetLandscape::-webkit-scrollbar {
+.caseSheetSpotlight::-webkit-scrollbar {
   display: none;
 }
 
-.caseSheetSpotlight .caseSheetBody {
-  max-width: 72ch;
+.caseSheetSpotlight .caseSheetLandscape {
+  grid-template-columns: 1fr;
+}
+
+.caseSheetSpotlightSplit .caseSheetLandscape {
+  grid-template-columns: minmax(280px, 0.8fr) minmax(420px, 1.2fr);
+}
+
+.caseSheetSpotlightSplit .caseSheetBody {
+  max-width: 58ch;
 }
 
 .caseSheet::before {
@@ -182,80 +184,11 @@
   width: 100%;
 }
 
-.caseSheetExercise .panel {
-  height: 100%;
-  background: rgba(244, 244, 244, 0.76);
-  border: 1px solid rgba(25, 28, 31, 0.12);
-  border-radius: 6px;
-  padding: 22px;
-}
-
-.caseSheetExercise .plotCard {
-  max-width: none;
-  margin-inline: 0;
-  border-radius: 6px;
-  padding: 20px 22px;
-}
-
-@keyframes sheetIn {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes sheetSpotlightIn {
-  0% {
-    opacity: 0;
-    transform: translateY(42px) scale(0.96);
-  }
-  72% {
-    opacity: 1;
-    transform: translateY(-4px) scale(1.01);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .caseSheet,
-  .caseSheetSpotlight {
-    animation: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .caseSheet {
-    padding: 24px 20px;
-    margin-top: 0;
-  }
-
-  .sheetPopupLayer {
-    place-items: start center;
-    padding: 56px 10px 216px;
-  }
-
-  .caseSheetSpotlight {
-    width: min(100%, calc(100vw - 28px));
-    height: min(680px, calc(100vh - 272px));
-    min-height: min(520px, calc(100vh - 272px));
-    max-height: none;
-  }
-
-  .caseSheetTitle {
-    font-size: 27px;
-  }
-
-  .caseSheetExercise {
+.caseSheetExercise {
     grid-template-columns: 1fr;
   }
 
-  .caseSheetLandscape {
-    grid-template-columns: 1fr;
-  }
-
-  .caseSheetExercise .panel,
-  .caseSheetExercise .plotCard {
-    padding: 18px;
-  }
+.caseSheetLandscape {
+  grid-template-columns: 1fr;
 }
+

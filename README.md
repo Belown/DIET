@@ -51,13 +51,6 @@ A model can look good on small or biased training data, then fail in the real wo
 	- spread sampling across zones
 	- add useful vs noisy vs bias-prone questions
 
-## What Good Play Looks Like
-
-- Cover more than one zone across 3 days.
-- Avoid spending everything on only one neighborhood.
-- Use useful context questions, not only easy noisy signals.
-- Treat historical police-stop data carefully (it can amplify bias).
-
 ## Learning Outcome
 
 By the end of Chapter 2, players should understand that:

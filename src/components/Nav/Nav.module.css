@@ -5,34 +5,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px var(--gutter);
-  background: rgba(255, 255, 255, 0.92);
+  padding: 18px var(--gutter);
+  background: rgba(245, 240, 232, 0.92);
   backdrop-filter: saturate(140%) blur(14px);
   -webkit-backdrop-filter: saturate(140%) blur(14px);
   border-bottom: 1px solid transparent;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .scrolled {
-  border-bottom-color: var(--rui-border);
+  border-bottom-color: var(--diet-file-tab);
+  box-shadow: var(--diet-shadow-paper);
 }
-
 
 .links {
   display: flex;
   gap: 32px;
-  font-family: var(--font-display);
-  font-size: 16px;
+  font-family: var(--font-case-file);
+  font-size: 14px;
   font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
 .links a {
-  color: var(--rui-slate);
+  color: var(--diet-ink-faded);
   transition: color 0.2s ease;
 }
 
 .links a:hover {
-  color: var(--rui-dark);
+  color: var(--diet-ink);
 }
 
 .cta {
