@@ -1,5 +1,5 @@
-import { SCENE_AUDIO } from "../../../../../assets/audio/audio";
-import { SCENE_IMAGES } from "../../../../../assets/image/image";
+import { SCENE_AUDIO } from "../../../../assets/audio/audio";
+import { SCENE_IMAGES } from "../../../../assets/image/image";
 
 export type StoryScene = {
   image: string;

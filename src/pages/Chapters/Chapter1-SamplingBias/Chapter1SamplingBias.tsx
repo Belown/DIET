@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect } from "react";
+﻿import { useState, useMemo, useEffect } from "react";
 import type { CSSProperties } from "react";
 import { useSearchParams } from "react-router-dom";
 import styles from "./Chapter1SamplingBias.module.css";
-import { BoundaryExercise, BoundaryReveal, ChoiceList, DayReportPanel, MissionPlanner, NarrativeBox, StoryIntro, VerdictPanel } from "./components";
+import { BoundaryExercise, BoundaryReveal, ChoiceList, DayReportPanel, MissionPlanner, NarrativeBox, VerdictPanel } from "./components";
 import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
 import { portraits } from "../../../assets/detective/portraits";
-import { CHAPTER1_BACKGROUNDS} from "../../../assets/image/image";
+import { CHAPTER1_BACKGROUNDS } from "../../../assets/image/image";
 import type { PassageId, Choice } from "./passages";
 import { getAdaptivePassage } from "./adaptivePassages";
 import { accOf, calcMissionCost, DEMO_BOUNDARY_START, DEMO_FULL, DEMO_INIT, summarizeStrategy } from "./simulation";
@@ -52,18 +52,17 @@ const getPortraitForText = (text: string) => {
   return portraits.neutral;
 };
 
-const getChapterBackground = (passage: PassageId) => {
+const getChapterBackground = (passage: PassageId): string | null => {
   switch (passage) {
     case "day1-plan":
     case "day2-plan":
     case "day3-plan":
-      return CHAPTER1_BACKGROUNDS.cityMapTable;
+    case "verdict":
+      return null;
     case "day1-debrief":
     case "day2-debrief":
     case "day3-debrief":
       return CHAPTER1_BACKGROUNDS.dayReport;
-    case "verdict":
-      return CHAPTER1_BACKGROUNDS.modelTraining;
     case "intro":
     case "day1-brief":
     case "day2-brief":
@@ -75,7 +74,6 @@ const getChapterBackground = (passage: PassageId) => {
 
 export default function Chapter1SamplingBias() {
   const [, setSearchParams] = useSearchParams();
-  const [showStoryIntro, setShowStoryIntro] = useState(true);
   const [passage, setPassage] = useState<PassageId>("intro");
   const [chunkIndex, setChunkIndex] = useState(0);
   const [narrativeHistory, setNarrativeHistory] = useState<NarrativeLocation[]>([]);
@@ -251,7 +249,7 @@ export default function Chapter1SamplingBias() {
   const shouldForceOpenNarrative = chatboxBehavior === "open";
   const chapterBackground = getChapterBackground(passage);
   const phaseStyle = {
-    "--chapter-bg": `url(${chapterBackground})`,
+    "--chapter-bg": chapterBackground ? `url(${chapterBackground})` : "none",
   } as CSSProperties;
 
   const createInvestigationSnapshot = (): InvestigationSnapshot => ({
@@ -496,21 +494,6 @@ export default function Chapter1SamplingBias() {
         return null;
     }
   })();
-
-  if (showStoryIntro) {
-    return (
-      <div className={styles.phase}>
-        <div className={styles.scene}>
-          <div className={styles.sceneInner}>
-            <StoryIntro
-              onStart={() => setShowStoryIntro(false)}
-              onSelectChapter={(chapter) => setSearchParams({ chapter })}
-            />
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={`${styles.phase} ${styles.phaseWithBackground}`} style={phaseStyle}>

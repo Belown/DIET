@@ -4,9 +4,11 @@ import Logo from "../../components/Logo/Logo";
 import Chapter1SamplingBias from "./Chapter1-SamplingBias/Chapter1SamplingBias";
 import Chapter2COMPAS from "./Chapter2-COMPAS";
 import Chapter3Placeholder from "./Chapter3-Placeholder/Chapter3Placeholder";
+import StoryIntro from "./components/StoryIntro/StoryIntro";
 import styles from "./Chapters.module.css";
 
 type ChapterId = "ch1" | "ch2" | "ch3";
+type ActiveView = ChapterId | "intro";
 
 type ChapterMeta = {
   id: ChapterId;
@@ -28,23 +30,26 @@ const isChapterId = (value: string | null): value is ChapterId =>
 export default function Chapters() {
   const [searchParams, setSearchParams] = useSearchParams();
   const chapterParam = searchParams.get("chapter");
-  const initialChapter = isChapterId(chapterParam) ? chapterParam : "ch1";
-  const [active, setActive] = useState<ChapterId>(initialChapter);
+  const shouldShowIntro = searchParams.get("intro") === "story" || !chapterParam;
+  const initialView: ActiveView = shouldShowIntro ? "intro" : isChapterId(chapterParam) ? chapterParam : "ch1";
+  const [active, setActive] = useState<ActiveView>(initialView);
   const [timelineOpen, setTimelineOpen] = useState(false);
   const chromeRef = useRef<HTMLDivElement>(null);
 
-  const activeIndex = CHAPTERS.findIndex((c) => c.id === active);
-  const progress = ((activeIndex + 0.5) / CHAPTERS.length) * 100;
+  const activeIndex = active === "intro" ? -1 : CHAPTERS.findIndex((c) => c.id === active);
+  const progress = activeIndex < 0 ? 0 : ((activeIndex + 0.5) / CHAPTERS.length) * 100;
 
   useEffect(() => {
     const chapter = searchParams.get("chapter");
-    if (isChapterId(chapter) && chapter !== active) {
-      setActive(chapter);
-    }
+    const nextView: ActiveView =
+      searchParams.get("intro") === "story" || !chapter ? "intro" : isChapterId(chapter) ? chapter : "ch1";
+
+    if (nextView !== active) setActive(nextView);
   }, [active, searchParams]);
 
   const selectChapter = (chapter: ChapterId) => {
     setActive(chapter);
+    setTimelineOpen(false);
     setSearchParams({ chapter });
   };
 
@@ -144,11 +149,31 @@ export default function Chapters() {
 
       <main className={styles.canvas}>
         <div key={active} className={styles.canvasBody}>
+          {active === "intro" && (
+            <ChapterIntro
+              onStart={() => selectChapter("ch1")}
+              onSelectChapter={selectChapter}
+            />
+          )}
           {active === "ch1" && <Chapter1SamplingBias />}
           {active === "ch2" && <Chapter2COMPAS />}
           {active === "ch3" && <Chapter3Placeholder />}
         </div>
       </main>
     </div>
+  );
+}
+
+type ChapterIntroProps = {
+  onStart: () => void;
+  onSelectChapter: (chapter: ChapterId) => void;
+};
+
+function ChapterIntro({ onStart, onSelectChapter }: ChapterIntroProps) {
+  return (
+    <StoryIntro
+      onStart={onStart}
+      onSelectChapter={onSelectChapter}
+    />
   );
 }

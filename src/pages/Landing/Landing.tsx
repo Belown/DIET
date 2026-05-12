@@ -64,7 +64,7 @@ export default function Landing() {
               the wrong side.
             </p>
             <div className={styles.ctaRow}>
-              <Button variant="primary" to="/chapters?chapter=ch1" id="start">
+              <Button variant="primary" to="/chapters?intro=story" id="start">
                 Open case file
               </Button>
               <Button variant="outline" href="#how">
@@ -189,7 +189,7 @@ export default function Landing() {
           <p className={styles.cta_sub}>
             Open the simulator and see why one line can tell two different stories.
           </p>
-          <Button variant="primary" size="lg" to="/chapters?chapter=ch1">
+          <Button variant="primary" size="lg" to="/chapters?intro=story">
             Start investigation
           </Button>
         </section>

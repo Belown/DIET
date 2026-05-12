@@ -448,7 +448,7 @@ function FairnessActivity({ onRestart, onActivity3 }: { onRestart: () => void; o
 // ─── Main Component ────────────────────────────────────────────────────────────
 export default function RecidivismGame({ onComplete, onActivity1Complete }: { onComplete?: () => void; onActivity1Complete?: () => void }) {
   const [phase, setPhase]         = useState<GamePhase>("intro");
-  const [timerSecs, setTimerSecs] = useState(5);
+  const [timerSecs]              = useState(5);
   const [deck, setDeck]           = useState<Profile[]>([]);
   const [current, setCurrent]     = useState(0);
   const [choices, setChoices]     = useState<Record<number, RiskChoice>>({});

@@ -27,9 +27,7 @@ import routineIcon from "./routine.png";
 import phoneIcon from "./phone.png";
 import policeIcon from "./police.png";
 import chapter1CaseRoom from "./Chapter1/chapter1_case_room.png";
-import chapter1CityMapTable from "./Chapter1/chapter1_city_map_table.png";
 import chapter1DayReport from "./Chapter1/chapter1_day_report.png";
-import chapter1ModelTraining from "./Chapter1/chapter1_model_training.png";
 
 export const ZONE_VISUALS = [
   { icon: zone1icon, image: zone1image },
@@ -70,7 +68,5 @@ export const QUESTION_IMAGES = {
 
 export const CHAPTER1_BACKGROUNDS = {
   caseRoom: chapter1CaseRoom,
-  cityMapTable: chapter1CityMapTable,
   dayReport: chapter1DayReport,
-  modelTraining: chapter1ModelTraining,
 } as const;

@@ -59,6 +59,9 @@ BookPage.displayName = "BookPage";
 const FINAL_SCENE_INDEX = STORY_SCENES.length - 1;
 const LAST_BOOK_SCENE_INDEX = FINAL_SCENE_INDEX - 1;
 const BOOK_SCENES = STORY_SCENES.slice(0, FINAL_SCENE_INDEX);
+const BOOK_PAGE_ASPECT = 710 / 640;
+const MIN_PAGE_WIDTH = 260;
+const MAX_PAGE_WIDTH = 640;
 const getBookPageForScene = (index: number) => index * 2;
 
 export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps) {
@@ -67,6 +70,8 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   const [isFlipping, setIsFlipping] = useState(false);
   const [isNarrating, setIsNarrating] = useState(false);
   const [chapterPickerOpen, setChapterPickerOpen] = useState(false);
+  const [bookPageSize, setBookPageSize] = useState({ width: MAX_PAGE_WIDTH, height: Math.round(MAX_PAGE_WIDTH * BOOK_PAGE_ASPECT) });
+  const bookSpreadRef = useRef<HTMLDivElement | null>(null);
   const flipBookRef = useRef<FlipBookHandle | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioStartTokenRef = useRef(0);
@@ -76,6 +81,33 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   const scene = STORY_SCENES[sceneIndex];
   const isLast = sceneIndex === FINAL_SCENE_INDEX;
   const isLastBookScene = sceneIndex === LAST_BOOK_SCENE_INDEX;
+
+  useEffect(() => {
+    const spread = bookSpreadRef.current;
+    if (!spread) return;
+
+    const updateBookSize = () => {
+      const spreadWidth = spread.clientWidth;
+      const nextWidth = Math.max(MIN_PAGE_WIDTH, Math.min(MAX_PAGE_WIDTH, Math.floor(spreadWidth / 2)));
+      const nextHeight = Math.round(nextWidth * BOOK_PAGE_ASPECT);
+      setBookPageSize((current) => (
+        current.width === nextWidth && current.height === nextHeight
+          ? current
+          : { width: nextWidth, height: nextHeight }
+      ));
+    };
+
+    updateBookSize();
+
+    const resizeObserver = new ResizeObserver(updateBookSize);
+    resizeObserver.observe(spread);
+    window.addEventListener("resize", updateBookSize);
+
+    return () => {
+      resizeObserver.disconnect();
+      window.removeEventListener("resize", updateBookSize);
+    };
+  }, []);
 
   const clearSceneTimers = () => {
     if (typewriterTimerRef.current !== null) {
@@ -303,18 +335,19 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
             </button>
           </div>
 
-          <div className={styles.bookPageSpread}>
+          <div className={styles.bookPageSpread} ref={bookSpreadRef}>
             <div className={styles.clickOverlay} onClick={handleOverlayClick} aria-hidden="true" />
             <HTMLFlipBook
+              key={`${bookPageSize.width}-${bookPageSize.height}`}
               ref={flipBookRef}
               className={styles.flipBook}
               style={{}}
-              width={640}
-              height={710}
-              minWidth={300}
-              maxWidth={720}
-              minHeight={360}
-              maxHeight={820}
+              width={bookPageSize.width}
+              height={bookPageSize.height}
+              minWidth={MIN_PAGE_WIDTH}
+              maxWidth={bookPageSize.width}
+              minHeight={Math.round(MIN_PAGE_WIDTH * BOOK_PAGE_ASPECT)}
+              maxHeight={bookPageSize.height}
               size="stretch"
               startPage={0}
               drawShadow

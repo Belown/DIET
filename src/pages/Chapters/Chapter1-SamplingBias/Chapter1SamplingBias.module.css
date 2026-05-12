@@ -40,7 +40,7 @@
 }
 
 .scene {
-  padding: 20px clamp(12px, 2vw, 28px) 0px;
+  padding: 20px clamp(12px, 2vw, 28px) 60px;
   max-width: 1600px;
   margin: 0 auto;
 }
