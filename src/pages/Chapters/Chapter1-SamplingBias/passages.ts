@@ -17,6 +17,7 @@ export interface Passage {
   text?: string;
   chunks?: string[];
   choices?: Choice[];
+  chatbox?: "open" | "close";
 }
 
 export const PASSAGES: Record<PassageId, Passage> = {
@@ -72,6 +73,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "day1-plan": {
+    chatbox: "close",
     chunks: [
       "Design your Day 1 data collection strategy.",
       "Fixed government records give you Night Activity and Group Size for every resident.",
@@ -81,6 +83,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "day1-debrief": {
+    chatbox: "open",
     chunks: [
       "Day 1 complete. The detective returns with your first batch of data.",
       "The model is already getting smarter — but two days remain, and the budget resets each morning.",
@@ -103,11 +106,13 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "day2-plan": {
+    chatbox: "close",
     text: "Plan your Day 2 mission. Refine from yesterday: add new zones, shift distribution, or change your question set.",
     choices: [],
   },
 
   "day2-debrief": {
+    chatbox: "open",
     chunks: [
       "Day 2 complete. Two batches of field data are in.",
       "The model's picture of New Eden is sharpening — but gaps remain.",
@@ -131,6 +136,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "day3-plan": {
+    chatbox: "close",
     chunks: [
       "Final mission.",
       "Close the gaps.",
@@ -140,6 +146,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "day3-debrief": {
+    chatbox: "open",
     chunks: [
       "Three days. Three batches of field data.",
       "The detective stands down.",
@@ -149,6 +156,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "verdict": {
+    chatbox: "close",
     chunks: [
       "The model finishes training on your three-day dataset.",
       "Below are the accuracy scores — first for New Eden itself, then deployed to a neighboring city to test whether your approach travels.",

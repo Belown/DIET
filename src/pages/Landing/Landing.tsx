@@ -3,19 +3,16 @@ import Footer from "../../components/Footer/Footer";
 import Button from "../../components/Button/Button";
 import styles from "./Landing.module.css";
 
-// Definition of the data points for the hero section
 const GROUP_A: Array<[number, number]> = [
   [160, 190], [200, 170], [240, 150], [280, 135], [320, 120],
-  [360, 110], [400, 100], [440, 85],  [480, 75],  [520, 60],
-  [260, 185], [330, 155], [390, 135],
-  [220, 255], [350, 210],
+  [360, 110], [400, 100], [440, 85], [480, 75], [520, 60],
+  [260, 185], [330, 155], [390, 135], [220, 255], [350, 210],
 ];
 
 const GROUP_B: Array<[number, number]> = [
   [100, 295], [140, 275], [180, 260], [220, 250], [260, 230],
   [300, 215], [340, 200], [380, 180], [150, 310], [230, 290],
-  [290, 265], [420, 170], [460, 155],
-  [110, 245], [180, 225],
+  [290, 265], [420, 170], [460, 155], [110, 245], [180, 225],
 ];
 
 type Step = {
@@ -28,28 +25,28 @@ type Step = {
 const STEPS: Step[] = [
   {
     num: "01",
-    title: "Meet the data",
-    body: "Open the dataset and get to know 200 candidates. Spot the patterns, find your favorites, and see what your model is about to learn from.",
+    title: "Collect the evidence",
+    body: "Open the candidate records and inspect the population before the machine learns from it. Missing data is the first clue.",
     accent: "blue",
   },
   {
     num: "02",
-    title: "Draw the line",
-    body: "Sketch a decision boundary right on the scatter plot. Push your accuracy as high as you can — then watch how the same line tells two very different stories.",
+    title: "Draw the verdict line",
+    body: "Sketch a decision boundary, chase accuracy, then compare how the same line treats two groups with different histories.",
     accent: "pink",
   },
   {
     num: "03",
-    title: "Unlock the third axis",
-    body: "Push your accuracy even higher with 3D surface — and discover why a model can be 90% right and still intrinsically favor one group far more often than the other.",
+    title: "Interrogate the system",
+    body: "Unlock the hidden axis and watch why a model can look correct while still reproducing an unfair pattern.",
     accent: "teal",
   },
 ];
 
 const TAKEAWAYS = [
-  "A clear intuition for why Overall Accuracy and Equal Opportunity can point in opposite directions — and the math to back it up.",
-  "A felt understanding of why relying on a single feature quietly enforces inequality — and concrete ways to push back.",
-  "Questions you didn't have before. The good kind. The kind you bring to your next ML lecture.",
+  "A clear intuition for why Overall Accuracy and Equal Opportunity can point in opposite directions.",
+  "A felt understanding of why relying on a single feature can quietly enforce inequality.",
+  "A stronger habit of asking what evidence the model never got to see.",
 ];
 
 export default function Landing() {
@@ -57,22 +54,21 @@ export default function Landing() {
     <>
       <Nav />
       <main id="top">
-        {/* Hero Section */}
         <section className={styles.hero}>
           <div className={styles.text}>
-            <p className="eyebrow">A hands-on playground for AI bias</p>
-            <h1 className={styles.display}>
-              Can a line<br />be unfair?
-            </h1>
+            <p className="eyebrow">Case file: Novus algorithm division</p>
+            <h1 className={styles.display}>Detecting Bias</h1>
             <p className={styles.lede}>
-              Every model draws a line somewhere. Here, <em>you'll</em> draw it yourself — on real-looking CV data — and see who ends up on the other side.
+              The city trusts a machine to draw the line. You travel through
+              its data, interrogate its verdicts, and expose who disappears on
+              the wrong side.
             </p>
             <div className={styles.ctaRow}>
               <Button variant="primary" to="/chapters?chapter=ch1" id="start">
-                Start exploring
+                Open case file
               </Button>
               <Button variant="outline" href="#how">
-                How it works
+                Scan clues
               </Button>
             </div>
           </div>
@@ -80,69 +76,72 @@ export default function Landing() {
           <figure className={styles.viz} aria-labelledby="vizTitle">
             <svg viewBox="0 0 600 380" role="img" aria-labelledby="vizTitle">
               <title id="vizTitle">
-                A 2D decision boundary across two demographic groups
+                A machine verdict boundary across two demographic groups
               </title>
 
-              <line x1="60" y1="320" x2="560" y2="320" stroke="#c9c9cd" strokeWidth="1.5" />
-              <line x1="60" y1="40" x2="60" y2="320" stroke="#c9c9cd" strokeWidth="1.5" />
+              <line x1="60" y1="320" x2="560" y2="320" stroke="#1c2836" strokeWidth="1.5" />
+              <line x1="60" y1="40" x2="60" y2="320" stroke="#1c2836" strokeWidth="1.5" />
 
-              <text x="310" y="358" textAnchor="middle" fontSize="13" fill="#8d969e" fontFamily="Inter, sans-serif">
-                Technical Score →
+              <text x="310" y="358" textAnchor="middle" fontSize="13" fill="#8ba4b8" fontFamily="JetBrains Mono, Consolas, monospace">
+                TECHNICAL SCORE
               </text>
-              <text x="22" y="180" textAnchor="middle" fontSize="13" fill="#8d969e" fontFamily="Inter, sans-serif" transform="rotate(-90 22 180)">
-                Experience →
+              <text x="22" y="180" textAnchor="middle" fontSize="13" fill="#8ba4b8" fontFamily="JetBrains Mono, Consolas, monospace" transform="rotate(-90 22 180)">
+                EXPERIENCE
               </text>
 
               {GROUP_A.map(([cx, cy], i) => (
-                <circle key={`a-${i}`} cx={cx} cy={cy} r="7" fill="#494fdf" opacity="0.9" />
+                <circle key={`a-${i}`} cx={cx} cy={cy} r="7" fill="#5b9bd5" opacity="0.9" />
               ))}
               {GROUP_B.map(([cx, cy], i) => (
-                <circle key={`b-${i}`} cx={cx} cy={cy} r="7" fill="#e61e49" opacity="0.9" />
+                <circle key={`b-${i}`} cx={cx} cy={cy} r="7" fill="#b44cf0" opacity="0.9" />
               ))}
 
               <line
-                x1="95" y1="290" x2="540" y2="95"
-                stroke="#191c1f" strokeWidth="3"
-                strokeDasharray="8 8" strokeLinecap="round"
+                x1="95"
+                y1="290"
+                x2="540"
+                y2="95"
+                stroke="#ff3347"
+                strokeWidth="3"
+                strokeDasharray="8 8"
+                strokeLinecap="round"
                 className={styles.boundary}
               />
 
               <g transform="translate(430, 55)">
-                <rect x="-12" y="-8" width="140" height="58" rx="10" fill="#ffffff" stroke="#c9c9cd" strokeWidth="1" />
-                <circle cx="4" cy="10" r="6" fill="#494fdf" />
-                <text x="20" y="14" fontSize="13" fontWeight="500" fill="#191c1f" fontFamily="Inter, sans-serif">
+                <rect x="-12" y="-8" width="140" height="58" rx="2" fill="#141b22" stroke="#1c2836" strokeWidth="1" />
+                <circle cx="4" cy="10" r="6" fill="#5b9bd5" />
+                <text x="20" y="14" fontSize="13" fontWeight="500" fill="#dce6f0" fontFamily="JetBrains Mono, Consolas, monospace">
                   Group A
                 </text>
-                <circle cx="4" cy="32" r="6" fill="#e61e49" />
-                <text x="20" y="36" fontSize="13" fontWeight="500" fill="#191c1f" fontFamily="Inter, sans-serif">
+                <circle cx="4" cy="32" r="6" fill="#b44cf0" />
+                <text x="20" y="36" fontSize="13" fontWeight="500" fill="#dce6f0" fontFamily="JetBrains Mono, Consolas, monospace">
                   Group B
                 </text>
               </g>
             </svg>
             <figcaption className={styles.vizCaption}>
-              Find a line that's fair to both groups <em>and</em> accurate.
+              AI verdict boundary: accuracy hides the missing witness.
             </figcaption>
           </figure>
         </section>
 
-        {/* Concept Section */}
         <section className={styles.concept_section} id="concept">
           <div className={styles.concept_inner}>
-            <p className="eyebrow eyebrow--light">The short version</p>
-            <h2 className="section__title">
-              An accurate model isn't<br />the same thing as a fair one.
-            </h2>
+            <p className="eyebrow eyebrow--light">Machine transcript</p>
+            <h2 className="section__title">Accuracy is not<br />an alibi.</h2>
             <p className={styles.concept_lede}>
-              Your ML class probably frames models as math: loss functions, gradients, accuracy scores. This is the other half of the story — where those numbers land on actual people, and where two candidates with identical qualifications can walk away with very different outcomes. We'll show you, not tell you.
+              Loss functions, gradients, and accuracy scores can all look clean
+              while the case file underneath is contaminated. DIET turns that
+              hidden record into evidence you can test.
             </p>
           </div>
         </section>
 
-        {/* How Section */}
         <section className={styles.how_section} id="how">
-          <p className="eyebrow">Three things you'll do</p>
+          <p className="eyebrow">Three things you will do</p>
           <h2 className="section__title section__title--dark">
-            Three phases.<br />One manifold.
+            Three clues.<br />One buried truth.
           </h2>
 
           <div className={styles.how_cards}>
@@ -159,18 +158,18 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Audience Section */}
         <section className={styles.audience_section} id="audience">
-          <div className={styles.audience_left}>
+          <div>
             <p className="eyebrow">Why bother?</p>
             <h2 className={`section__title section__title--dark ${styles.audience_title}`}>
-              Because your<br />first model<br />won't be neutral.
+              Because your<br />first model<br />will not be neutral.
             </h2>
             <p className={styles.audience_sub}>
-              Built for CS and data science students who've been taught to chase accuracy, and are starting to wonder what that costs.
+              Built for CS and data science students who have been taught to
+              chase accuracy, and are starting to wonder what that costs.
             </p>
           </div>
-          <div className={styles.audience_right}>
+          <div>
             <ol className={styles.audience_goals}>
               {TAKEAWAYS.map((text, i) => (
                 <li key={i}>
@@ -184,15 +183,14 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* CTA Section */}
         <section className={styles.cta_section}>
-          <p className={`eyebrow ${styles.cta_eyebrow}`}>What about now</p>
-          <h2 className={styles.cta_title}>Curious yet?</h2>
+          <p className={`eyebrow ${styles.cta_eyebrow}`}>Case status</p>
+          <h2 className={styles.cta_title}>Evidence waiting.</h2>
           <p className={styles.cta_sub}>
-            Try out the sandbox, see why a line can tell 2 different stories.
+            Open the simulator and see why one line can tell two different stories.
           </p>
           <Button variant="primary" size="lg" to="/chapters?chapter=ch1">
-            Start exploring
+            Start investigation
           </Button>
         </section>
       </main>

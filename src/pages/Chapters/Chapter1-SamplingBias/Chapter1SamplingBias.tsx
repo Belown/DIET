@@ -1,10 +1,13 @@
-﻿import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
+import type { CSSProperties } from "react";
+import { useSearchParams } from "react-router-dom";
 import styles from "./Chapter1SamplingBias.module.css";
-import { BoundaryExercise, BoundaryReveal, ChoiceList, MissionPlanner, NarrativeBox, VerdictPanel } from "./components";
+import { BoundaryExercise, BoundaryReveal, ChoiceList, DayReportPanel, MissionPlanner, NarrativeBox, StoryIntro, VerdictPanel } from "./components";
 import { DAILY_BUDGET, QUESTION_OPTIONS } from "./chapterData";
 import { portraits } from "../../../assets/detective/portraits";
+import { CHAPTER1_BACKGROUNDS} from "../../../assets/image/image";
 import type { PassageId, Choice } from "./passages";
-import { PASSAGES } from "./passages";
+import { getAdaptivePassage } from "./adaptivePassages";
 import { accOf, calcMissionCost, DEMO_BOUNDARY_START, DEMO_FULL, DEMO_INIT, summarizeStrategy } from "./simulation";
 import type { DemoBoundary, MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "./types";
 
@@ -13,6 +16,19 @@ type NarrativeLocation = {
   chunkIndex: number;
   text: string;
   current?: boolean;
+  snapshot: InvestigationSnapshot;
+};
+
+type InvestigationSnapshot = {
+  currentDay: number;
+  dayPlans: MissionPlan[][];
+  dayLocked: boolean[];
+  planPopulation: PopulationOption;
+  planZones: boolean[];
+  planDistribution: number[];
+  planQuestions: QuestionKey[];
+  flavorRolls: Record<QuestionKey, number>;
+  demoBoundary: DemoBoundary;
 };
 
 const isSameNarrativeLocation = (a: NarrativeLocation, b: NarrativeLocation) =>
@@ -25,7 +41,7 @@ const getPortraitForText = (text: string) => {
   if (lower.includes("collapsed") || lower.includes("wrong") || lower.includes("coin flip")) return portraits.shocked;
   if (lower.includes("blind spots") || lower.includes("gaps remain") || lower.includes("no going back")) return portraits.worried;
   if (lower.includes("did you") || lower.includes("why?") || lower.includes("what to ask")) return portraits.confused;
-  if (lower.includes("suspect") || lower.includes("threat") || lower.includes("police")) return portraits.suspicious;
+  if (lower.includes("suspect") || lower.includes("threat") || lower.includes("police") || lower.includes("sampling bias") || lower.includes("accuracy") || lower.includes("data")) return portraits.suspicious;
   if (lower.includes("stands down") || lower.includes("little better")) return portraits.sad;
   if (lower.includes("getting smarter") || lower.includes("sharpening") || lower.includes("made a difference")) return portraits.happy;
   if (lower.includes("pick where") || lower.includes("add more") || lower.includes("adjust") || lower.includes("plan")) return portraits.encouraging;
@@ -36,7 +52,30 @@ const getPortraitForText = (text: string) => {
   return portraits.neutral;
 };
 
+const getChapterBackground = (passage: PassageId) => {
+  switch (passage) {
+    case "day1-plan":
+    case "day2-plan":
+    case "day3-plan":
+      return CHAPTER1_BACKGROUNDS.cityMapTable;
+    case "day1-debrief":
+    case "day2-debrief":
+    case "day3-debrief":
+      return CHAPTER1_BACKGROUNDS.dayReport;
+    case "verdict":
+      return CHAPTER1_BACKGROUNDS.modelTraining;
+    case "intro":
+    case "day1-brief":
+    case "day2-brief":
+    case "day3-brief":
+    default:
+      return CHAPTER1_BACKGROUNDS.caseRoom;
+  }
+};
+
 export default function Chapter1SamplingBias() {
+  const [, setSearchParams] = useSearchParams();
+  const [showStoryIntro, setShowStoryIntro] = useState(true);
   const [passage, setPassage] = useState<PassageId>("intro");
   const [chunkIndex, setChunkIndex] = useState(0);
   const [narrativeHistory, setNarrativeHistory] = useState<NarrativeLocation[]>([]);
@@ -54,7 +93,8 @@ export default function Chapter1SamplingBias() {
     "past-police-stops": 0,
   });
   const [isBoundarySheetOpen, setIsBoundarySheetOpen] = useState(false);
-  const [revealSheetMode, setRevealSheetMode] = useState<"hidden" | "spotlight" | "inline">("hidden");
+  const [revealSheetMode, setRevealSheetMode] = useState<"hidden" | "spotlight">("hidden");
+  const [hasSeenRevealSheet, setHasSeenRevealSheet] = useState(false);
 
   const strategy = useMemo(() => summarizeStrategy(dayPlans, dayLocked), [dayPlans, dayLocked]);
   const regionAccs = strategy.regionAccs;
@@ -80,8 +120,6 @@ export default function Chapter1SamplingBias() {
       return next;
     });
 
-  const toPoints = (fraction: number) => Math.max(0, Math.min(10, Math.round(fraction * 10)));
-
   const buildEqualDistribution = (zones: boolean[]) => {
     const next = [0, 0, 0, 0];
     const active = zones.map((on, i) => (on ? i : -1)).filter((idx) => idx >= 0);
@@ -93,64 +131,6 @@ export default function Chapter1SamplingBias() {
       if (remainder > 0) remainder -= 1;
     });
     return next;
-  };
-
-  const rebalanceWithTarget = (zones: boolean[], current: number[], targetIdx: number, targetPct: number) => {
-    const next = [0, 0, 0, 0];
-    const active = zones.map((on, i) => (on ? i : -1)).filter((idx) => idx >= 0);
-    if (!active.length) return next;
-    if (!active.includes(targetIdx)) return buildEqualDistribution(zones);
-    if (active.length === 1) {
-      next[targetIdx] = 1;
-      return next;
-    }
-
-    const targetPoints = Math.max(0, Math.min(10, Math.round(targetPct / 10)));
-    const remainingPoints = 10 - targetPoints;
-    const points = [0, 0, 0, 0];
-    active.forEach((idx) => { points[idx] = toPoints(current[idx]); });
-    points[targetIdx] = targetPoints;
-
-    const others = active.filter((idx) => idx !== targetIdx);
-    if (remainingPoints <= 0) {
-      others.forEach((idx) => { points[idx] = 0; });
-    } else {
-      const otherSum = others.reduce((s, idx) => s + points[idx], 0);
-      if (otherSum <= 0) {
-        const base = Math.floor(remainingPoints / others.length);
-        let rem = remainingPoints - base * others.length;
-        others.forEach((idx) => {
-          points[idx] = base + (rem > 0 ? 1 : 0);
-          if (rem > 0) rem -= 1;
-        });
-      } else {
-        const scaled = others.map((idx) => {
-          const value = (points[idx] / otherSum) * remainingPoints;
-          return { idx, floor: Math.floor(value), frac: value - Math.floor(value) };
-        });
-        let assigned = 0;
-        scaled.forEach((s) => {
-          points[s.idx] = s.floor;
-          assigned += s.floor;
-        });
-        let rem = remainingPoints - assigned;
-        scaled.sort((a, b) => b.frac - a.frac);
-        for (let i = 0; i < scaled.length && rem > 0; i += 1) {
-          points[scaled[i].idx] += 1;
-          rem -= 1;
-        }
-      }
-    }
-
-    active.forEach((idx) => {
-      next[idx] = points[idx] / 10;
-    });
-    return next;
-  };
-
-  const setDistributionForZone = (zoneIdx: number, value: number) => {
-    const snapped = Math.max(0, Math.min(100, Math.round(value / 10) * 10));
-    setPlanDistribution((prev) => rebalanceWithTarget(planZones, prev, zoneIdx, snapped));
   };
 
   const toggleQuestion = (key: QuestionKey, checked: boolean) => {
@@ -246,25 +226,77 @@ export default function Chapter1SamplingBias() {
     setShowChoices(false);
     setIsBoundarySheetOpen(false);
     setRevealSheetMode("hidden");
+    if (passage !== "demo-reveal") {
+      setHasSeenRevealSheet(false);
+    }
   }, [passage]);
 
   const passageChoices = useMemo((): Choice[] => {
-    return PASSAGES[passage].choices ?? [];
-  }, [passage]);
+    return getAdaptivePassage(passage, strategy).choices ?? [];
+  }, [passage, strategy]);
 
   const passageText = useMemo(() => {
-    const currentPassage = PASSAGES[passage];
+    const currentPassage = getAdaptivePassage(passage, strategy);
     return currentPassage.chunks?.[chunkIndex] ?? currentPassage.text ?? "";
-  }, [passage, chunkIndex]);
+  }, [passage, chunkIndex, strategy]);
   const portraitSrc = useMemo(() => getPortraitForText(passageText), [passageText]);
 
   const hasMoreChunks = useMemo(() => {
-    const chunks = PASSAGES[passage].chunks;
+    const chunks = getAdaptivePassage(passage, strategy).chunks;
     return Boolean(chunks && chunkIndex < chunks.length - 1);
-  }, [passage, chunkIndex]);
+  }, [passage, chunkIndex, strategy]);
+  const isSheetPopupOpen = isBoundarySheetOpen || revealSheetMode === "spotlight";
+  const chatboxBehavior = getAdaptivePassage(passage, strategy).chatbox;
+  const shouldAutoHidePlannerNarrative = chatboxBehavior === "close" && !hasMoreChunks;
+  const shouldForceOpenNarrative = chatboxBehavior === "open";
+  const chapterBackground = getChapterBackground(passage);
+  const phaseStyle = {
+    "--chapter-bg": `url(${chapterBackground})`,
+  } as CSSProperties;
+
+  const createInvestigationSnapshot = (): InvestigationSnapshot => ({
+    currentDay,
+    dayPlans: dayPlans.map((plans) => plans.map((plan) => ({
+      ...plan,
+      zones: [...plan.zones],
+      zoneDistribution: [...plan.zoneDistribution],
+      questions: [...plan.questions],
+      flavorLines: { ...plan.flavorLines },
+    }))),
+    dayLocked: [...dayLocked],
+    planPopulation,
+    planZones: [...planZones],
+    planDistribution: [...planDistribution],
+    planQuestions: [...planQuestions],
+    flavorRolls: { ...flavorRolls },
+    demoBoundary: { ...demoBoundary },
+  });
+
+  const restoreInvestigationSnapshot = (snapshot: InvestigationSnapshot) => {
+    setCurrentDay(snapshot.currentDay);
+    setDayPlans(snapshot.dayPlans.map((plans) => plans.map((plan) => ({
+      ...plan,
+      zones: [...plan.zones],
+      zoneDistribution: [...plan.zoneDistribution],
+      questions: [...plan.questions],
+      flavorLines: { ...plan.flavorLines },
+    }))));
+    setDayLocked([...snapshot.dayLocked]);
+    setPlanPopulation(snapshot.planPopulation);
+    setPlanZones([...snapshot.planZones]);
+    setPlanDistribution([...snapshot.planDistribution]);
+    setPlanQuestions([...snapshot.planQuestions]);
+    setFlavorRolls({ ...snapshot.flavorRolls });
+    setDemoBoundary({ ...snapshot.demoBoundary });
+  };
 
   const rememberCurrentChat = () => {
-    const currentLocation = { passage, chunkIndex, text: passageText };
+    const currentLocation: NarrativeLocation = {
+      passage,
+      chunkIndex,
+      text: passageText,
+      snapshot: createInvestigationSnapshot(),
+    };
     setNarrativeHistory((prev) => {
       if (prev.some((item) => isSameNarrativeLocation(item, currentLocation))) return prev;
       return [...prev, currentLocation];
@@ -272,12 +304,18 @@ export default function Chapter1SamplingBias() {
   };
 
   const dialogueHistory = useMemo(() => {
-    const currentLocation: NarrativeLocation = { passage, chunkIndex, text: passageText };
+    const currentLocation: NarrativeLocation = {
+      passage,
+      chunkIndex,
+      text: passageText,
+      snapshot: createInvestigationSnapshot(),
+    };
     const hasCurrent = narrativeHistory.some((item) => isSameNarrativeLocation(item, currentLocation));
     const history = hasCurrent ? narrativeHistory : [...narrativeHistory, currentLocation];
 
     return history.map((item) => ({
       ...item,
+      passageId: item.passage,
       current: isSameNarrativeLocation(item, currentLocation),
     }));
   }, [chunkIndex, narrativeHistory, passage, passageText]);
@@ -285,6 +323,7 @@ export default function Chapter1SamplingBias() {
   const handleHistorySelect = (index: number) => {
     const selected = dialogueHistory[index];
     if (!selected || selected.current) return;
+    restoreInvestigationSnapshot(selected.snapshot);
     setPassage(selected.passage);
     setChunkIndex(selected.chunkIndex);
     setShowChoices(false);
@@ -296,7 +335,7 @@ export default function Chapter1SamplingBias() {
       return;
     }
 
-    if (passage === "demo-reveal" && revealSheetMode === "hidden") {
+    if (passage === "demo-reveal" && chunkIndex > 0 && !hasSeenRevealSheet && revealSheetMode === "hidden") {
       setRevealSheetMode("spotlight");
       return;
     }
@@ -318,9 +357,34 @@ export default function Chapter1SamplingBias() {
     }
   };
 
+  const closeRevealSheetAndAdvance = () => {
+    if (passage !== "demo-reveal") {
+      setRevealSheetMode("hidden");
+      return;
+    }
+
+    setRevealSheetMode("hidden");
+    setHasSeenRevealSheet(true);
+
+    if (hasMoreChunks) {
+      rememberCurrentChat();
+      setChunkIndex((idx) => idx + 1);
+      return;
+    }
+
+    if (passageChoices.length === 1) {
+      const c = passageChoices[0];
+      c.action?.();
+      rememberCurrentChat();
+      setPassage(c.nextPassage);
+      setChunkIndex(0);
+    }
+  };
+
   const submitBoundaryExercise = () => {
     if (passage !== "demo-intro") return;
     rememberCurrentChat();
+    setHasSeenRevealSheet(false);
     setPassage("demo-reveal");
     setChunkIndex(0);
   };
@@ -366,7 +430,7 @@ export default function Chapter1SamplingBias() {
           <BoundaryReveal
             boundary={demoBoundary}
             spotlight={revealSheetMode === "spotlight"}
-            onReturnToPage={() => setRevealSheetMode("inline")}
+            onReturnToPage={closeRevealSheetAndAdvance}
             realWorldAccuracy={pct(demoFullAcc)}
             trainingAccuracy={pct(demoTrainAcc)}
           />
@@ -385,7 +449,6 @@ export default function Chapter1SamplingBias() {
             remainToday={remainToday}
             planPopulation={planPopulation}
             planZones={planZones}
-            planDistribution={planDistribution}
             planQuestions={planQuestions}
             selectedQuestionInfos={selectedQuestionInfos}
             zoneCount={zoneCount}
@@ -393,13 +456,21 @@ export default function Chapter1SamplingBias() {
             canAddPlan={canAddPlan}
             togglePlanZone={togglePlanZone}
             setPlanPopulation={setPlanPopulation}
-            setDistributionForZone={setDistributionForZone}
             toggleQuestion={toggleQuestion}
             addPlan={addPlan}
             removePlan={removePlan}
             sendDetectiveAndAdvance={sendDetectiveAndAdvance}
           />
         );
+
+      case "day1-debrief":
+        return <DayReportPanel dayNumber={1} overallAcc={overallAcc} regionAccs={regionAccs} sampledFlags={strategy.sampledFlags} />;
+
+      case "day2-debrief":
+        return <DayReportPanel dayNumber={2} overallAcc={overallAcc} regionAccs={regionAccs} sampledFlags={strategy.sampledFlags} />;
+
+      case "day3-debrief":
+        return <DayReportPanel dayNumber={3} overallAcc={overallAcc} regionAccs={regionAccs} sampledFlags={strategy.sampledFlags} />;
 
       case "verdict":
         return (
@@ -415,6 +486,9 @@ export default function Chapter1SamplingBias() {
               resetInvestigation();
               setPassage("day1-brief");
             }}
+            onNextChapter={() => {
+              setSearchParams({ chapter: "ch2" });
+            }}
           />
         );
 
@@ -423,8 +497,23 @@ export default function Chapter1SamplingBias() {
     }
   })();
 
+  if (showStoryIntro) {
+    return (
+      <div className={styles.phase}>
+        <div className={styles.scene}>
+          <div className={styles.sceneInner}>
+            <StoryIntro
+              onStart={() => setShowStoryIntro(false)}
+              onSelectChapter={(chapter) => setSearchParams({ chapter })}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.phase}>
+    <div className={`${styles.phase} ${styles.phaseWithBackground}`} style={phaseStyle}>
 
       <div className={styles.scene}>
         <div className={styles.sceneInner}>
@@ -438,6 +527,9 @@ export default function Chapter1SamplingBias() {
         history={dialogueHistory}
         onHistorySelect={handleHistorySelect}
         onAdvance={handleAdvance}
+        autoCollapseOnTextComplete={shouldAutoHidePlannerNarrative}
+        disableKeyboardAdvance={isSheetPopupOpen}
+        forceOpen={shouldForceOpenNarrative}
       />
 
       {showChoices && passageChoices.length > 1 && (

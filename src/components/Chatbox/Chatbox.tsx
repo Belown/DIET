@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import historyIcon from "../../assets/svgs/history-icon.svg";
 import styles from "./Chatbox.module.css";
 
@@ -8,15 +8,22 @@ export interface ChatboxProps {
   history?: DialogueHistoryItem[];
   onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
+  onTextComplete?: () => void;
+  autoCollapseOnTextComplete?: boolean;
   speakerName?: string;
+  disableKeyboardAdvance?: boolean;
+  disablePreviousNavigation?: boolean;
+  forceOpen?: boolean;
 }
 
 export interface DialogueHistoryItem {
   text: string;
   current?: boolean;
+  passageId?: string;
 }
 
 const CHAR_SPEED = 25;
+const SHEET_HISTORY_MARKER_TEXT = "Read the sheet carefully. Then draw the best boundary you can.";
 
 export default function Chatbox({
   text,
@@ -24,13 +31,75 @@ export default function Chatbox({
   history = [],
   onHistorySelect,
   onAdvance,
+  onTextComplete,
+  autoCollapseOnTextComplete = false,
   speakerName = "Detective",
+  disableKeyboardAdvance = false,
+  disablePreviousNavigation = false,
+  forceOpen = false,
 }: ChatboxProps) {
   const [displayedLength, setDisplayedLength] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [openHistoryGroups, setOpenHistoryGroups] = useState<Record<string, boolean>>({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const hasReportedCompleteRef = useRef(false);
+  const wasAutoCollapsedRef = useRef(false);
+  const historyGroupRefs = useRef<Record<string, HTMLElement | null>>({});
   const hasPastDialogue = history.some((item) => !item.current);
+  const currentHistoryItem = history.find((item) => item.current);
+  const currentHistoryGroupId = currentHistoryItem?.passageId ?? "dialogue";
+
+  const historyGroups = useMemo(() => {
+    return history.reduce<Array<{ id: string; label: string; items: Array<DialogueHistoryItem & { index: number }> }>>(
+      (groups, item, index) => {
+        const id = item.passageId ?? "dialogue";
+        const existingGroup = groups.find((group) => group.id === id);
+
+        if (existingGroup) {
+          existingGroup.items.push({ ...item, index });
+          return groups;
+        }
+
+        groups.push({
+          id,
+          label: item.passageId ?? "Dialogue",
+          items: [{ ...item, index }],
+        });
+        return groups;
+      },
+      []
+    );
+  }, [history]);
+
+  const isHistoryGroupOpen = (id: string) => openHistoryGroups[id] ?? true;
+
+  const toggleHistoryGroup = (id: string) => {
+    setOpenHistoryGroups((prev) => ({
+      ...prev,
+      [id]: !(prev[id] ?? true),
+    }));
+  };
+
+  useEffect(() => {
+    if (!isHistoryOpen || !currentHistoryGroupId) return;
+
+    setOpenHistoryGroups((prev) => {
+      if (prev[currentHistoryGroupId] ?? true) return prev;
+      return { ...prev, [currentHistoryGroupId]: true };
+    });
+
+    window.requestAnimationFrame(() => {
+      historyGroupRefs.current[currentHistoryGroupId]?.scrollIntoView({ block: "start" });
+    });
+  }, [currentHistoryGroupId, isHistoryOpen]);
+
+  const reportComplete = useCallback(() => {
+    if (hasReportedCompleteRef.current) return;
+    hasReportedCompleteRef.current = true;
+    onTextComplete?.();
+  }, [onTextComplete]);
 
   const complete = useCallback(() => {
     if (timerRef.current) {
@@ -39,15 +108,22 @@ export default function Chatbox({
     }
     setDisplayedLength(text.length);
     setIsComplete(true);
-  }, [text.length]);
+    reportComplete();
+  }, [reportComplete, text.length]);
 
   useEffect(() => {
     setDisplayedLength(0);
     setIsComplete(false);
     setIsHistoryOpen(false);
+    hasReportedCompleteRef.current = false;
+    if (wasAutoCollapsedRef.current && !autoCollapseOnTextComplete) {
+      wasAutoCollapsedRef.current = false;
+      setIsCollapsed(false);
+    }
 
     if (!text.length) {
       setIsComplete(true);
+      reportComplete();
       return;
     }
 
@@ -60,6 +136,7 @@ export default function Chatbox({
             timerRef.current = null;
           }
           setIsComplete(true);
+          reportComplete();
           return text.length;
         }
         return next;
@@ -72,11 +149,37 @@ export default function Chatbox({
         timerRef.current = null;
       }
     };
-  }, [text]);
+  }, [reportComplete, text]);
+
+  useEffect(() => {
+    if (!forceOpen) return;
+    wasAutoCollapsedRef.current = false;
+    setIsCollapsed(false);
+  }, [forceOpen, text]);
+
+  useEffect(() => {
+    if (!autoCollapseOnTextComplete || !isComplete || isCollapsed || forceOpen) return;
+
+    const handleWindowClick = () => {
+      wasAutoCollapsedRef.current = true;
+      setIsCollapsed(true);
+    };
+
+    window.addEventListener("click", handleWindowClick);
+    return () => window.removeEventListener("click", handleWindowClick);
+  }, [autoCollapseOnTextComplete, forceOpen, isCollapsed, isComplete, text]);
 
   const handleClick = () => {
+    if (isCollapsed) return;
+
     if (!isComplete) {
       complete();
+      return;
+    }
+
+    if (autoCollapseOnTextComplete) {
+      wasAutoCollapsedRef.current = true;
+      setIsCollapsed(true);
     } else {
       onAdvance?.();
     }
@@ -84,7 +187,7 @@ export default function Chatbox({
 
   const handleAdvanceClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    onAdvance?.();
+    handleClick();
   };
 
   const handleHistoryClick = (e: React.MouseEvent) => {
@@ -92,16 +195,37 @@ export default function Chatbox({
     setIsHistoryOpen((prev) => !prev);
   };
 
+  const handleCollapseClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    wasAutoCollapsedRef.current = false;
+    setIsCollapsed(true);
+  };
+
+  const handleOpenClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    wasAutoCollapsedRef.current = false;
+    setIsCollapsed(false);
+  };
+
   const handleHistorySelect = (index: number) => {
     setIsHistoryOpen(false);
+    if (disablePreviousNavigation) return;
     if (!history[index]?.current) {
       onHistorySelect?.(index);
     }
   };
 
+  const navigateToPreviousHistory = () => {
+    if (disablePreviousNavigation) return;
+    const currentIndex = history.findIndex((item) => item.current);
+    if (currentIndex <= 0) return;
+
+    onHistorySelect?.(currentIndex - 1);
+  };
+
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.code !== "Space" || isHistoryOpen) return;
+      if (!["ArrowRight", "ArrowLeft"].includes(event.code) || isCollapsed || isHistoryOpen || disableKeyboardAdvance) return;
       if (event.ctrlKey || event.altKey || event.metaKey) return;
 
       const target = event.target;
@@ -113,12 +237,16 @@ export default function Chatbox({
       }
 
       event.preventDefault();
-      handleClick();
+      if (event.code === "ArrowRight") {
+        handleClick();
+      } else {
+        navigateToPreviousHistory();
+      }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [complete, isComplete, isHistoryOpen, onAdvance]);
+  }, [complete, disableKeyboardAdvance, disablePreviousNavigation, history, isCollapsed, isComplete, isHistoryOpen, onAdvance, onHistorySelect]);
 
   return (
     <>
@@ -145,24 +273,73 @@ export default function Chatbox({
               </button>
             </div>
             <div className={styles.historyTranscript}>
-              {history.map((item, index) => (
-                <button
-                  type="button"
-                  className={styles.historyLine}
-                  key={`${index}-${item.text.slice(0, 24)}`}
-                  onClick={() => handleHistorySelect(index)}
-                  disabled={item.current}
-                >
-                  <span className={styles.speaker}>{speakerName}</span>
-                  <span className={styles.historyText}>{item.text}</span>
-                </button>
-              ))}
+              {historyGroups.map((group) => {
+                const isOpen = isHistoryGroupOpen(group.id);
+
+                return (
+                  <section
+                    className={styles.historyGroup}
+                    key={group.id}
+                    ref={(element) => {
+                      historyGroupRefs.current[group.id] = element;
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className={styles.historyGroupToggle}
+                      onClick={() => toggleHistoryGroup(group.id)}
+                      aria-expanded={isOpen}
+                    >
+                      <span className={styles.historyGroupIcon} aria-hidden="true">
+                        {isOpen ? "-" : "+"}
+                      </span>
+                      <span className={styles.historyGroupLabel}>{group.label}</span>
+                      <span className={styles.historyGroupCount}>{group.items.length}</span>
+                    </button>
+
+                    {isOpen && (
+                      <div className={styles.historyGroupList}>
+                        {group.items.map((item) => (
+                          <button
+                            type="button"
+                            className={`${styles.historyLine}${item.current ? ` ${styles.historyLineCurrent}` : ""}`}
+                            key={`${item.index}-${item.text.slice(0, 24)}`}
+                            onClick={() => handleHistorySelect(item.index)}
+                            disabled={item.current || disablePreviousNavigation}
+                          >
+                            <span className={styles.speaker}>{speakerName}</span>
+                            <span className={styles.historyText}>
+                              {item.text === SHEET_HISTORY_MARKER_TEXT && (
+                                <span className={styles.historySheetMarker} aria-label="Sheet passage">
+                                  📋
+                                </span>
+                              )}
+                              {item.text}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </section>
+                );
+              })}
             </div>
           </div>
         </div>
       )}
-      <div className={styles.chatbox} onClick={handleClick} role="region" aria-label="Narrative">
+      <div
+        className={`${styles.chatbox} ${isCollapsed ? styles.chatboxCollapsed : ""}`}
+        onClick={handleClick}
+        role="region"
+        aria-label={isCollapsed ? "Narrative collapsed" : "Narrative"}
+      >
         <div className={styles.namePlate}>{speakerName}</div>
+        <button type="button" className={styles.openChatboxBtn} onClick={handleOpenClick} aria-label="Open narrative">
+          Open
+        </button>
+        <button type="button" className={styles.hideBtn} onClick={handleCollapseClick} aria-label="Hide narrative">
+          Hide
+        </button>
         <div className={styles.chatboxInner}>
           <div className={styles.portraitFrame} aria-hidden="true">
             <img src={portraitSrc} alt="" className={styles.portrait} />
@@ -171,7 +348,7 @@ export default function Chatbox({
             {text.slice(0, displayedLength)}
             {!isComplete && <span className={styles.cursor} aria-hidden="true" />}
           </p>
-          {(hasPastDialogue || isComplete) && (
+          {(hasPastDialogue || text.length > 0) && (
             <div className={styles.navControls}>
               {hasPastDialogue && (
                 <button
@@ -184,7 +361,7 @@ export default function Chatbox({
                   <img src={historyIcon} alt="" className={styles.historyIcon} aria-hidden="true" />
                 </button>
               )}
-              {isComplete && (
+              {text.length > 0 && (
                 <button type="button" className={styles.navBtn} onClick={handleAdvanceClick} aria-label="Advance">
                   {">"}
                 </button>

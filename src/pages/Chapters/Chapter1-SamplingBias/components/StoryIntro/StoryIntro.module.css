@@ -1,0 +1,864 @@
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=IM+Fell+English:ital@0;1&family=Spectral:wght@400;500;600&display=swap");
+
+.root {
+  padding: 0;
+}
+
+.bookShell {
+  position: relative;
+  width: 75em;
+  margin: 0 auto;
+  padding: clamp(18px, 2.4vw, 30px);
+  border: 1px solid rgba(28, 43, 64, 0.12);
+  border-radius: 8px;
+  background:
+    linear-gradient(90deg, rgba(8, 18, 33, 0.07) 0, rgba(8, 18, 33, 0) 7%, rgba(8, 18, 33, 0) 93%, rgba(8, 18, 33, 0.06) 100%),
+    radial-gradient(100% 82% at 14% 14%, rgba(92, 142, 210, 0.16) 0%, rgba(92, 142, 210, 0) 48%),
+    linear-gradient(135deg, #f8f6ef 0%, #ede7d8 48%, #f8f4e9 100%);
+  box-shadow:
+    0 24px 70px rgba(17, 27, 43, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  overflow: hidden;
+}
+
+.bookShell::before {
+  content: "";
+  position: absolute;
+  inset: 10px;
+  z-index: 0;
+  border: 1px solid rgba(75, 58, 38, 0.11);
+  border-radius: 6px;
+  pointer-events: none;
+}
+
+.bookShell::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, transparent 0 49.5%, rgba(65, 45, 28, 0.14) 49.86%, rgba(255, 255, 255, 0.34) 50.18%, transparent 50.55%),
+    radial-gradient(80% 80% at 50% 50%, rgba(255, 255, 255, 0) 48%, rgba(54, 34, 16, 0.08) 100%);
+}
+
+.storyControls {
+  position: relative;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: clamp(14px, 1.8vw, 22px);
+}
+
+.progressDots {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  border: 1px solid rgba(70, 51, 31, 0.13);
+  border-radius: 999px;
+  background: rgba(255, 252, 244, 0.66);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.progressDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(70, 51, 31, 0.24);
+  transition: transform 0.22s ease, background 0.22s ease;
+}
+
+.progressDotActive {
+  background: #234fc4;
+  transform: scale(1.35);
+}
+
+.skipBtn {
+  position: relative;
+  z-index: 3;
+  appearance: none;
+  border: 1px solid rgba(50, 42, 31, 0.18);
+  border-radius: 999px;
+  padding: 8px 16px;
+  background: rgba(255, 252, 244, 0.78);
+  color: #2e2a24;
+  font-family: "Cormorant Garamond", "Spectral", Georgia, serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(18, 28, 44, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.72);
+}
+
+.skipBtn:hover {
+  background: rgba(255, 252, 244, 0.96);
+}
+
+.bookPageSpread {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  justify-content: center;
+  cursor: pointer;
+  overflow: visible;
+}
+
+.clickOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: transparent;
+}
+
+.flipBook {
+  position: relative;
+  z-index: 4;
+  width: min(100%, 1280px);
+  margin: 0 auto;
+  overflow: visible;
+}
+
+.flipPage {
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+  background: #fbf4e4;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  isolation: isolate;
+}
+
+.leftPage,
+.rightPage {
+  border-radius: 6px;
+}
+
+.leftPage {
+  overflow: hidden;
+  background:
+    transparent;
+  box-shadow: 0 16px 34px rgba(26, 31, 41, 0.12);
+  display: grid;
+  place-items: center;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 610px;
+  max-height: 760px;
+  object-fit: contain;
+  object-position: center;
+}
+
+.rightPage {
+  position: relative;
+  text-align: left;
+  background:
+    linear-gradient(90deg, rgba(70, 42, 20, 0.11), rgba(70, 42, 20, 0) 11%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 251, 239, 0.5)),
+    #fbf4e4;
+  padding: clamp(28px, 3.2vw, 46px);
+  cursor: inherit;
+  overflow: hidden;
+  border: 1px solid rgba(64, 45, 24, 0.16);
+  box-shadow:
+    0 16px 34px rgba(26, 31, 41, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.74);
+  display: flex;
+  flex-direction: column;
+}
+
+.rightPage::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px solid rgba(77, 54, 27, 0.11);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.rightPage::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 58px;
+  height: 58px;
+  background:
+    linear-gradient(135deg, rgba(145, 118, 82, 0), rgba(145, 118, 82, 0.2)),
+    linear-gradient(135deg, transparent 50%, rgba(255, 255, 255, 0.54) 50%);
+  opacity: 0.58;
+  pointer-events: none;
+  transition: width 0.24s ease, height 0.24s ease, opacity 0.24s ease;
+}
+
+.rightPageTurning {
+  animation: pageSurfaceTurn 0.72s cubic-bezier(0.16, 0.78, 0.24, 1) both;
+}
+
+.rightPageTurning .sceneKicker,
+.rightPageTurning .textViewport,
+.rightPageTurning .pageTurnCue {
+  animation: pageInkFade 0.42s ease both;
+}
+
+.turningPageBack,
+.turningPageShadow {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.turningPageBack {
+  z-index: 5;
+  border-radius: inherit;
+  transform-origin: left center;
+  transform: perspective(1400px) rotateY(0deg);
+  background:
+    linear-gradient(90deg, rgba(55, 33, 16, 0.22), rgba(55, 33, 16, 0.04) 18%, rgba(255, 255, 255, 0.24) 52%, rgba(68, 42, 20, 0.2) 100%),
+    repeating-linear-gradient(90deg, rgba(73, 48, 22, 0.035) 0 1px, rgba(255, 255, 255, 0) 1px 5px),
+    #f4ead6;
+  box-shadow:
+    -26px 0 34px rgba(45, 31, 19, 0),
+    inset 22px 0 24px rgba(65, 42, 24, 0.18),
+    inset -18px 0 22px rgba(255, 255, 255, 0.42);
+}
+
+.turningPageBack::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(96deg, rgba(255, 255, 255, 0) 0 44%, rgba(255, 255, 255, 0.62) 52%, rgba(255, 255, 255, 0) 64%),
+    radial-gradient(90% 120% at 100% 50%, rgba(75, 43, 18, 0.22), rgba(75, 43, 18, 0) 58%);
+  opacity: 0;
+}
+
+.turningPageShadow {
+  z-index: 4;
+  transform-origin: left center;
+  background:
+    linear-gradient(90deg, rgba(34, 21, 12, 0.34), rgba(34, 21, 12, 0.05) 46%, rgba(34, 21, 12, 0) 70%);
+  filter: blur(9px);
+  transform: translateX(-4px) scaleX(0.2);
+}
+
+.rightPageTurning .turningPageBack {
+  animation: turningPageBack 0.72s cubic-bezier(0.16, 0.78, 0.24, 1) both;
+}
+
+.rightPageTurning .turningPageBack::before {
+  animation: pageSheen 0.72s cubic-bezier(0.16, 0.78, 0.24, 1) both;
+}
+
+.rightPageTurning .turningPageShadow {
+  animation: turningPageShadow 0.72s cubic-bezier(0.16, 0.78, 0.24, 1) both;
+}
+
+@keyframes pageSurfaceTurn {
+  0% {
+    transform: perspective(1400px) rotateY(0deg) skewY(0deg);
+    filter: brightness(1);
+  }
+  34% {
+    transform: perspective(1400px) rotateY(-18deg) skewY(-0.6deg);
+    filter: brightness(0.98);
+  }
+  68% {
+    transform: perspective(1400px) rotateY(-58deg) skewY(-1.3deg);
+    filter: brightness(0.86);
+  }
+  100% {
+    transform: perspective(1400px) rotateY(-96deg) skewY(-1.6deg);
+    filter: brightness(0.74);
+  }
+}
+
+@keyframes turningPageBack {
+  0% {
+    opacity: 0;
+    transform: perspective(1400px) rotateY(0deg) translateX(0) scaleX(1);
+    box-shadow:
+      -8px 0 16px rgba(45, 31, 19, 0),
+      inset 22px 0 24px rgba(65, 42, 24, 0.1),
+      inset -18px 0 22px rgba(255, 255, 255, 0.26);
+  }
+  18% {
+    opacity: 0.96;
+  }
+  48% {
+    opacity: 1;
+    transform: perspective(1400px) rotateY(-42deg) translateX(-1.4%) scaleX(0.96);
+    box-shadow:
+      -20px 0 28px rgba(45, 31, 19, 0.18),
+      inset 28px 0 30px rgba(65, 42, 24, 0.24),
+      inset -22px 0 30px rgba(255, 255, 255, 0.36);
+  }
+  76% {
+    opacity: 0.96;
+    transform: perspective(1400px) rotateY(-112deg) translateX(-3%) scaleX(0.92);
+    box-shadow:
+      -36px 0 38px rgba(45, 31, 19, 0.24),
+      inset 34px 0 38px rgba(65, 42, 24, 0.34),
+      inset -18px 0 28px rgba(255, 255, 255, 0.22);
+  }
+  100% {
+    opacity: 0;
+    transform: perspective(1400px) rotateY(-178deg) translateX(-5%) scaleX(0.9);
+    box-shadow:
+      -46px 0 48px rgba(45, 31, 19, 0),
+      inset 36px 0 42px rgba(65, 42, 24, 0.34),
+      inset -18px 0 28px rgba(255, 255, 255, 0.16);
+  }
+}
+
+@keyframes turningPageShadow {
+  0% {
+    opacity: 0;
+    transform: translateX(0) scaleX(0.16);
+  }
+  30% {
+    opacity: 0.3;
+    transform: translateX(-14%) scaleX(0.42);
+  }
+  65% {
+    opacity: 0.42;
+    transform: translateX(-40%) scaleX(0.74);
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(-62%) scaleX(0.92);
+  }
+}
+
+@keyframes pageSheen {
+  0% { opacity: 0; transform: translateX(30%); }
+  30% { opacity: 0.7; transform: translateX(8%); }
+  58% { opacity: 0.42; transform: translateX(-18%); }
+  100% { opacity: 0; transform: translateX(-40%); }
+}
+
+@keyframes pageInkFade {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0.12; transform: translateX(-18px); }
+}
+
+.captionTextTyped {
+  margin: 0;
+  white-space: pre-wrap;
+  font-size: clamp(18px, 1.38vw, 24px);
+  line-height: 1.58;
+  color: #3b2b1f;
+  font-family: "IM Fell English", "Spectral", Georgia, serif;
+}
+
+.textViewport {
+  position: relative;
+  padding-right: clamp(2px, 1vw, 18px);
+  min-height: 0;
+}
+
+.sceneKicker {
+  display: block;
+  margin: 0 0 clamp(18px, 2vw, 28px);
+  font-family: "Cormorant Garamond", "Spectral", Georgia, serif;
+  font-size: clamp(18px, 1.35vw, 24px);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #234fc4;
+}
+
+.captionTextTyped {
+  position: relative;
+  z-index: 1;
+}
+
+.pageTurnCue {
+  position: absolute;
+  right: clamp(24px, 3vw, 42px);
+  bottom: clamp(22px, 2.6vw, 36px);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(57, 44, 29, 0.34);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.24s ease, transform 0.24s ease, color 0.24s ease;
+}
+
+.pageTurnCueReady {
+  opacity: 1;
+  transform: translateX(0);
+  color: #234fc4;
+  animation: cuePulse 1.35s ease-in-out infinite;
+}
+
+.pageTurnLine {
+  width: 34px;
+  height: 1px;
+  background: currentColor;
+}
+
+.pageTurnArrow {
+  font-family: "Cormorant Garamond", "Spectral", Georgia, serif;
+  font-size: 28px;
+  line-height: 1;
+}
+
+@keyframes cuePulse {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(5px); }
+}
+
+.finalStage {
+  display: grid;
+  gap: 14px;
+  justify-items: center;
+  animation: finalStageReveal 0.9s cubic-bezier(0.2, 0.75, 0.2, 1) both;
+}
+
+.finalImageWrap {
+  position: relative;
+  width: min(100%, 1120px);
+  min-height: clamp(560px, 68vh, 720px);
+  border-radius: 0;
+  overflow: hidden;
+  border: 0;
+  cursor: pointer;
+}
+
+.finalImage {
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transform: scale(1.015);
+  animation: finalImageDrift 7.5s ease-in-out infinite;
+}
+
+.finalCinematicOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(180deg, rgba(3, 7, 13, 0.78), rgba(3, 7, 13, 0.5) 42%, rgba(3, 7, 13, 0.74) 100%),
+    radial-gradient(120% 90% at 50% 100%, rgba(3, 9, 20, 0.74) 0%, rgba(3, 9, 20, 0.28) 44%, rgba(3, 9, 20, 0) 70%),
+    radial-gradient(70% 46% at 50% 4%, rgba(162, 213, 255, 0.45) 0%, rgba(162, 213, 255, 0.16) 36%, rgba(162, 213, 255, 0) 76%),
+    linear-gradient(112deg, rgba(186, 209, 231, 0.2) 18%, rgba(186, 209, 231, 0) 38%),
+    linear-gradient(248deg, rgba(103, 191, 255, 0.2) 20%, rgba(103, 191, 255, 0) 40%);
+  mix-blend-mode: screen;
+}
+
+.openPickerBtn {
+  appearance: none;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(22px, 4vw, 44px);
+  z-index: 2;
+  transform: translateX(-50%);
+  padding: 12px 28px;
+  border: 1px solid rgba(77, 201, 246, 0.62);
+  border-radius: var(--diet-radius-document);
+  background: rgba(10, 14, 20, 0.78);
+  color: var(--diet-cold-white);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 0 24px rgba(77, 201, 246, 0.24), 0 14px 28px rgba(0, 0, 0, 0.36);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.openPickerBtn:hover,
+.openPickerBtn:focus-visible {
+  transform: translateX(-50%) translateY(-2px);
+  background: rgba(20, 27, 34, 0.9);
+  box-shadow: 0 0 34px rgba(77, 201, 246, 0.36), 0 18px 34px rgba(0, 0, 0, 0.42);
+  outline: 0;
+}
+
+.chapterPickerBackdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  align-items: start;
+  justify-items: center;
+  padding: clamp(28px, 6vh, 64px) clamp(18px, 3vw, 44px);
+  background: rgba(3, 7, 13, 0.72);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: pickerFadeIn 0.22s ease-out both;
+}
+
+.portalPanel {
+  width: min(1040px, calc(100% - 44px));
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  animation: pickerRiseIn 0.34s cubic-bezier(0.18, 0.9, 0.24, 1.12) both;
+}
+
+.portalKicker {
+  width: max-content;
+  max-width: 100%;
+  margin: 0 auto 8px;
+  padding: 6px 12px;
+  border: 1px solid rgba(77, 201, 246, 0.34);
+  background: rgba(10, 14, 20, 0.82);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--diet-neon-teal);
+}
+
+.portalTitle {
+  margin: 0 auto clamp(18px, 2.8vw, 32px);
+  max-width: 16ch;
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--diet-cold-white);
+  text-shadow: 0 4px 18px rgba(0, 0, 0, 0.78);
+}
+
+.portalGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: start;
+  gap: clamp(16px, 2.4vw, 28px);
+}
+
+.portalCard {
+  appearance: none;
+  position: relative;
+  min-height: 190px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 22px;
+  border: 1px solid var(--portal-border);
+  border-radius: var(--diet-radius-sharp);
+  background: var(--portal-bg);
+  color: var(--portal-text);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.46),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 18px var(--portal-glow);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transform: translateY(var(--portal-offset, 0)) rotate(var(--portal-rotate, 0deg));
+  animation: chapterCardPop 0.52s cubic-bezier(0.18, 0.9, 0.24, 1.12) both;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, filter 0.22s ease;
+}
+
+.portalCard::before {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  border: 1px solid var(--portal-frame);
+  border-radius: var(--diet-radius-sharp);
+  pointer-events: none;
+}
+
+.portalCard::after {
+  content: "";
+  position: absolute;
+  left: 22px;
+  right: 22px;
+  bottom: 18px;
+  height: 2px;
+  background: linear-gradient(90deg, var(--portal-ring), transparent);
+  opacity: 0.86;
+  pointer-events: none;
+}
+
+.portalCard:hover,
+.portalCard:focus-visible {
+  transform: translateY(calc(var(--portal-offset, 0) - 10px)) rotate(0deg) scale(1.025);
+  border-color: var(--portal-ring);
+  filter: saturate(1.1) brightness(1.06);
+  box-shadow:
+    0 0 0 2px var(--portal-ring),
+    0 30px 60px rgba(0, 0, 0, 0.56),
+    0 0 34px var(--portal-glow);
+  outline: 0;
+}
+
+.portalCard_warm {
+  --portal-bg:
+    linear-gradient(135deg, rgba(245, 240, 232, 0.97), rgba(212, 197, 169, 0.94)),
+    var(--diet-paper);
+  --portal-border: var(--diet-file-tab);
+  --portal-frame: rgba(92, 61, 46, 0.16);
+  --portal-ring: var(--diet-amber);
+  --portal-glow: rgba(199, 125, 32, 0.38);
+  --portal-text: var(--diet-ink);
+  --portal-offset: 10px;
+  --portal-rotate: -1.2deg;
+}
+
+.portalCard_mixed {
+  --portal-bg:
+    linear-gradient(135deg, rgba(92, 61, 46, 0.88), rgba(20, 27, 34, 0.96)),
+    var(--diet-steel);
+  --portal-border: rgba(180, 76, 240, 0.46);
+  --portal-frame: rgba(180, 76, 240, 0.18);
+  --portal-ring: var(--diet-glitch-purple);
+  --portal-glow: rgba(180, 76, 240, 0.34);
+  --portal-text: var(--diet-cold-white);
+  --portal-offset: -2px;
+  --portal-rotate: 0.4deg;
+}
+
+.portalCard_cold {
+  --portal-bg:
+    linear-gradient(135deg, rgba(10, 14, 20, 0.96), rgba(20, 27, 34, 0.96)),
+    var(--diet-steel);
+  --portal-border: var(--diet-grid-line);
+  --portal-frame: rgba(77, 201, 246, 0.16);
+  --portal-ring: var(--diet-holo-blue);
+  --portal-glow: rgba(77, 201, 246, 0.36);
+  --portal-text: var(--diet-cold-white);
+  --portal-offset: 10px;
+  --portal-rotate: 1.2deg;
+}
+
+.portalNum {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--portal-ring);
+  text-shadow: 0 0 10px var(--portal-glow);
+}
+
+.portalName {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-case-file);
+  font-size: clamp(20px, 2vw, 26px);
+  font-weight: 600;
+  line-height: 1.12;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.42);
+}
+
+.portalBody {
+  position: relative;
+  z-index: 1;
+  max-width: 25ch;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.45;
+  color: currentColor;
+  opacity: 0.82;
+}
+
+@keyframes chapterCardPop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(var(--portal-offset, 0) - 20px)) rotate(var(--portal-rotate, 0deg)) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(var(--portal-offset, 0)) rotate(var(--portal-rotate, 0deg)) scale(1);
+  }
+}
+
+@keyframes pickerFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pickerRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(-16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+.startBtn {
+  appearance: none;
+  position: absolute;
+  left: 50%;
+  bottom: clamp(12px, 3.5vw, 34px);
+  transform: translateX(-50%);
+  z-index: 2;
+  border: 1px solid rgba(182, 214, 240, 0.58);
+  border-radius: 999px;
+  padding: 12px 30px;
+  font-family: "Cormorant Garamond", "Spectral", Georgia, serif;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  background:
+    linear-gradient(180deg, rgba(226, 244, 255, 0.18), rgba(226, 244, 255, 0) 44%),
+    linear-gradient(108deg, rgba(10, 26, 44, 0.74) 0%, rgba(20, 45, 74, 0.7) 55%, rgba(54, 95, 142, 0.66) 100%);
+  color: #eaf5ff;
+  box-shadow:
+    0 0 0 0 rgba(134, 199, 247, 0.24),
+    inset 0 1px 0 rgba(232, 245, 255, 0.42),
+    inset 0 -10px 18px rgba(5, 16, 30, 0.34),
+    0 10px 20px rgba(1, 8, 18, 0.46),
+    0 0 20px rgba(116, 189, 243, 0.28);
+  text-shadow: 0 1px 2px rgba(2, 11, 22, 0.65);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: startGlow 2.1s ease-in-out infinite;
+}
+
+.startBtn:hover {
+  transform: translateX(-50%);
+  filter: saturate(1.08) brightness(1.08);
+}
+
+.startBtn:active {
+  transform: translateX(-50%);
+}
+
+.startBtn::before {
+  content: "";
+  position: absolute;
+  inset: -10px;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(136, 208, 255, 0.34) 0%, rgba(136, 208, 255, 0) 72%);
+  filter: blur(4px);
+  opacity: 0.56;
+  animation: haloPulse 2.2s ease-in-out infinite;
+}
+
+.startBtn::after {
+  content: "✦";
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  color: rgba(208, 236, 255, 0.9);
+  text-shadow: 0 0 7px rgba(141, 214, 255, 0.66);
+}
+
+@keyframes startGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(134, 201, 246, 0.18), 0 0 14px rgba(134, 201, 246, 0.22); }
+  50% { box-shadow: 0 0 0 8px rgba(134, 201, 246, 0), 0 0 22px rgba(134, 201, 246, 0.44); }
+}
+
+@keyframes haloPulse {
+  0%, 100% { opacity: 0.46; transform: scale(0.98); }
+  50% { opacity: 0.86; transform: scale(1.03); }
+}
+
+@keyframes finalStageReveal {
+  from { opacity: 0; transform: translateY(16px) scale(0.994); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes finalImageDrift {
+  0%, 100% { transform: scale(1.015) translateY(0); }
+  50% { transform: scale(1.03) translateY(-3px); }
+}
+
+@media (max-width: 1020px) {
+  .bookShell {
+    padding: 16px;
+  }
+
+  .bookPageSpread {
+    grid-template-columns: 1fr;
+  }
+
+  .captionTextTyped {
+    font-size: 18px;
+  }
+
+  .rightPage {
+    min-height: 320px;
+    padding: 28px 24px 72px;
+  }
+
+  .image {
+    min-height: 0;
+    max-height: none;
+    aspect-ratio: 16 / 10;
+  }
+
+  .startBtn {
+    font-size: 20px;
+    padding: 11px 22px;
+  }
+
+  .portalPanel {
+    position: relative;
+    left: auto;
+    top: auto;
+    bottom: auto;
+    width: 100%;
+    transform: none;
+    margin-top: -2px;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .portalGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .portalCard {
+    min-height: 160px;
+    transform: none;
+  }
+
+  .portalCard:hover {
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 560px) {
+  .storyControls {
+    align-items: flex-start;
+  }
+
+  .progressDots {
+    max-width: 142px;
+    flex-wrap: wrap;
+  }
+
+  .rightPage {
+    padding: 26px 20px 70px;
+  }
+
+  .captionTextTyped {
+    font-size: 17px;
+  }
+}

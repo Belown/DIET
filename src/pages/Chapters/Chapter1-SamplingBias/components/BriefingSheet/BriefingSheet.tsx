@@ -7,11 +7,12 @@ type BriefingSheetProps = {
   sheet: BriefingSheetData;
   children: ReactNode;
   spotlight?: boolean;
+  spotlightLayout?: "stacked" | "split";
 };
 
-export default function BriefingSheet({ sheet, children, spotlight = false }: BriefingSheetProps) {
+export default function BriefingSheet({ sheet, children, spotlight = false, spotlightLayout = "stacked" }: BriefingSheetProps) {
   const sheetRef = useRef<HTMLElement>(null);
-  const className = `${styles.caseSheet} ${styles.caseSheetWide}${spotlight ? ` ${styles.caseSheetSpotlight}` : ""}`;
+  const className = `${styles.caseSheet} ${styles.caseSheetWide}${spotlight ? ` ${styles.caseSheetSpotlight}` : ""}${spotlight && spotlightLayout === "split" ? ` ${styles.caseSheetSpotlightSplit}` : ""}`;
 
   useEffect(() => {
     if (!spotlight) return;
