@@ -1,4 +1,4 @@
-import type { PassageId } from "./passages";
+import type { PassageId } from "./staticPassages";
 import type { BriefingSheet, PopulationOption, QuestionOption, Region } from "./types";
 
 export const REGIONS: readonly Region[] = [
@@ -31,7 +31,6 @@ export const BRIEFING_SHEETS: Partial<Record<PassageId, BriefingSheet>> = {
 };
 
 export const DAILY_BUDGET = 100;
-export const POP_OPTIONS: PopulationOption[] = [100, 500, 1000];
 export const POP_COST: Record<PopulationOption, number> = { 100: 15, 500: 40, 1000: 80 };
 export const ZONE_COST = 5;
 

@@ -28,6 +28,7 @@
 /* ─── Mission dashboard ─────────────────────────────────────────────────── */
 
 .missionDashboard {
+  position: relative;
   display: grid;
   gap: 18px;
 }
@@ -384,6 +385,79 @@
   grid-column: 2 / -1;
   color: var(--rui-slate);
   font-size: 12px;
+}
+
+.mandatorySignalGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.mandatorySignalCard {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  padding: 13px 14px;
+  border: 2px solid rgba(0, 168, 126, 0.28);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(0, 168, 126, 0.08)),
+    var(--rui-white);
+}
+
+.mandatorySignalIcon {
+  width: 34px;
+  height: 34px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: rgba(0, 168, 126, 0.14);
+  color: #0f766e;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mandatorySignalText {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.mandatorySignalText strong {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--rui-dark);
+}
+
+.mandatorySignalText small {
+  color: var(--rui-slate);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.mandatorySignalBadge {
+  margin-left: auto;
+  flex: 0 0 auto;
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: rgba(0, 168, 126, 0.12);
+  color: #0f766e;
+  font-family: var(--font-display);
+  font-size: 11px;
+}
+
+.signalSectionLabel {
+  margin: 18px 0 -6px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--rui-gray);
 }
 
 .missionFeatureChip {
@@ -819,4 +893,9 @@
   .missionRegionGrid {
     grid-template-columns: 1fr;
   }
+
+  .mandatorySignalGrid {
+    grid-template-columns: 1fr;
+  }
+
 }

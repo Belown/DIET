@@ -34,6 +34,7 @@ export default function Chapters() {
   const initialView: ActiveView = shouldShowIntro ? "intro" : isChapterId(chapterParam) ? chapterParam : "ch1";
   const [active, setActive] = useState<ActiveView>(initialView);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [missionTutorialOpen, setMissionTutorialOpen] = useState(false);
   const chromeRef = useRef<HTMLDivElement>(null);
 
   const activeIndex = active === "intro" ? -1 : CHAPTERS.findIndex((c) => c.id === active);
@@ -46,6 +47,12 @@ export default function Chapters() {
 
     if (nextView !== active) setActive(nextView);
   }, [active, searchParams]);
+
+  useEffect(() => {
+    if (active !== "ch1") {
+      setMissionTutorialOpen(false);
+    }
+  }, [active]);
 
   const selectChapter = (chapter: ChapterId) => {
     setActive(chapter);
@@ -147,7 +154,7 @@ export default function Chapters() {
         </div>
       </div>
 
-      <main className={styles.canvas}>
+      <main className={`${styles.canvas} ${missionTutorialOpen ? styles.canvasTutorialActive : ""}`}>
         <div key={active} className={styles.canvasBody}>
           {active === "intro" && (
             <ChapterIntro
@@ -155,7 +162,7 @@ export default function Chapters() {
               onSelectChapter={selectChapter}
             />
           )}
-          {active === "ch1" && <Chapter1SamplingBias />}
+          {active === "ch1" && <Chapter1SamplingBias onMissionTutorialOpenChange={setMissionTutorialOpen} />}
           {active === "ch2" && <Chapter2COMPAS />}
           {active === "ch3" && <Chapter3Placeholder />}
         </div>

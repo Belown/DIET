@@ -256,6 +256,8 @@
 }
 
 .canvas {
+  position: relative;
+  isolation: isolate;
   padding: 48px clamp(24px, 4vw, 56px) 0;
   max-width: 1600px;
   width: 100%;
@@ -263,8 +265,25 @@
   overflow-y: hidden;
 }
 
+.canvasTutorialActive::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background: rgba(20, 20, 20, 0.48);
+  pointer-events: none;
+  animation: canvasTutorialBackdropIn 0.18s ease-out both;
+}
+
 .canvasBody {
+  position: relative;
+  z-index: 1;
   animation: phaseEnter 0.35s ease-out both;
+}
+
+@keyframes canvasTutorialBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @keyframes phaseEnter {

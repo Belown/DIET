@@ -3,6 +3,8 @@ import shared from "../../../../../styles/shared.module.css";
 import { BUDGET_VISUALS, POPULATION_IMAGES, QUESTION_IMAGES, ZONE_VISUALS } from "../../../../../assets/image/image";
 import { DAILY_BUDGET, QUESTION_OPTIONS, REGIONS } from "../../chapterData";
 import type { MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "../../types";
+import { useTutorial, type TutorialStep } from "../../hooks/useTutorial";
+import TutorialPopover from "../Tutorial/TutorialPopover";
 
 type SelectedQuestionInfo = QuestionOption & { line: string };
 
@@ -25,6 +27,7 @@ type MissionPlannerProps = {
   addPlan: () => void;
   removePlan: (id: string) => void;
   sendDetectiveAndAdvance: () => void;
+  onTutorialOpenChange?: (open: boolean) => void;
 };
 
 const getPopulationLabel = (population: PopulationOption) => {
@@ -39,6 +42,60 @@ const POPULATION_TIERS: Array<{ value: PopulationOption; title: string; desc: st
   { value: 100, title: "Scout Sweep", desc: "Cheap, fast, narrow signal" },
   { value: 500, title: "Field Campaign", desc: "Balanced coverage push" },
   { value: 1000, title: "Citywide Dragnet", desc: "High power, high cost" },
+];
+
+const MANDATORY_SIGNALS = [
+  {
+    label: "Night Activity",
+    code: "NA",
+    desc: "Fixed record used for every sampled resident.",
+  },
+  {
+    label: "Group Size",
+    code: "GS",
+    desc: "Fixed record used for every sampled resident.",
+  },
+] as const;
+
+type TutorialTarget = "intro" | "budget" | "coverage" | "sample" | "signals" | "queue";
+
+const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
+  {
+    target: "intro",
+    title: "Mission overview",
+    body: "This card tells you the day, objective, and readiness checklist. Use it as your quick status read before building a sortie.",
+    offset: { x: 0, y: 280 },
+  },
+  {
+    target: "budget",
+    title: "Budget and readiness",
+    body: "This card tracks your daily investigation points, spent budget, and draft cost. A mission must fit the budget before it can be queued.",
+    offset: { x: -450, y: 0 },
+  },
+  {
+    target: "coverage",
+    title: "Coverage",
+    body: "Choose which zones the detective should visit. Wider coverage helps the model learn from the whole city instead of one narrow area.",
+    offset: { x: 100, y: 320 },
+  },
+  {
+    target: "sample",
+    title: "Sample size",
+    body: "Pick how many residents to sample. Larger samples cost more, but they give the model stronger evidence.",
+    offset: { x: 500, y: 300 },
+  },
+  {
+    target: "signals",
+    title: "Signals",
+    body: "Night Activity and Group Size are mandatory records. Optional questions cost extra, and some add useful context while others add noise or bias.",
+    offset: { x: 20, y: -320 },
+  },
+  {
+    target: "queue",
+    title: "Operation stack",
+    body: "Add the current sortie to today's queue, review what will be collected, then deploy the detective when the plan is ready.",
+    offset: { x: -450, y: 0 },
+  },
 ];
 
 const DAY_COPY = [
@@ -84,8 +141,13 @@ export default function MissionPlanner({
   addPlan,
   removePlan,
   sendDetectiveAndAdvance,
+  onTutorialOpenChange,
 }: MissionPlannerProps) {
   const locked = dayLocked[currentDay];
+  const tutorial = useTutorial(TUTORIAL_STEPS, {
+    enabled: currentDay === 0 && !locked,
+    onOpenChange: onTutorialOpenChange,
+  });
   const remainingAfterAdd = remainToday - draftCost;
   const budgetUsed = Math.min(100, Math.round((spentToday / DAILY_BUDGET) * 100));
   const coverageProgress = Math.round((zoneCount / REGIONS.length) * 100);
@@ -101,9 +163,14 @@ export default function MissionPlanner({
   const dayCopy = DAY_COPY[currentDay];
 
   return (
-    <div className={styles.missionDashboard}>
-      <section className={styles.missionHeader}>
-        <div className={styles.commandIntro}>
+    <div className={`${styles.missionDashboard} ${tutorial.open ? styles.missionDashboardTutorial : ""}`}>
+      <section
+        className={styles.missionHeader}
+      >
+        <div
+          ref={tutorial.registerTarget("intro")}
+          className={tutorial.getTargetClass("intro", styles.commandIntro)}
+        >
           <div className={styles.commandMeta}>
             <span className={styles.dayBadge}>{dayCopy.kicker}</span>
             <span className={styles.rankBadge}>{DAY_RANKS[currentDay]}</span>
@@ -123,7 +190,11 @@ export default function MissionPlanner({
           </div>
         </div>
 
-        <div className={styles.budgetPanel} aria-label="Budget status">
+        <div
+          ref={tutorial.registerTarget("budget")}
+          className={tutorial.getTargetClass("budget", styles.budgetPanel)}
+          aria-label="Budget status"
+        >
           <div className={styles.budgetRing} style={{ ["--budget-used" as string]: `${budgetUsed}%` }}>
             <span>{remainToday}</span>
             <small>IP left</small>
@@ -138,7 +209,10 @@ export default function MissionPlanner({
       </section>
 
       <div className={styles.missionGrid}>
-        <section className={`${styles.missionCard} ${styles.missionCardWide}`}>
+        <section
+          ref={tutorial.registerTarget("coverage")}
+          className={tutorial.getTargetClass("coverage", `${styles.missionCard} ${styles.missionCardWide}`)}
+        >
           <div className={styles.missionCardHeader}>
             <div>
               <p className={styles.panelEyebrow}>Coverage</p>
@@ -172,7 +246,10 @@ export default function MissionPlanner({
           </div>
         </section>
 
-        <section className={styles.missionCard}>
+        <section
+          ref={tutorial.registerTarget("sample")}
+          className={tutorial.getTargetClass("sample", styles.missionCard)}
+        >
           <div className={styles.missionCardHeader}>
             <div>
               <p className={styles.panelEyebrow}>Sample</p>
@@ -200,15 +277,32 @@ export default function MissionPlanner({
           </div>
         </section>
 
-        <section className={`${styles.missionCard} ${styles.missionCardWide}`}>
+        <section
+          ref={tutorial.registerTarget("signals")}
+          className={tutorial.getTargetClass("signals", `${styles.missionCard} ${styles.missionCardWide}`)}
+        >
           <div className={styles.missionCardHeader}>
             <div>
               <p className={styles.panelEyebrow}>Signals</p>
-              <h3 className={styles.missionCardTitle}>Optional questions</h3>
+              <h3 className={styles.missionCardTitle}>Mandatory signals and optional questions</h3>
             </div>
-            <span className={styles.missionPill}>{planQuestions.length} active</span>
+            <span className={styles.missionPill}>2 required / {planQuestions.length} extra</span>
           </div>
 
+          <div className={styles.mandatorySignalGrid} aria-label="Mandatory signals">
+            {MANDATORY_SIGNALS.map((signal) => (
+              <div key={signal.label} className={styles.mandatorySignalCard}>
+                <span className={styles.mandatorySignalIcon}>{signal.code}</span>
+                <span className={styles.mandatorySignalText}>
+                  <strong>{signal.label}</strong>
+                  <small>{signal.desc}</small>
+                </span>
+                <span className={styles.mandatorySignalBadge}>Required</span>
+              </div>
+            ))}
+          </div>
+
+          <p className={styles.signalSectionLabel}>Optional questions</p>
           <div className={styles.featureGrid}>
             {QUESTION_OPTIONS.map((f) => {
               const compactLabel = f.label.replace(/\s*\([^)]*\)\s*/g, " ").trim();
@@ -233,7 +327,7 @@ export default function MissionPlanner({
 
           <div className={styles.featureIntelPanel}>
             {selectedQuestionInfos.length === 0 ? (
-              <p className={styles.featureIntelEmpty}>No extra question selected. Mission uses only fixed government records.</p>
+              <p className={styles.featureIntelEmpty}>No extra question selected. Mission still collects mandatory Night Activity and Group Size records.</p>
             ) : (
               selectedQuestionInfos.map((q) => (
                 <div className={styles.featureIntelCard} key={q.key}>
@@ -247,7 +341,10 @@ export default function MissionPlanner({
           </div>
         </section>
 
-        <aside className={styles.missionQueue}>
+        <aside
+          ref={tutorial.registerTarget("queue")}
+          className={tutorial.getTargetClass("queue", styles.missionQueue)}
+        >
           <div className={styles.missionCardHeader}>
             <div>
               <p className={styles.panelEyebrow}>Operation Stack</p>
@@ -283,6 +380,7 @@ export default function MissionPlanner({
                   <p>{p.population} residents | {p.zones.filter(Boolean).length} zone(s)</p>
                   <p>{REGIONS.filter((_, i) => p.zones[i]).map((z) => z.label).join(", ")}</p>
                   <p>
+                    Mandatory: Night Activity; Group Size | Extra:{" "}
                     {p.questions.length
                       ? p.questions.map((k) => QUESTION_OPTIONS.find((q) => q.key === k)?.label).join("; ")
                       : "No extra questions"}
@@ -306,6 +404,21 @@ export default function MissionPlanner({
           )}
         </aside>
       </div>
+
+      {tutorial.step && (
+        <TutorialPopover
+          open={tutorial.open}
+          title={tutorial.step.title}
+          body={tutorial.step.body}
+          stepIndex={tutorial.stepIndex}
+          totalSteps={tutorial.totalSteps}
+          style={tutorial.popoverStyle}
+          onSkip={tutorial.close}
+          onBack={tutorial.goPrev}
+          onNext={tutorial.goNext}
+          titleId="mission-tutorial-title"
+        />
+      )}
     </div>
   );
 }

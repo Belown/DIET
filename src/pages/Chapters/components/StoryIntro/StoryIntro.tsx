@@ -60,8 +60,9 @@ const FINAL_SCENE_INDEX = STORY_SCENES.length - 1;
 const LAST_BOOK_SCENE_INDEX = FINAL_SCENE_INDEX - 1;
 const BOOK_SCENES = STORY_SCENES.slice(0, FINAL_SCENE_INDEX);
 const BOOK_PAGE_ASPECT = 710 / 640;
-const MIN_PAGE_WIDTH = 260;
+const MIN_PAGE_WIDTH = 140;
 const MAX_PAGE_WIDTH = 640;
+const COMPACT_STORY_QUERY = "(max-width: 720px)";
 const getBookPageForScene = (index: number) => index * 2;
 
 export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps) {
@@ -70,6 +71,9 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   const [isFlipping, setIsFlipping] = useState(false);
   const [isNarrating, setIsNarrating] = useState(false);
   const [chapterPickerOpen, setChapterPickerOpen] = useState(false);
+  const [isCompactStory, setIsCompactStory] = useState(() => (
+    typeof window === "undefined" ? false : window.matchMedia(COMPACT_STORY_QUERY).matches
+  ));
   const [bookPageSize, setBookPageSize] = useState({ width: MAX_PAGE_WIDTH, height: Math.round(MAX_PAGE_WIDTH * BOOK_PAGE_ASPECT) });
   const bookSpreadRef = useRef<HTMLDivElement | null>(null);
   const flipBookRef = useRef<FlipBookHandle | null>(null);
@@ -83,6 +87,22 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   const isLastBookScene = sceneIndex === LAST_BOOK_SCENE_INDEX;
 
   useEffect(() => {
+    const mediaQuery = window.matchMedia(COMPACT_STORY_QUERY);
+    const handleMediaChange = (event: MediaQueryListEvent) => {
+      setIsCompactStory(event.matches);
+      setIsFlipping(false);
+      pendingBookPageRef.current = null;
+    };
+
+    setIsCompactStory(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleMediaChange);
+
+    return () => mediaQuery.removeEventListener("change", handleMediaChange);
+  }, []);
+
+  useEffect(() => {
+    if (isCompactStory) return;
+
     const spread = bookSpreadRef.current;
     if (!spread) return;
 
@@ -107,7 +127,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
       resizeObserver.disconnect();
       window.removeEventListener("resize", updateBookSize);
     };
-  }, []);
+  }, [isCompactStory]);
 
   const clearSceneTimers = () => {
     if (typewriterTimerRef.current !== null) {
@@ -280,6 +300,33 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
     flipBookRef.current?.pageFlip().flipNext("bottom");
   };
 
+  const goPrevScene = () => {
+    stopCurrentAudio();
+    pendingBookPageRef.current = null;
+    setIsFlipping(false);
+    setSceneIndex((current) => Math.max(current - 1, 0));
+  };
+
+  const goNextScene = () => {
+    stopCurrentAudio();
+    pendingBookPageRef.current = null;
+    setIsFlipping(false);
+    setSceneIndex((current) => (
+      current >= LAST_BOOK_SCENE_INDEX ? FINAL_SCENE_INDEX : current + 1
+    ));
+  };
+
+  const handleCompactStoryClick = () => {
+    if (canFinishCurrentPage) {
+      finishCurrentPage();
+      return;
+    }
+
+    if (canTurnPage) {
+      goNextScene();
+    }
+  };
+
   const handleOverlayClick = (e: MouseEvent<HTMLDivElement>) => {
     if (canFinishCurrentPage) {
       finishCurrentPage();
@@ -335,6 +382,45 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
             </button>
           </div>
 
+          {isCompactStory ? (
+            <div className={styles.compactStory} onClick={handleCompactStoryClick} role="presentation">
+              <div className={styles.compactImagePanel}>
+                <img src={scene.image} alt={scene.title} className={styles.compactImage} />
+              </div>
+              <div className={styles.compactTextPanel}>
+                <span className={styles.sceneKicker}>{scene.title}</span>
+                <p className={styles.captionTextTyped}>{typedText}</p>
+              </div>
+              <div className={styles.compactNav} aria-label="Story navigation">
+                <button
+                  type="button"
+                  className={styles.compactNavBtn}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    goPrevScene();
+                  }}
+                  disabled={sceneIndex === 0}
+                >
+                  Back
+                </button>
+                <button
+                  type="button"
+                  className={styles.compactNavBtn}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    if (canFinishCurrentPage) {
+                      finishCurrentPage();
+                      return;
+                    }
+                    goNextScene();
+                  }}
+                  disabled={!canFinishCurrentPage && !canTurnPage}
+                >
+                  {canFinishCurrentPage ? "Finish" : isLastBookScene ? "Continue" : "Next"}
+                </button>
+              </div>
+            </div>
+          ) : (
           <div className={styles.bookPageSpread} ref={bookSpreadRef}>
             <div className={styles.clickOverlay} onClick={handleOverlayClick} aria-hidden="true" />
             <HTMLFlipBook
@@ -349,7 +435,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
               minHeight={Math.round(MIN_PAGE_WIDTH * BOOK_PAGE_ASPECT)}
               maxHeight={bookPageSize.height}
               size="stretch"
-              startPage={0}
+              startPage={getBookPageForScene(sceneIndex)}
               drawShadow
               flippingTime={950}
               usePortrait={false}
@@ -398,6 +484,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
               })}
             </HTMLFlipBook>
           </div>
+          )}
         </div>
       ) : (
         <>

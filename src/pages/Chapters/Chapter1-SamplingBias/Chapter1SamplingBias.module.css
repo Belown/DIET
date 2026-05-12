@@ -19,6 +19,16 @@
   transform: scale(1.02);
 }
 
+.phaseTutorialActive {
+  background: transparent;
+}
+
+.phaseWithBackground.phaseTutorialActive::before {
+  background-image: var(--chapter-bg);
+  background-color: transparent;
+  transform: scale(1.02);
+}
+
 .phaseWithBackground::after {
   content: "";
   position: fixed;
@@ -32,6 +42,18 @@
   background-size: auto, auto, min(44vw, 520px) auto;
   background-position: center, center, right 8% top 12%;
   background-repeat: no-repeat;
+}
+
+.phaseWithBackground.phaseTutorialActive::after {
+  background-image:
+    linear-gradient(rgba(20, 20, 20, 0.48), rgba(20, 20, 20, 0.48)),
+    linear-gradient(180deg, rgba(250, 247, 240, 0.2), rgba(10, 14, 20, 0.34)),
+    radial-gradient(circle at 50% 18%, rgba(250, 247, 240, 0.1), transparent 42%),
+    var(--chapter-overlay);
+  background-size: auto, auto, auto, min(44vw, 520px) auto;
+  background-position: center, center, center, right 8% top 12%;
+  background-repeat: no-repeat;
+  background-color: transparent;
 }
 
 .phaseWithBackground .sceneInner {
@@ -53,8 +75,8 @@
 }
 
 @keyframes sceneIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }
 
 .overlayChoices {

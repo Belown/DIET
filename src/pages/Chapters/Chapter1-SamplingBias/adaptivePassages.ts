@@ -14,8 +14,8 @@
  * StrategyResult shape matches what summarizeStrategy() already returns.
  */
 
-import type { Passage, PassageId } from "./passages";
-import { PASSAGES } from "./passages";
+import type { Passage, PassageId } from "./staticPassages";
+import { PASSAGES } from "./staticPassages";
 
 export interface StrategyResult {
   regionAccs: number[]; // [uptown, downtown, factory, slums] 0-1

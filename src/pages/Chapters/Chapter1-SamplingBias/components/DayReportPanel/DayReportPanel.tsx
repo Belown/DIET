@@ -2,19 +2,50 @@ import { useEffect, useMemo, useState } from "react";
 import { ZONE_VISUALS } from "../../../../../assets/image/image";
 import { REGIONS } from "../../chapterData";
 import styles from "./DayReportPanel.module.css";
+import { useTutorial, type TutorialStep } from "../../hooks/useTutorial";
+import TutorialPopover from "../Tutorial/TutorialPopover";
 
 type DayReportPanelProps = {
   dayNumber: 1 | 2 | 3;
   overallAcc: number;
   regionAccs: number[];
   sampledFlags: boolean[];
+  onTutorialOpenChange?: (open: boolean) => void;
 };
 
 const districtCode = (index: number) => ["UP", "DT", "FZ", "SL"][index] ?? "RG";
 
-export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, sampledFlags }: DayReportPanelProps) {
+type TutorialTarget = "overall" | "districts" | "narrative";
+
+const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
+  {
+    target: "overall",
+    title: "Overall accuracy",
+    body: "This pill summarizes how the model performed across the whole city for this day. Color tells you the confidence band at a glance.",
+    offset: { x: -360, y: 120 },
+  },
+  {
+    target: "districts",
+    title: "District breakdown",
+    body: "Each card shows confidence per district. Watch for unsampled zones — those bars are guesses, not evidence.",
+    offset: { x: 120, y: 80 },
+  },
+  {
+    target: "narrative",
+    title: "Narrative log",
+    body: "Plain-language summary of what the model learned today and what to fix tomorrow. Use the recommendation to guide your next plan.",
+    offset: { x: -360, y: 80 },
+  },
+];
+
+export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, sampledFlags, onTutorialOpenChange }: DayReportPanelProps) {
   const [barValues, setBarValues] = useState([0, 0, 0, 0]);
   const [typedSummary, setTypedSummary] = useState("");
+
+  const tutorial = useTutorial(TUTORIAL_STEPS, {
+    enabled: dayNumber === 1,
+    onOpenChange: onTutorialOpenChange,
+  });
 
   useEffect(() => {
     setBarValues([0, 0, 0, 0]);
@@ -84,7 +115,7 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
   };
 
   return (
-    <section className={styles.reportRoot}>
+    <section className={`${styles.reportRoot} ${tutorial.open ? styles.reportRootTutorialActive : ""}`}>
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>Case File · Temporal Bias Unit</p>
@@ -95,14 +126,20 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
               : "Final field-day report before full city verdict review."}
           </p>
         </div>
-        <div className={`${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`}>
+        <div
+          ref={tutorial.registerTarget("overall")}
+          className={tutorial.getTargetClass("overall", `${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`)}
+        >
           <span className={styles.overallLabel}>Overall Accuracy</span>
           <strong className={styles.overallValue}>{overallPct}%</strong>
         </div>
       </header>
 
       <div className={styles.grid}>
-        <article className={styles.sectionCard}>
+        <article
+          ref={tutorial.registerTarget("districts")}
+          className={tutorial.getTargetClass("districts", styles.sectionCard)}
+        >
           <p className={styles.sectionEyebrow}>District Breakdown</p>
           <div className={styles.zoneGrid}>
             {REGIONS.map((region, i) => (
@@ -139,7 +176,10 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
           </div>
         </article>
 
-        <article className={styles.sectionCard}>
+        <article
+          ref={tutorial.registerTarget("narrative")}
+          className={tutorial.getTargetClass("narrative", styles.sectionCard)}
+        >
           <p className={styles.sectionEyebrow}>Narrative Log</p>
           <div className={styles.typewriterPaper}>
             <p className={styles.typewriterText}>{typedSummary}<span className={styles.cursor}>|</span></p>
@@ -147,6 +187,21 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
 
         </article>
       </div>
+
+      {tutorial.step && (
+        <TutorialPopover
+          open={tutorial.open}
+          title={tutorial.step.title}
+          body={tutorial.step.body}
+          stepIndex={tutorial.stepIndex}
+          totalSteps={tutorial.totalSteps}
+          style={tutorial.popoverStyle}
+          onSkip={tutorial.close}
+          onBack={tutorial.goPrev}
+          onNext={tutorial.goNext}
+          titleId="day-report-tutorial-title"
+        />
+      )}
     </section>
   );
 }

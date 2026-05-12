@@ -227,6 +227,41 @@
   50% { opacity: 0; }
 }
 
+.reportRootTutorialActive {
+  background: transparent;
+  border-color: transparent;
+}
+
+.reportRootTutorialActive .eyebrow,
+.reportRootTutorialActive .title,
+.reportRootTutorialActive .subtitle {
+  opacity: 0.58;
+  filter: brightness(0.52) saturate(0.65);
+  transition: opacity 0.24s ease, filter 0.24s ease;
+}
+
+.reportRootTutorialActive .overallPill_good {
+  background:
+    linear-gradient(rgba(22, 163, 74, 0.12), rgba(22, 163, 74, 0.12)),
+    var(--rui-white);
+}
+
+.reportRootTutorialActive .overallPill_mid {
+  background:
+    linear-gradient(rgba(217, 119, 6, 0.14), rgba(217, 119, 6, 0.14)),
+    var(--rui-white);
+}
+
+.reportRootTutorialActive .overallPill_low {
+  background:
+    linear-gradient(rgba(220, 38, 38, 0.12), rgba(220, 38, 38, 0.12)),
+    var(--rui-white);
+}
+
+.reportRootTutorialActive .sectionCard {
+  background: var(--rui-white);
+}
+
 @media (max-width: 1160px) {
   .grid {
     grid-template-columns: 1fr;
