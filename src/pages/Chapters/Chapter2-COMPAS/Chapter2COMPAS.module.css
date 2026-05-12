@@ -1,0 +1,73 @@
+.phase {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+  padding-top: 12px;
+}
+
+.scene {
+  padding: 20px clamp(20px, 4vw, 48px) 232px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sceneInner {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  animation: sceneIn 0.4s ease-out both;
+}
+
+.loadButton {
+  appearance: none;
+  border: 1px solid var(--rui-border);
+  background: linear-gradient(180deg, var(--rui-white), rgba(245, 247, 250, 0.92));
+  color: var(--rui-dark);
+  font-family: var(--font-display);
+  font-size: clamp(18px, 2vw, 24px);
+  font-weight: 500;
+  letter-spacing: 0;
+  border-radius: 10px;
+  padding: 18px 26px;
+  align-self: center;
+  box-shadow: 0 16px 32px rgba(25, 28, 31, 0.16);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.loadButton:hover {
+  transform: translateY(-2px);
+  border-color: rgba(73, 79, 223, 0.55);
+  box-shadow: 0 20px 36px rgba(25, 28, 31, 0.2);
+}
+
+@keyframes sceneIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 640px) {
+  .phase {
+    padding-top: 16px;
+  }
+
+  .scene {
+    padding-inline: 12px;
+    padding-bottom: 248px;
+  }
+
+  .sceneInner {
+    gap: 16px;
+  }
+
+  .loadButton {
+    width: 100%;
+    font-size: 18px;
+  }
+}

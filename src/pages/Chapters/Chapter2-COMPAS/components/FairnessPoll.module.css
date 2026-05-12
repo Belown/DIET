@@ -1,0 +1,56 @@
+.poll {
+  width: min(900px, 100%);
+  margin: 0 auto;
+  border: 1px solid rgba(25, 28, 31, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  padding: 16px;
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-display);
+  color: var(--rui-dark);
+}
+
+.options {
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.option {
+  appearance: none;
+  text-align: left;
+  border: 1px solid rgba(25, 28, 31, 0.2);
+  border-radius: 8px;
+  background: rgba(244, 246, 255, 0.82);
+  padding: 12px;
+  font-family: var(--font-body);
+  color: var(--rui-dark);
+  display: grid;
+  gap: 4px;
+}
+
+.optionActive {
+  border-color: rgba(73, 79, 223, 0.58);
+  box-shadow: 0 0 0 2px rgba(73, 79, 223, 0.14) inset;
+}
+
+.confirm {
+  margin-top: 12px;
+  appearance: none;
+  border: 1px solid rgba(25, 28, 31, 0.2);
+  border-radius: 8px;
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  font-family: var(--font-display);
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+.note {
+  margin: 12px 0 0;
+  font-family: var(--font-body);
+  color: var(--rui-dark);
+}

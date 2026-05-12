@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import Logo from "../../components/Logo/Logo";
 import Chapter1SamplingBias from "./Chapter1-SamplingBias/Chapter1SamplingBias";
-import Chapter2Placeholder from "./Chapter2-Placeholder/Chapter2Placeholder";
+import Chapter2COMPAS from "./Chapter2-COMPAS";
 import Chapter3Placeholder from "./Chapter3-Placeholder/Chapter3Placeholder";
 import styles from "./Chapters.module.css";
 
@@ -18,7 +18,7 @@ type ChapterMeta = {
 
 const CHAPTERS: ChapterMeta[] = [
   { id: "ch1", num: "01", title: "Sampling Bias", hint: "Data collection shapes outcomes", status: "ready" },
-  { id: "ch2", num: "02", title: "TBD", hint: "TBD", status: "draft" },
+  { id: "ch2", num: "02", title: "COMPAS Trade-offs", hint: "Fairness definitions collide", status: "ready" },
   { id: "ch3", num: "03", title: "TBD", hint: "TBD", status: "draft" },
 ];
 
@@ -145,7 +145,7 @@ export default function Chapters() {
       <main className={styles.canvas}>
         <div key={active} className={styles.canvasBody}>
           {active === "ch1" && <Chapter1SamplingBias />}
-          {active === "ch2" && <Chapter2Placeholder />}
+          {active === "ch2" && <Chapter2COMPAS />}
           {active === "ch3" && <Chapter3Placeholder />}
         </div>
       </main>
