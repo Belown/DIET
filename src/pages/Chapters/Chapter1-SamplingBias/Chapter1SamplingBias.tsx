@@ -270,6 +270,9 @@ export default function Chapter1SamplingBias({
     setPassage(choice.nextPassage);
     setChunkIndex(0);
     setShowChoices(false);
+    if (passage === "day3-debrief" && choice.nextPassage === "verdict") {
+      setChatboxReopenSignal((signal) => signal + 1);
+    }
   };
 
   const sendDetectiveAndAdvance = () => {
