@@ -61,44 +61,43 @@ const MANDATORY_SIGNALS = [
   },
 ] as const;
 
-type TutorialTarget = "intro" | "budget" | "coverage" | "sample" | "signals" | "queue";
+type TutorialTarget = "intro" | "budget" | "coverage" | "sample" | "signals" | "queue" | "help";
 
 const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
   {
     target: "intro",
     title: "Mission overview",
     body: "This card tells you the day and objective. Use it as your quick status read before building a sortie.",
-    placement: "bottom",
   },
   {
     target: "budget",
     title: "Budget",
     body: "This card tracks your daily investigation points, spent budget, and draft cost. A mission must fit the budget before it can be queued.",
-    placement: "left",
   },
   {
     target: "coverage",
     title: "Coverage",
     body: "Choose which zones the detective should visit. Wider coverage helps the model learn from the whole city instead of one narrow area.",
-    placement: "bottom",
   },
   {
     target: "sample",
     title: "Sample size",
     body: "Pick how many residents to sample. Larger samples cost more, but they give the model stronger evidence.",
-    placement: "right",
   },
   {
     target: "signals",
     title: "Signals",
     body: "Signals are model inputs. Some can sharpen the dataset, some can distract it, and some can carry bias, so choose which extra records belong in the case file.",
-    placement: "top",
   },
   {
     target: "queue",
     title: "Operation stack",
     body: "Add the current sortie to today's queue, review what will be collected, then deploy the detective when the plan is ready.",
-    placement: "left",
+  },
+  {
+    target: "help",
+    title: "Replay the guide",
+    body: "Use this help button any time you want to reopen the mission planner walkthrough from the beginning.",
   },
 ];
 
@@ -162,22 +161,23 @@ export default function MissionPlanner({
 
   return (
     <div className={`${styles.missionDashboard} ${tutorial.open ? styles.missionDashboardTutorial : ""}`}>
-      <button
-        type="button"
-        className={styles.helpButton}
-        onClick={tutorial.restart}
-        aria-label="Replay mission planner intro"
-        data-tooltip="Replay intro tutorial"
-      >
-        ?
-      </button>
+      <div className={styles.helpButtonSlot}>
+        <div className={tutorial.getTargetClass("help", styles.helpButtonTarget)}>
+          <button
+            type="button"
+            className={styles.helpButton}
+            onClick={tutorial.restart}
+            aria-label="Replay mission planner intro"
+            data-tooltip="Replay intro tutorial"
+          >
+            ?
+          </button>
+        </div>
+      </div>
       <section
         className={styles.missionHeader}
       >
-        <div
-          ref={tutorial.registerTarget("intro")}
-          className={tutorial.getTargetClass("intro", styles.commandIntro)}
-        >
+        <div className={tutorial.getTargetClass("intro", styles.commandIntro)}>
           <div className={styles.commandMeta}>
             <span className={styles.dayBadge}>{dayCopy.kicker}</span>
             <span className={styles.rankBadge}>{DAY_RANKS[currentDay]}</span>
@@ -187,7 +187,6 @@ export default function MissionPlanner({
         </div>
 
         <div
-          ref={tutorial.registerTarget("budget")}
           className={tutorial.getTargetClass("budget", styles.budgetPanel)}
           aria-label="Budget status"
         >
@@ -205,7 +204,6 @@ export default function MissionPlanner({
 
       <div className={styles.missionGrid}>
         <section
-          ref={tutorial.registerTarget("coverage")}
           className={tutorial.getTargetClass("coverage", `${styles.missionCard} ${styles.missionCardWide}`)}
         >
           <div className={styles.missionCardHeader}>
@@ -242,7 +240,6 @@ export default function MissionPlanner({
         </section>
 
         <section
-          ref={tutorial.registerTarget("sample")}
           className={tutorial.getTargetClass("sample", styles.missionCard)}
         >
           <div className={styles.missionCardHeader}>
@@ -273,7 +270,6 @@ export default function MissionPlanner({
         </section>
 
         <section
-          ref={tutorial.registerTarget("signals")}
           className={tutorial.getTargetClass("signals", `${styles.missionCard} ${styles.missionCardWide} ${styles.signalMissionCard}`)}
         >
           <div className={styles.missionCardHeader}>
@@ -341,7 +337,6 @@ export default function MissionPlanner({
         </section>
 
         <aside
-          ref={tutorial.registerTarget("queue")}
           className={tutorial.getTargetClass("queue", styles.missionQueue)}
         >
           <div className={styles.missionCardHeader}>
@@ -419,7 +414,6 @@ export default function MissionPlanner({
           onBack={tutorial.goPrev}
           onNext={tutorial.goNext}
           titleId="mission-tutorial-title"
-          popoverRef={tutorial.registerPopover}
         />
       )}
     </div>

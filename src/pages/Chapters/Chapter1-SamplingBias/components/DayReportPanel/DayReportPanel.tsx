@@ -21,32 +21,33 @@ type DayReportPanelProps = {
 const districtCode = (index: number) => ["UP", "DT", "FZ", "SL"][index] ?? "RG";
 const districtName = (label: string) => label.replace(/\s+/g, " ").trim();
 
-type TutorialTarget = "overall" | "districts" | "narrative" | "continue";
+type TutorialTarget = "overall" | "districts" | "narrative" | "continue" | "help";
 
 const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
   {
     target: "overall",
     title: "Overall checkpoint",
     body: "This is the model's current accuracy after today's committed patrols. Low scores mean the dataset still has blind spots.",
-    placement: "left",
   },
   {
     target: "districts",
     title: "District breakdown",
     body: "Each district shows its own confidence score. Compare sampled and unsampled districts before planning the next day.",
-    placement: "top",
   },
   {
     target: "narrative",
     title: "Audit receipt",
     body: "This receipt shows the totals, the districts needing attention, and the next action to take.",
-    placement: "top",
   },
   {
     target: "continue",
     title: "Proceed to the next day",
     body: "Use this button to move from the report into the next briefing.",
-    placement: "top",
+  },
+  {
+    target: "help",
+    title: "Replay the guide",
+    body: "Use this help button any time you want to reopen the day report walkthrough from the beginning.",
   },
 ];
 
@@ -67,7 +68,6 @@ export default function DayReportPanel({
     enabled: tutorialEnabled && dayNumber === 1,
     onOpenChange: onTutorialOpenChange,
     onDismiss: onTutorialDismiss,
-    popoverWidth: 400,
   });
 
   useEffect(() => {
@@ -137,15 +137,19 @@ export default function DayReportPanel({
 
   return (
     <section className={`${styles.reportRoot} ${tutorial.open ? styles.reportRootTutorialActive : ""}`}>
-      <button
-        type="button"
-        className={styles.helpButton}
-        onClick={tutorial.restart}
-        aria-label="Replay day report intro"
-        data-tooltip="Replay intro tutorial"
-      >
-        ?
-      </button>
+      <div className={styles.helpButtonSlot}>
+        <div className={tutorial.getTargetClass("help", styles.helpButtonTarget)}>
+          <button
+            type="button"
+            className={styles.helpButton}
+            onClick={tutorial.restart}
+            aria-label="Replay day report intro"
+            data-tooltip="Replay intro tutorial"
+          >
+            ?
+          </button>
+        </div>
+      </div>
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>Case File · Temporal Bias Unit</p>
@@ -157,7 +161,6 @@ export default function DayReportPanel({
           </p>
         </div>
         <div
-          ref={tutorial.registerTarget("overall")}
           className={tutorial.getTargetClass("overall", `${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`)}
         >
           <span className={styles.overallLabel}>Overall Accuracy</span>
@@ -167,7 +170,6 @@ export default function DayReportPanel({
 
       <div className={styles.grid}>
         <article
-          ref={tutorial.registerTarget("districts")}
           className={tutorial.getTargetClass("districts", styles.sectionCard)}
         >
           <p className={styles.sectionEyebrow}>District Breakdown</p>
@@ -207,7 +209,6 @@ export default function DayReportPanel({
         </article>
 
         <article
-          ref={tutorial.registerTarget("narrative")}
           className={tutorial.getTargetClass("narrative", styles.sectionCard)}
         >
           <p className={styles.sectionEyebrow}>Audit Receipt</p>
@@ -252,7 +253,6 @@ export default function DayReportPanel({
             {dayNumber < 3 ? "Report filed. Move to the next patrol day when ready." : "Final field report filed. Review the closing verdict."}
           </p>
           <button
-            ref={tutorial.registerTarget("continue")}
             type="button"
             className={tutorial.getTargetClass("continue", shared.continueBtn)}
             onClick={onContinue}
@@ -274,7 +274,6 @@ export default function DayReportPanel({
           onBack={tutorial.goPrev}
           onNext={tutorial.goNext}
           titleId="day-report-tutorial-title"
-          popoverRef={tutorial.registerPopover}
         />
       )}
     </section>
