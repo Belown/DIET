@@ -30,6 +30,7 @@ const isChapterId = (value: string | null): value is ChapterId =>
 export default function Chapters() {
   const [searchParams, setSearchParams] = useSearchParams();
   const chapterParam = searchParams.get("chapter");
+  const tutorialDebugEnabled = searchParams.get("tutorialDebug") === "true";
   const shouldShowIntro = searchParams.get("intro") === "story" || !chapterParam;
   const initialView: ActiveView = shouldShowIntro ? "intro" : isChapterId(chapterParam) ? chapterParam : "ch1";
   const [active, setActive] = useState<ActiveView>(initialView);
@@ -168,7 +169,12 @@ export default function Chapters() {
               onSelectChapter={selectChapter}
             />
           )}
-          {active === "ch1" && <Chapter1SamplingBias onMissionTutorialOpenChange={setMissionTutorialOpen} />}
+          {active === "ch1" && (
+            <Chapter1SamplingBias
+              tutorialDebugEnabled={tutorialDebugEnabled}
+              onMissionTutorialOpenChange={setMissionTutorialOpen}
+            />
+          )}
           {active === "ch2" && <Chapter2COMPAS />}
           {active === "ch3" && <Chapter3Placeholder />}
         </div>

@@ -29,6 +29,7 @@ type MissionPlannerProps = {
   removePlan: (id: string) => void;
   sendDetectiveAndAdvance: () => void;
   tutorialEnabled?: boolean;
+  tutorialDebugEnabled?: boolean;
   onTutorialOpenChange?: (open: boolean) => void;
   onTutorialDismiss?: () => void;
 };
@@ -153,12 +154,14 @@ export default function MissionPlanner({
   removePlan,
   sendDetectiveAndAdvance,
   tutorialEnabled = true,
+  tutorialDebugEnabled = false,
   onTutorialOpenChange,
   onTutorialDismiss,
 }: MissionPlannerProps) {
   const locked = dayLocked[currentDay];
   const tutorial = useTutorial(TUTORIAL_STEPS, {
     enabled: tutorialEnabled && currentDay === 0 && !locked,
+    debugEnabled: tutorialDebugEnabled,
     onOpenChange: onTutorialOpenChange,
     onDismiss: onTutorialDismiss,
   });
@@ -425,7 +428,7 @@ export default function MissionPlanner({
           popoverRef={tutorial.registerPopover}
         />
       )}
-      {tutorial.open && <TutorialDebugOverlay info={tutorial.debugInfo} />}
+      {tutorialDebugEnabled && tutorial.open && <TutorialDebugOverlay info={tutorial.debugInfo} />}
     </div>
   );
 }

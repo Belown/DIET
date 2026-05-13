@@ -17,6 +17,7 @@ export type TutorialStep<T extends string> = {
 
 type UseTutorialOptions = {
   enabled: boolean;
+  debugEnabled?: boolean;
   onOpenChange?: (open: boolean) => void;
   onDismiss?: () => void;
 };
@@ -50,6 +51,7 @@ export type TutorialController<T extends string> = {
 };
 
 const TARGET_GAP = 16;
+const VIEWPORT_MARGIN = 16;
 let tutorialInstanceCounter = 0;
 
 const BASE_POPOVER_STYLE: CSSProperties = {
@@ -71,6 +73,49 @@ const HIDDEN_POPOVER_STYLE: CSSProperties = {
 
 type Rect = { top: number; left: number; right: number; bottom: number; width: number; height: number };
 
+function getSafeViewportTop(): number {
+  const sampleXs = [VIEWPORT_MARGIN, window.innerWidth / 2, window.innerWidth - VIEWPORT_MARGIN];
+  const topChrome = new Set<HTMLElement>();
+
+  sampleXs.forEach((x) => {
+    document.elementsFromPoint(x, 1).forEach((el) => {
+      let current: HTMLElement | null = el instanceof HTMLElement ? el : null;
+      while (current && current !== document.body) {
+        const style = window.getComputedStyle(current);
+        if ((style.position === "sticky" || style.position === "fixed") && style.top === "0px") {
+          topChrome.add(current);
+          break;
+        }
+        current = current.parentElement;
+      }
+    });
+  });
+
+  const stickyHeaderBottom = Array.from(topChrome).reduce((bottom, el) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return bottom;
+    if (rect.top > VIEWPORT_MARGIN) return bottom;
+    return Math.max(bottom, rect.bottom);
+  }, 0);
+
+  return Math.max(VIEWPORT_MARGIN, Math.ceil(stickyHeaderBottom) + VIEWPORT_MARGIN);
+}
+
+function getReferenceRect(target: HTMLElement, safeTop: number): Rect {
+  const r = target.getBoundingClientRect();
+  const visibleTop = Math.max(r.top, safeTop);
+  const visibleBottom = Math.max(visibleTop, r.bottom);
+
+  return {
+    top: visibleTop,
+    left: r.left,
+    right: r.right,
+    bottom: visibleBottom,
+    width: r.width,
+    height: visibleBottom - visibleTop,
+  };
+}
+
 function placeOn(side: ConcretePlacement, t: Rect, pw: number, ph: number): { top: number; left: number } {
   switch (side) {
     case "bottom":
@@ -84,31 +129,40 @@ function placeOn(side: ConcretePlacement, t: Rect, pw: number, ph: number): { to
   }
 }
 
+function choosePlacement(
+  requested: Placement | undefined,
+  space: Record<ConcretePlacement, number>,
+  fits: Record<ConcretePlacement, boolean>,
+): ConcretePlacement {
+  if (requested && requested !== "auto" && fits[requested]) {
+    return requested;
+  }
+
+  const fittingSides = (Object.keys(fits) as ConcretePlacement[]).filter((s) => fits[s]);
+  const candidates = fittingSides.length > 0 ? fittingSides : (Object.keys(space) as ConcretePlacement[]);
+
+  return candidates.reduce((best, s) => (space[s] > space[best] ? s : best));
+}
+
 function computePopoverStyle(
   target: HTMLElement,
   popover: HTMLElement,
   requested: Placement | undefined,
   offset: { x?: number; y?: number } | undefined,
+  debugEnabled: boolean,
 ): { style: CSSProperties; debug: TutorialDebugInfo } {
-  const r = target.getBoundingClientRect();
-  const t: Rect = {
-    top: r.top,
-    left: r.left,
-    right: r.right,
-    bottom: r.bottom,
-    width: r.width,
-    height: r.height,
-  };
+  const safeTop = getSafeViewportTop();
+  const t = getReferenceRect(target, safeTop);
   const pw = popover.offsetWidth;
   const ph = popover.offsetHeight;
   const vw = window.innerWidth;
   const vh = window.innerHeight;
 
   const space: Record<ConcretePlacement, number> = {
-    top: t.top,
-    bottom: vh - t.bottom,
-    left: t.left,
-    right: vw - t.right,
+    top: t.top - safeTop,
+    bottom: vh - VIEWPORT_MARGIN - t.bottom,
+    left: t.left - VIEWPORT_MARGIN,
+    right: vw - VIEWPORT_MARGIN - t.right,
   };
   const fits: Record<ConcretePlacement, boolean> = {
     top: space.top >= ph + TARGET_GAP,
@@ -116,15 +170,14 @@ function computePopoverStyle(
     left: space.left >= pw + TARGET_GAP,
     right: space.right >= pw + TARGET_GAP,
   };
-  const side = (Object.keys(space) as ConcretePlacement[]).reduce((best, s) =>
-    space[s] > space[best] ? s : best,
-  );
-  const chosenSide = requested && requested !== "auto" ? requested : side;
+  const chosenSide = choosePlacement(requested, space, fits);
 
   const { top: rawTop, left: rawLeft } = placeOn(chosenSide, t, pw, ph);
 
-  const top = rawTop + (offset?.y ?? 0);
-  const left = rawLeft + (offset?.x ?? 0);
+  const unclampedTop = rawTop + (offset?.y ?? 0);
+  const unclampedLeft = rawLeft + (offset?.x ?? 0);
+  const top = Math.min(Math.max(unclampedTop, safeTop), Math.max(safeTop, vh - ph - VIEWPORT_MARGIN));
+  const left = Math.min(Math.max(unclampedLeft, VIEWPORT_MARGIN), Math.max(VIEWPORT_MARGIN, vw - pw - VIEWPORT_MARGIN));
 
   const overflow: Record<ConcretePlacement, number> = {
     top: Math.max(0, -top),
@@ -151,11 +204,14 @@ function computePopoverStyle(
     overflow,
   };
 
-  // eslint-disable-next-line no-console
-  console.debug("[useTutorial] placement", debug);
+  if (debugEnabled) {
+    // eslint-disable-next-line no-console
+    console.debug("[useTutorial] placement", debug);
+  }
 
   const style: CSSProperties = {
     ...BASE_POPOVER_STYLE,
+    maxHeight: `calc(100vh - ${safeTop + VIEWPORT_MARGIN}px)`,
     top,
     left,
     right: "auto",
@@ -167,7 +223,7 @@ function computePopoverStyle(
 
 export function useTutorial<T extends string>(
   steps: TutorialStep<T>[],
-  { enabled, onOpenChange, onDismiss }: UseTutorialOptions,
+  { enabled, debugEnabled = false, onOpenChange, onDismiss }: UseTutorialOptions,
 ): TutorialController<T> {
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -229,9 +285,10 @@ export function useTutorial<T extends string>(
         popoverRef.current,
         placement,
         offsetX !== undefined || offsetY !== undefined ? { x: offsetX, y: offsetY } : undefined,
+        debugEnabled,
       );
       setPopoverStyle(style);
-      setDebugInfo(debug);
+      setDebugInfo(debugEnabled ? debug : null);
     };
 
     const targetEl = document.querySelector<HTMLElement>(`.${activeTargetClass}`);
@@ -259,7 +316,7 @@ export function useTutorial<T extends string>(
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
-  }, [open, step, stepIndex, stepTarget, placement, offsetX, offsetY, popoverNode]);
+  }, [open, step, stepIndex, stepTarget, placement, offsetX, offsetY, popoverNode, debugEnabled]);
 
   const getTargetClass = (target: T, baseClassName: string) => {
     const isActive = open && stepTarget === target;

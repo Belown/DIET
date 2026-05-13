@@ -15,6 +15,7 @@ type DayReportPanelProps = {
   continueLabel?: string;
   onContinue?: () => void;
   tutorialEnabled?: boolean;
+  tutorialDebugEnabled?: boolean;
   onTutorialOpenChange?: (open: boolean) => void;
   onTutorialDismiss?: () => void;
 };
@@ -65,6 +66,7 @@ export default function DayReportPanel({
   continueLabel,
   onContinue,
   tutorialEnabled = true,
+  tutorialDebugEnabled = false,
   onTutorialOpenChange,
   onTutorialDismiss,
 }: DayReportPanelProps) {
@@ -72,6 +74,7 @@ export default function DayReportPanel({
 
   const tutorial = useTutorial(TUTORIAL_STEPS, {
     enabled: tutorialEnabled && dayNumber === 1,
+    debugEnabled: tutorialDebugEnabled,
     onOpenChange: onTutorialOpenChange,
     onDismiss: onTutorialDismiss,
   });
@@ -283,7 +286,7 @@ export default function DayReportPanel({
           popoverRef={tutorial.registerPopover}
         />
       )}
-      {tutorial.open && <TutorialDebugOverlay info={tutorial.debugInfo} />}
+      {tutorialDebugEnabled && tutorial.open && <TutorialDebugOverlay info={tutorial.debugInfo} />}
     </section>
   );
 }

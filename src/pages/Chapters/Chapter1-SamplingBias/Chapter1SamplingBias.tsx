@@ -60,9 +60,13 @@ const getChapterBackground = (passage: PassageId): string | null => {
 
 type Chapter1SamplingBiasProps = {
   onMissionTutorialOpenChange?: (open: boolean) => void;
+  tutorialDebugEnabled?: boolean;
 };
 
-export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Chapter1SamplingBiasProps) {
+export default function Chapter1SamplingBias({
+  onMissionTutorialOpenChange,
+  tutorialDebugEnabled = false,
+}: Chapter1SamplingBiasProps) {
   const [, setSearchParams] = useSearchParams();
   const investigation = useInvestigationState();
   const {
@@ -333,6 +337,7 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
             removePlan={removePlan}
             sendDetectiveAndAdvance={sendDetectiveAndAdvance}
             tutorialEnabled={!hasCompletedMissionTutorial}
+            tutorialDebugEnabled={tutorialDebugEnabled}
             onTutorialOpenChange={setIsMissionTutorialOpen}
             onTutorialDismiss={() => setHasCompletedMissionTutorial(true)}
           />
@@ -348,6 +353,7 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
             tutorialEnabled={!hasCompletedDayReportTutorial}
+            tutorialDebugEnabled={tutorialDebugEnabled}
             onTutorialOpenChange={setIsMissionTutorialOpen}
             onTutorialDismiss={() => setHasCompletedDayReportTutorial(true)}
           />
@@ -362,6 +368,7 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
             sampledFlags={strategy.sampledFlags}
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
+            tutorialDebugEnabled={tutorialDebugEnabled}
           />
         );
 
@@ -374,6 +381,7 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
             sampledFlags={strategy.sampledFlags}
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
+            tutorialDebugEnabled={tutorialDebugEnabled}
           />
         );
 
