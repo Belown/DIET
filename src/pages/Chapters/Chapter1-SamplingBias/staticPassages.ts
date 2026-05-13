@@ -22,6 +22,7 @@ export interface Passage {
 
 export const PASSAGES: Record<PassageId, Passage> = {
   "intro": {
+    chatbox: "open",
     chunks: [
       "Listen carefully. We don't have much time.",
       "Ten years from now, a machine convicts us.",

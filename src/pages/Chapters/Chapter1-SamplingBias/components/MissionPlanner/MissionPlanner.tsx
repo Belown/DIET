@@ -27,7 +27,9 @@ type MissionPlannerProps = {
   addPlan: () => void;
   removePlan: (id: string) => void;
   sendDetectiveAndAdvance: () => void;
+  tutorialEnabled?: boolean;
   onTutorialOpenChange?: (open: boolean) => void;
+  onTutorialDismiss?: () => void;
 };
 
 const getPopulationLabel = (population: PopulationOption) => {
@@ -141,14 +143,16 @@ export default function MissionPlanner({
   addPlan,
   removePlan,
   sendDetectiveAndAdvance,
+  tutorialEnabled = true,
   onTutorialOpenChange,
+  onTutorialDismiss,
 }: MissionPlannerProps) {
   const locked = dayLocked[currentDay];
   const tutorial = useTutorial(TUTORIAL_STEPS, {
-    enabled: currentDay === 0 && !locked,
+    enabled: tutorialEnabled && currentDay === 0 && !locked,
     onOpenChange: onTutorialOpenChange,
+    onDismiss: onTutorialDismiss,
   });
-  const remainingAfterAdd = remainToday - draftCost;
   const budgetUsed = Math.min(100, Math.round((spentToday / DAILY_BUDGET) * 100));
   const coverageProgress = Math.round((zoneCount / REGIONS.length) * 100);
   const selectedDistricts = REGIONS.filter((_, i) => planZones[i]).map((region) => region.label);
@@ -156,6 +160,15 @@ export default function MissionPlanner({
 
   return (
     <div className={`${styles.missionDashboard} ${tutorial.open ? styles.missionDashboardTutorial : ""}`}>
+      <button
+        type="button"
+        className={styles.helpButton}
+        onClick={tutorial.restart}
+        aria-label="Replay mission planner intro"
+        data-tooltip="Replay intro tutorial"
+      >
+        ?
+      </button>
       <section
         className={styles.missionHeader}
       >
@@ -330,8 +343,8 @@ export default function MissionPlanner({
               <p className={styles.panelEyebrow}>Operation Stack</p>
               <h3 className={styles.missionCardTitle}>Today&apos;s queue</h3>
             </div>
-            <span className={remainingAfterAdd < 0 ? styles.missionPillBad : styles.missionPill}>
-              {remainingAfterAdd} left
+            <span className={remainToday < 0 ? styles.missionPillBad : styles.missionPill}>
+              {remainToday} left
             </span>
           </div>
 

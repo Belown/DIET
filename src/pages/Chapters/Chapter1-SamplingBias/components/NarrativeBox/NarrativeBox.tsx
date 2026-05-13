@@ -11,6 +11,7 @@ interface NarrativeBoxProps {
   disableKeyboardAdvance?: boolean;
   disablePreviousNavigation?: boolean;
   forceOpen?: boolean;
+  reopenSignal?: number;
 }
 
 export type { DialogueHistoryItem };

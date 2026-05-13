@@ -104,6 +104,9 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
   const [revealSheetMode, setRevealSheetMode] = useState<"hidden" | "spotlight">("hidden");
   const [hasSeenRevealSheet, setHasSeenRevealSheet] = useState(false);
   const [isMissionTutorialOpen, setIsMissionTutorialOpen] = useState(false);
+  const [hasCompletedMissionTutorial, setHasCompletedMissionTutorial] = useState(false);
+  const [hasCompletedDayReportTutorial, setHasCompletedDayReportTutorial] = useState(false);
+  const [chatboxReopenSignal, setChatboxReopenSignal] = useState(0);
 
   useEffect(() => {
     onMissionTutorialOpenChange?.(isMissionTutorialOpen);
@@ -329,7 +332,9 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
             addPlan={addPlan}
             removePlan={removePlan}
             sendDetectiveAndAdvance={sendDetectiveAndAdvance}
+            tutorialEnabled={!hasCompletedMissionTutorial}
             onTutorialOpenChange={setIsMissionTutorialOpen}
+            onTutorialDismiss={() => setHasCompletedMissionTutorial(true)}
           />
         );
 
@@ -342,7 +347,9 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
             sampledFlags={strategy.sampledFlags}
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
+            tutorialEnabled={!hasCompletedDayReportTutorial}
             onTutorialOpenChange={setIsMissionTutorialOpen}
+            onTutorialDismiss={() => setHasCompletedDayReportTutorial(true)}
           />
         );
 
@@ -383,6 +390,9 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
             onRestart={() => {
               resetInvestigation();
               setPassage("day1-brief");
+              setChunkIndex(0);
+              setShowChoices(false);
+              setChatboxReopenSignal((signal) => signal + 1);
             }}
             onNextChapter={() => {
               setSearchParams({ chapter: "ch2" });
@@ -417,6 +427,7 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
           autoCollapseOnTextComplete={shouldAutoHidePlannerNarrative}
           disableKeyboardAdvance={isSheetPopupOpen}
           forceOpen={shouldForceOpenNarrative}
+          reopenSignal={chatboxReopenSignal}
         />
       )}
 

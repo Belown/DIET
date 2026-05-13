@@ -22,6 +22,47 @@ type AccBarProps = {
   note?: string;
 };
 
+type ScoreTone = "good" | "mid" | "low";
+
+type MetricCardProps = {
+  label: string;
+  value: string;
+  status: string;
+  tone: ScoreTone;
+  percent?: number;
+};
+
+const scoreTone = (value: number): ScoreTone => {
+  if (value >= 0.75) return "good";
+  if (value >= 0.6) return "mid";
+  return "low";
+};
+
+const scoreStatus = (value: number) => {
+  if (value >= 0.75) return "Strong";
+  if (value >= 0.6) return "Watch";
+  return "Needs attention";
+};
+
+function MetricCard({ label, value, status, tone, percent }: MetricCardProps) {
+  return (
+    <div className={`${styles.metricCard} ${styles[`metricCard_${tone}`]}`}>
+      <div className={styles.metricTopline}>
+        <span>{label}</span>
+        <strong>{status}</strong>
+      </div>
+      <p className={styles.metricValue}>{value}</p>
+      {typeof percent === "number" ? (
+        <div className={styles.metricTrack} aria-hidden="true">
+          <div className={styles.metricFill} style={{ "--bar-width": `${Math.round(percent * 100)}%` } as React.CSSProperties} />
+        </div>
+      ) : (
+        <div className={styles.riskBand} aria-hidden="true" />
+      )}
+    </div>
+  );
+}
+
 function AccBar({ label, color, value, note }: AccBarProps) {
   const [width, setWidth] = useState(0);
 
@@ -56,6 +97,7 @@ export default function VerdictPanel({
   onNextChapter,
 }: VerdictPanelProps) {
   const riskLevel = overallAcc >= 0.8 ? "Low Risk" : overallAcc >= 0.6 ? "Medium Risk" : "High Risk";
+  const riskTone: ScoreTone = overallAcc >= 0.8 ? "good" : overallAcc >= 0.6 ? "mid" : "low";
 
   const narrativeInsights = useMemo(() => {
     const lowestIdx = regionAccs.reduce((minI, acc, i, arr) => (acc < arr[minI] ? i : minI), 0);
@@ -85,10 +127,27 @@ export default function VerdictPanel({
         <p className={styles.panelEyebrow}>Case Closure · Day 3 Final Report</p>
         <h2 className={styles.h2}>AI Justice Investigation Outcome</h2>
         <p className={styles.panelBody}>Three field days are complete. This report summarizes model performance, transfer risk, and what to do next.</p>
-        <div className={styles.summaryRow}>
-          <span className={styles.scorePill}>Overall <strong>{pct(overallAcc)}</strong></span>
-          <span className={styles.scorePill}>Neighbor City <strong>{pct(otherCityOvr)}</strong></span>
-          <span className={styles.scorePill}>Risk <strong>{riskLevel}</strong></span>
+        <div className={styles.metricStrip}>
+          <MetricCard
+            label="Overall"
+            value={pct(overallAcc)}
+            status={scoreStatus(overallAcc)}
+            tone={scoreTone(overallAcc)}
+            percent={overallAcc}
+          />
+          <MetricCard
+            label="Neighbor City"
+            value={pct(otherCityOvr)}
+            status={scoreStatus(otherCityOvr)}
+            tone={scoreTone(otherCityOvr)}
+            percent={otherCityOvr}
+          />
+          <MetricCard
+            label="Risk"
+            value={riskLevel}
+            status={riskTone === "good" ? "Deploy watch" : riskTone === "mid" ? "Review" : "Stop"}
+            tone={riskTone}
+          />
         </div>
       </section>
 

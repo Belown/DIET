@@ -14,6 +14,7 @@ export interface ChatboxProps {
   disableKeyboardAdvance?: boolean;
   disablePreviousNavigation?: boolean;
   forceOpen?: boolean;
+  reopenSignal?: number;
 }
 
 export interface DialogueHistoryItem {
@@ -37,6 +38,7 @@ export default function Chatbox({
   disableKeyboardAdvance = false,
   disablePreviousNavigation = false,
   forceOpen = false,
+  reopenSignal = 0,
 }: ChatboxProps) {
   const [displayedLength, setDisplayedLength] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -156,6 +158,12 @@ export default function Chatbox({
     wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
   }, [forceOpen, text]);
+
+  useEffect(() => {
+    if (!reopenSignal) return;
+    wasAutoCollapsedRef.current = false;
+    setIsCollapsed(false);
+  }, [reopenSignal]);
 
   useEffect(() => {
     if (!autoCollapseOnTextComplete || !isComplete || isCollapsed || forceOpen) return;

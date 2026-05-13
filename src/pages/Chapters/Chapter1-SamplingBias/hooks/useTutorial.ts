@@ -15,6 +15,7 @@ export type TutorialStep<T extends string> = {
 type UseTutorialOptions = {
   enabled: boolean;
   onOpenChange?: (open: boolean) => void;
+  onDismiss?: () => void;
   popoverWidth?: number;
 };
 
@@ -27,6 +28,7 @@ export type TutorialController<T extends string> = {
   registerTarget: (target: T) => (node: HTMLElement | null) => void;
   registerPopover: (node: HTMLElement | null) => void;
   getTargetClass: (target: T, baseClassName: string) => string;
+  restart: () => void;
   goNext: () => void;
   goPrev: () => void;
   close: () => void;
@@ -44,7 +46,7 @@ const opposite: Record<Exclude<TutorialPlacement, "auto">, Exclude<TutorialPlace
 
 export function useTutorial<T extends string>(
   steps: TutorialStep<T>[],
-  { enabled, onOpenChange, popoverWidth = 440 }: UseTutorialOptions,
+  { enabled, onOpenChange, onDismiss, popoverWidth = 440 }: UseTutorialOptions,
 ): TutorialController<T> {
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
@@ -190,6 +192,15 @@ export function useTutorial<T extends string>(
   const close = () => {
     setOpen(false);
     setDismissed(true);
+    onDismiss?.();
+  };
+
+  const restart = () => {
+    if (!steps.length) return;
+    setPopoverStyle(hiddenPopoverStyle);
+    setStepIndex(0);
+    setDismissed(false);
+    setOpen(true);
   };
 
   const goPrev = () => {
@@ -214,6 +225,7 @@ export function useTutorial<T extends string>(
     registerTarget,
     registerPopover,
     getTargetClass,
+    restart,
     goNext,
     goPrev,
     close,

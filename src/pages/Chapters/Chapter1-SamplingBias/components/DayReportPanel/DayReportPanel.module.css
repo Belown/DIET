@@ -1,4 +1,5 @@
 .reportRoot {
+  position: relative;
   background: var(--rui-surface);
   border: 1px solid var(--rui-border);
   border-radius: var(--radius-card);
@@ -21,6 +22,55 @@
   letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--rui-gray);
+}
+
+.helpButton {
+  position: absolute;
+  top: -84px;
+  right: 0;
+  z-index: 8;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(25, 28, 31, 0.16);
+  border-radius: 999px;
+  background: var(--rui-white);
+  color: var(--rui-teal);
+  font-family: var(--font-display);
+  font-size: 16px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(25, 28, 31, 0.12);
+}
+
+.helpButton:hover {
+  border-color: var(--rui-teal-border);
+  background: var(--rui-teal-soft);
+}
+
+.helpButton::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 10px);
+  transform: translateY(-50%);
+  width: max-content;
+  max-width: 160px;
+  padding: 7px 9px;
+  border-radius: 6px;
+  background: rgba(25, 28, 31, 0.94);
+  color: var(--rui-white);
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.2;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s ease;
+}
+
+.helpButton:hover::after,
+.helpButton:focus-visible::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(-2px);
 }
 
 .title {
@@ -94,6 +144,9 @@
 }
 
 .sectionCard {
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   border: 1px solid var(--rui-border);
   border-radius: 20px;
   padding: 14px;
@@ -113,10 +166,14 @@
 .zoneGrid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  min-height: 0;
+  height: 100%;
 }
 
 .zoneCard {
+  min-height: 0;
   display: grid;
   grid-template-columns: 48% 52%;
   border: 1px solid rgba(25, 28, 31, 0.12);
@@ -399,6 +456,8 @@
 @media (max-width: 760px) {
   .zoneGrid {
     grid-template-columns: 1fr;
+    grid-template-rows: none;
+    height: auto;
   }
 
   .zoneCard {

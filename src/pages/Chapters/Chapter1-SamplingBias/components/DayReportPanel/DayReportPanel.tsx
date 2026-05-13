@@ -13,7 +13,9 @@ type DayReportPanelProps = {
   sampledFlags: boolean[];
   continueLabel?: string;
   onContinue?: () => void;
+  tutorialEnabled?: boolean;
   onTutorialOpenChange?: (open: boolean) => void;
+  onTutorialDismiss?: () => void;
 };
 
 const districtCode = (index: number) => ["UP", "DT", "FZ", "SL"][index] ?? "RG";
@@ -55,13 +57,16 @@ export default function DayReportPanel({
   sampledFlags,
   continueLabel,
   onContinue,
+  tutorialEnabled = true,
   onTutorialOpenChange,
+  onTutorialDismiss,
 }: DayReportPanelProps) {
   const [barValues, setBarValues] = useState([0, 0, 0, 0]);
 
   const tutorial = useTutorial(TUTORIAL_STEPS, {
-    enabled: dayNumber === 1,
+    enabled: tutorialEnabled && dayNumber === 1,
     onOpenChange: onTutorialOpenChange,
+    onDismiss: onTutorialDismiss,
     popoverWidth: 400,
   });
 
@@ -132,6 +137,15 @@ export default function DayReportPanel({
 
   return (
     <section className={`${styles.reportRoot} ${tutorial.open ? styles.reportRootTutorialActive : ""}`}>
+      <button
+        type="button"
+        className={styles.helpButton}
+        onClick={tutorial.restart}
+        aria-label="Replay day report intro"
+        data-tooltip="Replay intro tutorial"
+      >
+        ?
+      </button>
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>Case File · Temporal Bias Unit</p>
@@ -219,7 +233,6 @@ export default function DayReportPanel({
             </div>
 
             <div className={`${styles.attentionBox} ${styles[`attentionBox_${attentionTone}`]}`}>
-              <span className={styles.attentionLabel}>Look here first</span>
               <strong>{attentionTitle}</strong>
               <p>{attentionDetail}</p>
             </div>
