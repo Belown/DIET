@@ -5,6 +5,7 @@ import { REGIONS } from "../../chapterData";
 import styles from "./DayReportPanel.module.css";
 import { useTutorial, type TutorialStep } from "../../hooks/useTutorial";
 import TutorialPopover from "../Tutorial/TutorialPopover";
+import TutorialDebugOverlay from "../Tutorial/TutorialDebugOverlay";
 
 type DayReportPanelProps = {
   dayNumber: 1 | 2 | 3;
@@ -28,26 +29,31 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
     target: "overall",
     title: "Overall checkpoint",
     body: "This is the model's current accuracy after today's committed patrols. Low scores mean the dataset still has blind spots.",
+    placement: "right",
   },
   {
     target: "districts",
     title: "District breakdown",
     body: "Each district shows its own confidence score. Compare sampled and unsampled districts before planning the next day.",
+    placement: "right",
   },
   {
     target: "narrative",
     title: "Audit receipt",
     body: "This receipt shows the totals, the districts needing attention, and the next action to take.",
+    placement: "left",
   },
   {
     target: "continue",
     title: "Proceed to the next day",
     body: "Use this button to move from the report into the next briefing.",
+    placement: "top",
   },
   {
     target: "help",
     title: "Replay the guide",
     body: "Use this help button any time you want to reopen the day report walkthrough from the beginning.",
+    placement: "bottom",
   },
 ];
 
@@ -274,8 +280,10 @@ export default function DayReportPanel({
           onBack={tutorial.goPrev}
           onNext={tutorial.goNext}
           titleId="day-report-tutorial-title"
+          popoverRef={tutorial.registerPopover}
         />
       )}
+      {tutorial.open && <TutorialDebugOverlay info={tutorial.debugInfo} />}
     </section>
   );
 }

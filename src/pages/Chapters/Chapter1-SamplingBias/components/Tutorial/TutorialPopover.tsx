@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import styles from "./Tutorial.module.css";
 
 type TutorialPopoverProps = {
@@ -12,6 +13,7 @@ type TutorialPopoverProps = {
   onBack: () => void;
   onNext: () => void;
   titleId?: string;
+  popoverRef?: (el: HTMLElement | null) => void;
 };
 
 export default function TutorialPopover({
@@ -25,11 +27,12 @@ export default function TutorialPopover({
   onBack,
   onNext,
   titleId,
+  popoverRef,
 }: TutorialPopoverProps) {
   if (!open) return null;
 
-  return (
-    <div className={styles.popover} style={style} role="dialog" aria-labelledby={titleId}>
+  return createPortal(
+    <div ref={popoverRef} className={styles.popover} style={style} role="dialog" aria-labelledby={titleId}>
       <p className={styles.eyebrow}>
         Step {stepIndex + 1} of {totalSteps}
       </p>
@@ -59,6 +62,7 @@ export default function TutorialPopover({
           {stepIndex === totalSteps - 1 ? "Done" : "Next"}
         </button>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

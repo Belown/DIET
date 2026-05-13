@@ -5,6 +5,7 @@ import { DAILY_BUDGET, QUESTION_OPTIONS, REGIONS } from "../../chapterData";
 import type { MissionPlan, PopulationOption, QuestionKey, QuestionOption } from "../../types";
 import { useTutorial, type TutorialStep } from "../../hooks/useTutorial";
 import TutorialPopover from "../Tutorial/TutorialPopover";
+import TutorialDebugOverlay from "../Tutorial/TutorialDebugOverlay";
 
 type SelectedQuestionInfo = QuestionOption & { line: string };
 
@@ -68,36 +69,43 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
     target: "intro",
     title: "Mission overview",
     body: "This card tells you the day and objective. Use it as your quick status read before building a sortie.",
+    placement: "bottom",
   },
   {
     target: "budget",
     title: "Budget",
     body: "This card tracks your daily investigation points, spent budget, and draft cost. A mission must fit the budget before it can be queued.",
+    placement: "left",
   },
   {
     target: "coverage",
     title: "Coverage",
     body: "Choose which zones the detective should visit. Wider coverage helps the model learn from the whole city instead of one narrow area.",
+    placement: "right",
   },
   {
     target: "sample",
     title: "Sample size",
     body: "Pick how many residents to sample. Larger samples cost more, but they give the model stronger evidence.",
+    placement: "right",
   },
   {
     target: "signals",
     title: "Signals",
     body: "Signals are model inputs. Some can sharpen the dataset, some can distract it, and some can carry bias, so choose which extra records belong in the case file.",
+    placement: "top",
   },
   {
     target: "queue",
     title: "Operation stack",
     body: "Add the current sortie to today's queue, review what will be collected, then deploy the detective when the plan is ready.",
+    placement: "left",
   },
   {
     target: "help",
     title: "Replay the guide",
     body: "Use this help button any time you want to reopen the mission planner walkthrough from the beginning.",
+    placement: "bottom",
   },
 ];
 
@@ -414,8 +422,10 @@ export default function MissionPlanner({
           onBack={tutorial.goPrev}
           onNext={tutorial.goNext}
           titleId="mission-tutorial-title"
+          popoverRef={tutorial.registerPopover}
         />
       )}
+      {tutorial.open && <TutorialDebugOverlay info={tutorial.debugInfo} />}
     </div>
   );
 }
