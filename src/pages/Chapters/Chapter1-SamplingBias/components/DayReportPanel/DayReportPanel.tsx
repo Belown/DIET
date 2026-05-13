@@ -17,10 +17,29 @@ type DayReportPanelProps = {
 };
 
 const districtCode = (index: number) => ["UP", "DT", "FZ", "SL"][index] ?? "RG";
+const districtName = (label: string) => label.replace(/\s+/g, " ").trim();
 
-type TutorialTarget = "continue";
+type TutorialTarget = "overall" | "districts" | "narrative" | "continue";
 
 const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
+  {
+    target: "overall",
+    title: "Overall checkpoint",
+    body: "This is the model's current accuracy after today's committed patrols. Low scores mean the dataset still has blind spots.",
+    placement: "left",
+  },
+  {
+    target: "districts",
+    title: "District breakdown",
+    body: "Each district shows its own confidence score. Compare sampled and unsampled districts before planning the next day.",
+    placement: "top",
+  },
+  {
+    target: "narrative",
+    title: "Audit receipt",
+    body: "This receipt shows the totals, the districts needing attention, and the next action to take.",
+    placement: "top",
+  },
   {
     target: "continue",
     title: "Proceed to the next day",
@@ -39,11 +58,11 @@ export default function DayReportPanel({
   onTutorialOpenChange,
 }: DayReportPanelProps) {
   const [barValues, setBarValues] = useState([0, 0, 0, 0]);
-  const [typedSummary, setTypedSummary] = useState("");
 
   const tutorial = useTutorial(TUTORIAL_STEPS, {
     enabled: dayNumber === 1,
     onOpenChange: onTutorialOpenChange,
+    popoverWidth: 400,
   });
 
   useEffect(() => {
@@ -63,6 +82,33 @@ export default function DayReportPanel({
   const overallPct = Math.round(overallAcc * 100);
   const sampledCount = sampledFlags.filter(Boolean).length;
   const overallTone = overallPct >= 75 ? "good" : overallPct >= 60 ? "mid" : "low";
+  const strongZones = useMemo(
+    () => REGIONS.filter((_, i) => (regionAccs[i] ?? 0) >= 0.75).map((r) => districtName(r.label)),
+    [regionAccs],
+  );
+  const lowZones = useMemo(
+    () => REGIONS.filter((_, i) => (regionAccs[i] ?? 0) < 0.6).map((r) => districtName(r.label)),
+    [regionAccs],
+  );
+  const unseenZones = useMemo(
+    () => REGIONS.filter((_, i) => !sampledFlags[i]).map((r) => districtName(r.label)),
+    [sampledFlags],
+  );
+  const attentionTone = unseenZones.length > 0 || overallPct < 60 ? "critical" : lowZones.length > 0 ? "warning" : "stable";
+  const attentionTitle =
+    unseenZones.length > 0
+      ? "Coverage blind spot"
+      : lowZones.length > 0
+        ? "Weak district confidence"
+        : "No urgent gaps";
+  const attentionDetail =
+    unseenZones.length > 0
+      ? unseenZones.join(", ")
+      : lowZones.length > 0
+        ? lowZones.join(", ")
+        : strongZones.length > 0
+          ? strongZones.join(", ")
+          : "All sampled districts";
 
   const suggestedActions = useMemo(() => {
     if (dayNumber === 3) {
@@ -77,35 +123,6 @@ export default function DayReportPanel({
     actions.push(`Prepare Day ${dayNumber + 1} mission with balanced distribution.`);
     return actions;
   }, [dayNumber, overallPct, sampledCount]);
-
-  const summaryText = useMemo(() => {
-    const strongZones = REGIONS.filter((_, i) => (regionAccs[i] ?? 0) >= 0.75).map((r) => r.label);
-    const lowZones = REGIONS.filter((_, i) => (regionAccs[i] ?? 0) < 0.6).map((r) => r.label);
-    const unseenZones = REGIONS.filter((_, i) => !sampledFlags[i]).map((r) => r.label);
-
-    const lines: string[] = [];
-    lines.push(`Day ${dayNumber} closed.`);
-    lines.push(`Dataset coverage: ${sampledCount}/4 districts sampled.`);
-    lines.push("");
-    if (strongZones.length) lines.push(`Strong confidence in ${strongZones.join(", ")}.`);
-    if (lowZones.length) lines.push(`Weak confidence in ${lowZones.join(", ")}.`);
-    if (unseenZones.length) lines.push(`Blind spots remain in ${unseenZones.join(", ")}.`);
-    lines.push("");
-    lines.push(`Recommendation: ${suggestedActions[0]}`);
-    if (suggestedActions[1]) lines.push(suggestedActions[1]);
-    return lines.join("\n");
-  }, [dayNumber, regionAccs, sampledCount, sampledFlags, suggestedActions]);
-
-  useEffect(() => {
-    setTypedSummary("");
-    let index = 0;
-    const timer = window.setInterval(() => {
-      index += 1;
-      setTypedSummary(summaryText.slice(0, index));
-      if (index >= summaryText.length) window.clearInterval(timer);
-    }, 14);
-    return () => window.clearInterval(timer);
-  }, [summaryText]);
 
   const confidenceLabel = (score: number) => {
     if (score >= 75) return "Strong confidence";
@@ -126,7 +143,8 @@ export default function DayReportPanel({
           </p>
         </div>
         <div
-          className={`${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`}
+          ref={tutorial.registerTarget("overall")}
+          className={tutorial.getTargetClass("overall", `${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`)}
         >
           <span className={styles.overallLabel}>Overall Accuracy</span>
           <strong className={styles.overallValue}>{overallPct}%</strong>
@@ -135,7 +153,8 @@ export default function DayReportPanel({
 
       <div className={styles.grid}>
         <article
-          className={styles.sectionCard}
+          ref={tutorial.registerTarget("districts")}
+          className={tutorial.getTargetClass("districts", styles.sectionCard)}
         >
           <p className={styles.sectionEyebrow}>District Breakdown</p>
           <div className={styles.zoneGrid}>
@@ -174,13 +193,43 @@ export default function DayReportPanel({
         </article>
 
         <article
-          className={styles.sectionCard}
+          ref={tutorial.registerTarget("narrative")}
+          className={tutorial.getTargetClass("narrative", styles.sectionCard)}
         >
-          <p className={styles.sectionEyebrow}>Narrative Log</p>
-          <div className={styles.typewriterPaper}>
-            <p className={styles.typewriterText}>{typedSummary}<span className={styles.cursor}>|</span></p>
-          </div>
+          <p className={styles.sectionEyebrow}>Audit Receipt</p>
+          <div className={styles.receiptPaper}>
+            <div className={styles.receiptHeader}>
+              <span>Day {dayNumber} closed</span>
+              <strong className={styles.receiptStamp}>Filed</strong>
+            </div>
 
+            <div className={styles.receiptRows} aria-label="Report totals">
+              <div className={styles.receiptRow}>
+                <span>Overall accuracy</span>
+                <strong>{overallPct}%</strong>
+              </div>
+              <div className={styles.receiptRow}>
+                <span>District coverage</span>
+                <strong>{sampledCount}/4</strong>
+              </div>
+              <div className={styles.receiptRow}>
+                <span>Strong districts</span>
+                <strong>{strongZones.length || 0}</strong>
+              </div>
+            </div>
+
+            <div className={`${styles.attentionBox} ${styles[`attentionBox_${attentionTone}`]}`}>
+              <span className={styles.attentionLabel}>Look here first</span>
+              <strong>{attentionTitle}</strong>
+              <p>{attentionDetail}</p>
+            </div>
+
+            <div className={styles.receiptSection}>
+              <span className={styles.receiptSectionLabel}>Next action</span>
+              <p>{suggestedActions[0]}</p>
+              {suggestedActions[1] && <small>{suggestedActions[1]}</small>}
+            </div>
+          </div>
         </article>
       </div>
 

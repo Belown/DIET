@@ -63,12 +63,12 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
   {
     target: "intro",
     title: "Mission overview",
-    body: "This card tells you the day, objective, and readiness checklist. Use it as your quick status read before building a sortie.",
+    body: "This card tells you the day and objective. Use it as your quick status read before building a sortie.",
     placement: "bottom",
   },
   {
     target: "budget",
-    title: "Budget and readiness",
+    title: "Budget",
     body: "This card tracks your daily investigation points, spent budget, and draft cost. A mission must fit the budget before it can be queued.",
     placement: "left",
   },
@@ -151,14 +151,6 @@ export default function MissionPlanner({
   const remainingAfterAdd = remainToday - draftCost;
   const budgetUsed = Math.min(100, Math.round((spentToday / DAILY_BUDGET) * 100));
   const coverageProgress = Math.round((zoneCount / REGIONS.length) * 100);
-  const budgetFitsDraft = remainingAfterAdd >= 0;
-  const readinessSteps = [
-    { label: "Coverage", complete: zoneCount > 0 },
-    { label: "Sample", complete: Boolean(planPopulation) },
-    { label: "Budget", complete: budgetFitsDraft },
-    { label: "Queue", complete: currentPlans.length > 0 },
-  ];
-  const readinessScore = Math.round((readinessSteps.filter((step) => step.complete).length / readinessSteps.length) * 100);
   const selectedDistricts = REGIONS.filter((_, i) => planZones[i]).map((region) => region.label);
   const dayCopy = DAY_COPY[currentDay];
 
@@ -177,17 +169,6 @@ export default function MissionPlanner({
           </div>
           <h2 className={styles.h2}>{dayCopy.title}</h2>
           <p className={styles.panelBody}>{dayCopy.desc}</p>
-          <div className={styles.objectiveTrack} aria-label="Mission readiness checklist">
-            {readinessSteps.map((step, index) => (
-              <span
-                key={step.label}
-                className={`${styles.objectiveStep} ${step.complete ? styles.objectiveStepDone : ""}`}
-              >
-                <span>{index + 1}</span>
-                {step.label}
-              </span>
-            ))}
-          </div>
         </div>
 
         <div
@@ -200,7 +181,6 @@ export default function MissionPlanner({
             <small>IP left</small>
           </div>
           <div className={styles.budgetStats}>
-            <strong>Readiness {readinessScore}%</strong>
             <span><img src={BUDGET_VISUALS.budget} alt="" aria-hidden="true" /> Budget {DAILY_BUDGET}</span>
             <span><img src={BUDGET_VISUALS.spent} alt="" aria-hidden="true" /> Spent {spentToday}</span>
             <span><img src={BUDGET_VISUALS.draft} alt="" aria-hidden="true" /> Draft {draftCost}</span>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import styles from "../components/Tutorial/Tutorial.module.css";
 
@@ -49,7 +49,15 @@ export function useTutorial<T extends string>(
   const [open, setOpen] = useState(false);
   const [dismissed, setDismissed] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
-  const [popoverStyle, setPopoverStyle] = useState<CSSProperties>({});
+  const hiddenPopoverStyle = useMemo<CSSProperties>(
+    () => ({
+      width: popoverWidth,
+      visibility: "hidden",
+      pointerEvents: "none",
+    }),
+    [popoverWidth],
+  );
+  const [popoverStyle, setPopoverStyle] = useState<CSSProperties>(hiddenPopoverStyle);
   const targets = useRef<Record<string, HTMLElement | null>>({});
   const popoverEl = useRef<HTMLElement | null>(null);
 
@@ -60,7 +68,7 @@ export function useTutorial<T extends string>(
     if (!step) return;
     const target = targets.current[step.target];
     if (!target) {
-      setPopoverStyle({});
+      setPopoverStyle(hiddenPopoverStyle);
       return;
     }
     const rect = target.getBoundingClientRect();
@@ -118,16 +126,17 @@ export function useTutorial<T extends string>(
     left = Math.min(Math.max(VIEWPORT_PAD, left), Math.max(VIEWPORT_PAD, vw - popW - VIEWPORT_PAD));
     top = Math.min(Math.max(VIEWPORT_PAD, top), Math.max(VIEWPORT_PAD, vh - popH - VIEWPORT_PAD));
 
-    setPopoverStyle({ width: popoverWidth, left, top });
-  }, [step, popoverWidth]);
+    setPopoverStyle({ width: popoverWidth, left, top, visibility: "visible", pointerEvents: "auto" });
+  }, [hiddenPopoverStyle, step, popoverWidth]);
 
   useEffect(() => {
     if (enabled && !dismissed) {
+      setPopoverStyle(hiddenPopoverStyle);
       setOpen(true);
       return;
     }
     setOpen(false);
-  }, [enabled, dismissed]);
+  }, [enabled, dismissed, hiddenPopoverStyle]);
 
   useEffect(() => {
     onOpenChange?.(open);
@@ -136,9 +145,10 @@ export function useTutorial<T extends string>(
 
   useEffect(() => {
     if (!open || !stepTarget) return;
+    setPopoverStyle(hiddenPopoverStyle);
     const target = targets.current[stepTarget];
     window.requestAnimationFrame(() => {
-      target?.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+      target?.scrollIntoView({ behavior: "auto", block: "center", inline: "nearest" });
       updatePosition();
     });
     const timer = window.setTimeout(updatePosition, 420);
@@ -157,7 +167,7 @@ export function useTutorial<T extends string>(
       window.removeEventListener("scroll", updatePosition, true);
       ro?.disconnect();
     };
-  }, [stepTarget, open, updatePosition]);
+  }, [stepTarget, open, updatePosition, hiddenPopoverStyle]);
 
   const registerTarget = (target: T) => (node: HTMLElement | null) => {
     targets.current[target] = node;
@@ -182,12 +192,16 @@ export function useTutorial<T extends string>(
     setDismissed(true);
   };
 
-  const goPrev = () => setStepIndex((i) => Math.max(0, i - 1));
+  const goPrev = () => {
+    setPopoverStyle(hiddenPopoverStyle);
+    setStepIndex((i) => Math.max(0, i - 1));
+  };
   const goNext = () => {
     if (stepIndex >= steps.length - 1) {
       close();
       return;
     }
+    setPopoverStyle(hiddenPopoverStyle);
     setStepIndex((i) => i + 1);
   };
 

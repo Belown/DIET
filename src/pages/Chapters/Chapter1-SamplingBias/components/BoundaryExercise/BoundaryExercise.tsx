@@ -7,6 +7,8 @@ import type { DemoBoundary } from "../../types";
 import BriefingSheet from "../BriefingSheet/BriefingSheet";
 import ScatterPlot from "../ScatterPlot/ScatterPlot";
 
+const clampShift = (shift: number) => Math.max(-40, Math.min(120, shift));
+
 type BoundaryExerciseProps = {
   boundary: DemoBoundary;
   setBoundary: Dispatch<SetStateAction<DemoBoundary>>;
@@ -23,10 +25,9 @@ export default function BoundaryExercise({
   onSubmit,
 }: BoundaryExerciseProps) {
   const [submitError, setSubmitError] = useState("");
+  const [xShift, setXShift] = useState(() => clampShift(boundary.slope === 0 ? 50 : -boundary.intercept / boundary.slope));
   const sheet = BRIEFING_SHEETS["demo-intro"];
   const hasPerfectAccuracy = trainingAccuracyValue >= 1;
-  const boundaryShift = boundary.slope === 0 ? 50 : -boundary.intercept / boundary.slope;
-  const sliderShift = Math.max(-40, Math.min(120, boundaryShift));
 
   useEffect(() => {
     if (hasPerfectAccuracy) {
@@ -80,7 +81,7 @@ export default function BoundaryExercise({
                   value={boundary.slope}
                   onChange={(e) => {
                     const slope = parseFloat(e.target.value);
-                    setBoundary((b) => ({ ...b, slope, intercept: -slope * boundaryShift }));
+                    setBoundary((b) => ({ ...b, slope, intercept: -slope * xShift }));
                   }}
                   className={shared.sliderInput}
                 />
@@ -93,14 +94,15 @@ export default function BoundaryExercise({
                   min={-40}
                   max={120}
                   step={1}
-                  value={sliderShift}
+                  value={xShift}
                   onChange={(e) => {
                     const shift = parseFloat(e.target.value);
+                    setXShift(shift);
                     setBoundary((b) => ({ ...b, intercept: -b.slope * shift }));
                   }}
                   className={shared.sliderInput}
                 />
-                <span className={shared.sliderValue}>{boundaryShift.toFixed(0)}</span>
+                <span className={shared.sliderValue}>{xShift.toFixed(0)}</span>
               </div>
             </div>
 

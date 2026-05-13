@@ -84,49 +84,6 @@
   border: 1px solid var(--rui-teal-border);
 }
 
-.objectiveTrack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 18px;
-}
-
-.objectiveStep {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  min-height: 30px;
-  padding: 5px 10px 5px 6px;
-  border: 1px solid rgba(25, 28, 31, 0.14);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  color: var(--rui-slate);
-  font-family: var(--font-display);
-  font-size: 12px;
-}
-
-.objectiveStep span {
-  width: 20px;
-  height: 20px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 999px;
-  background: rgba(25, 28, 31, 0.1);
-  color: var(--rui-dark);
-  font-size: 11px;
-}
-
-.objectiveStepDone {
-  border-color: var(--rui-teal-border);
-  background: var(--rui-teal-soft);
-  color: var(--rui-teal);
-}
-
-.objectiveStepDone span {
-  background: var(--rui-teal);
-  color: var(--rui-white);
-}
-
 .budgetPanel {
   min-height: 100%;
   display: grid;
@@ -246,8 +203,9 @@
   min-height: 28px;
   padding: 6px 10px;
   border-radius: 999px;
-  background: rgba(73, 79, 223, 0.1);
-  color: var(--rui-blue);
+  border: 1px solid rgba(37, 58, 143, 0.18);
+  background: rgba(73, 79, 223, 0.14);
+  color: #253a8f;
   font-family: var(--font-display);
   font-size: 12px;
   line-height: 1;
@@ -255,6 +213,7 @@
 }
 
 .missionPillBad {
+  border-color: rgba(220, 38, 38, 0.18);
   background: rgba(220, 38, 38, 0.1);
   color: #dc2626;
 }
@@ -508,65 +467,6 @@
   padding: 5px 8px;
   border-radius: 999px;
   background: rgba(25, 28, 31, 0.08);
-}
-
-.readinessPanel {
-  display: grid;
-  gap: 10px;
-  padding: 14px;
-  border-radius: 8px;
-  background:
-    linear-gradient(135deg, rgba(25, 28, 31, 0.96), rgba(42, 48, 54, 0.96));
-  color: var(--rui-white);
-}
-
-.readinessHeader {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  font-family: var(--font-display);
-  font-size: 13px;
-}
-
-.readinessHeader strong {
-  color: #8ef0cf;
-}
-
-.readinessTrack {
-  height: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.14);
-}
-
-.readinessTrack span {
-  --readiness: 0%;
-  display: block;
-  height: 100%;
-  width: var(--readiness);
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--rui-teal), var(--rui-blue));
-  transition: width 0.25s ease;
-}
-
-.readinessChecks {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.readinessChecks span {
-  padding: 4px 7px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.68);
-  font-family: var(--font-display);
-  font-size: 11px;
-}
-
-.readinessChecks .readinessCheckDone {
-  background: rgba(142, 240, 207, 0.18);
-  color: #8ef0cf;
 }
 
 .draftSummary {

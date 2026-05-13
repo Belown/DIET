@@ -25,7 +25,6 @@
   box-shadow:
     0 0 0 8px rgba(77, 201, 246, 0.16),
     0 18px 46px rgba(77, 201, 246, 0.22);
-  transform: translateY(-2px);
 }
 
 .popover {
