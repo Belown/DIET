@@ -79,9 +79,9 @@
 }
 
 .rankBadge {
-  background: rgba(0, 168, 126, 0.12);
+  background: var(--rui-teal-soft);
   color: var(--rui-teal);
-  border: 1px solid rgba(0, 168, 126, 0.32);
+  border: 1px solid var(--rui-teal-border);
 }
 
 .objectiveTrack {
@@ -117,9 +117,9 @@
 }
 
 .objectiveStepDone {
-  border-color: rgba(0, 168, 126, 0.32);
-  background: rgba(0, 168, 126, 0.1);
-  color: #0f766e;
+  border-color: var(--rui-teal-border);
+  background: var(--rui-teal-soft);
+  color: var(--rui-teal);
 }
 
 .objectiveStepDone span {
@@ -216,7 +216,8 @@
   grid-column: 2;
   grid-row: 1 / span 3;
   position: sticky;
-  top: 92px;
+  align-self: start;
+  max-height: calc(100vh - 112px);
   display: grid;
   gap: 14px;
 }
@@ -347,7 +348,7 @@
 
 .sampleTierOn {
   border-color: var(--rui-teal);
-  background: rgba(0, 168, 126, 0.1);
+  background: var(--rui-teal-soft);
 }
 
 .sampleTierIcon {
@@ -399,10 +400,10 @@
   gap: 12px;
   min-width: 0;
   padding: 13px 14px;
-  border: 2px solid rgba(0, 168, 126, 0.28);
+  border: 2px solid var(--rui-teal-border);
   border-radius: 8px;
   background:
-    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(0, 168, 126, 0.08)),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(47, 111, 100, 0.1)),
     var(--rui-white);
 }
 
@@ -413,8 +414,9 @@
   place-items: center;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: rgba(0, 168, 126, 0.14);
-  color: #0f766e;
+  border: 1px solid var(--rui-teal-border);
+  background: var(--rui-teal-soft);
+  color: var(--rui-teal);
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 600;
@@ -444,8 +446,8 @@
   flex: 0 0 auto;
   padding: 5px 8px;
   border-radius: 999px;
-  background: rgba(0, 168, 126, 0.12);
-  color: #0f766e;
+  background: var(--rui-teal-soft);
+  color: var(--rui-teal);
   font-family: var(--font-display);
   font-size: 11px;
 }

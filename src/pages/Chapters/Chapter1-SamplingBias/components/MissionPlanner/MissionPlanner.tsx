@@ -64,37 +64,37 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
     target: "intro",
     title: "Mission overview",
     body: "This card tells you the day, objective, and readiness checklist. Use it as your quick status read before building a sortie.",
-    offset: { x: 0, y: 280 },
+    placement: "bottom",
   },
   {
     target: "budget",
     title: "Budget and readiness",
     body: "This card tracks your daily investigation points, spent budget, and draft cost. A mission must fit the budget before it can be queued.",
-    offset: { x: -450, y: 0 },
+    placement: "left",
   },
   {
     target: "coverage",
     title: "Coverage",
     body: "Choose which zones the detective should visit. Wider coverage helps the model learn from the whole city instead of one narrow area.",
-    offset: { x: 100, y: 320 },
+    placement: "bottom",
   },
   {
     target: "sample",
     title: "Sample size",
     body: "Pick how many residents to sample. Larger samples cost more, but they give the model stronger evidence.",
-    offset: { x: 500, y: 300 },
+    placement: "right",
   },
   {
     target: "signals",
     title: "Signals",
     body: "Night Activity and Group Size are mandatory records. Optional questions cost extra, and some add useful context while others add noise or bias.",
-    offset: { x: 20, y: -320 },
+    placement: "top",
   },
   {
     target: "queue",
     title: "Operation stack",
     body: "Add the current sortie to today's queue, review what will be collected, then deploy the detective when the plan is ready.",
-    offset: { x: -450, y: 0 },
+    placement: "left",
   },
 ];
 
@@ -417,6 +417,7 @@ export default function MissionPlanner({
           onBack={tutorial.goPrev}
           onNext={tutorial.goNext}
           titleId="mission-tutorial-title"
+          popoverRef={tutorial.registerPopover}
         />
       )}
     </div>

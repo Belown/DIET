@@ -180,6 +180,9 @@ export default function Chatbox({
     if (autoCollapseOnTextComplete) {
       wasAutoCollapsedRef.current = true;
       setIsCollapsed(true);
+    } else if (!onAdvance) {
+      wasAutoCollapsedRef.current = false;
+      setIsCollapsed(true);
     } else {
       onAdvance?.();
     }
@@ -361,7 +364,7 @@ export default function Chatbox({
                   <img src={historyIcon} alt="" className={styles.historyIcon} aria-hidden="true" />
                 </button>
               )}
-              {text.length > 0 && (
+              {text.length > 0 && (!isComplete || onAdvance) && (
                 <button type="button" className={styles.navBtn} onClick={handleAdvanceClick} aria-label="Advance">
                   {">"}
                 </button>

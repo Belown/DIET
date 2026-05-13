@@ -26,22 +26,19 @@
   z-index: 35;
   display: grid;
   place-items: center;
-  padding: clamp(18px, 3vh, 34px) clamp(12px, 2.5vw, 34px);
+  padding: clamp(54px, 7vh, 82px) clamp(12px, 2.5vw, 34px) clamp(18px, 3vh, 34px);
   overflow-x: clip;
   background: rgba(25, 28, 31, 0.12);
 }
 
 .caseSheetSpotlight {
   box-sizing: border-box;
-  width: min(1160px, calc(80vw - clamp(36px, 7vw, 92px)));
-  height: min(760px, calc(100vh - 120px));
+  width: min(1000px, calc(100vw - clamp(48px, 6vw, 96px)));
+  height: min(860px, calc(100vh - 128px));
   min-height: 0;
   max-height: none;
   margin: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow: visible;
   z-index: 1;
   outline: none;
   box-shadow:
@@ -51,20 +48,26 @@
   animation: sheetSpotlightIn 0.7s cubic-bezier(0.18, 0.9, 0.24, 1.12) both;
 }
 
-.caseSheetSpotlight::-webkit-scrollbar {
+.caseSheetScroll {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+}
+
+.caseSheetSpotlight .caseSheetScroll {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.caseSheetSpotlight .caseSheetScroll::-webkit-scrollbar {
   display: none;
 }
 
 .caseSheetSpotlight .caseSheetLandscape {
   grid-template-columns: 1fr;
-}
-
-.caseSheetSpotlightSplit .caseSheetLandscape {
-  grid-template-columns: minmax(280px, 0.8fr) minmax(420px, 1.2fr);
-}
-
-.caseSheetSpotlightSplit .caseSheetBody {
-  max-width: 58ch;
 }
 
 .caseSheet::before {
@@ -90,10 +93,16 @@
   box-shadow: inset 0 5px 0 rgba(255, 255, 255, 0.45);
 }
 
+.caseSheetSpotlight .caseSheetClip {
+  top: -14px;
+  transform: translateX(-50%);
+}
+
 .caseSheetHeader,
 .caseSheetBody,
 .caseSheetDivider,
 .caseSheetNotes,
+.caseSheetScroll,
 .caseSheetLandscape {
   position: relative;
   z-index: 1;
@@ -131,11 +140,14 @@
 }
 
 .caseSheetBody {
-  max-width: 48ch;
   margin: 22px 0 0;
   font-size: clamp(16px, 1.6vw, 19px);
   line-height: 1.7;
   color: var(--rui-slate);
+}
+
+.caseSheetSpotlightSplit .caseSheetBody {
+  max-width: 58ch;
 }
 
 .caseSheetDivider {
@@ -146,7 +158,7 @@
 
 .caseSheetNotes {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -154,22 +166,26 @@
 
 .caseSheetNotes li {
   position: relative;
-  padding-left: 22px;
-  font-size: 15px;
+  padding-left: 26px;
+  max-width: 78ch;
+  font-family: var(--font-case-file);
+  font-size: clamp(16px, 1.25vw, 18px);
+  font-weight: 500;
   line-height: 1.55;
-  color: var(--rui-dark);
+  color: #4c4035;
 }
 
 .caseSheetNotes li::before {
   content: "";
   position: absolute;
-  left: 0;
-  top: 0.72em;
-  width: 8px;
-  height: 8px;
+  left: 2px;
+  top: 0.78em;
+  width: 6px;
+  height: 6px;
   transform: translateY(-50%);
   border-radius: 50%;
-  background: var(--rui-dark);
+  background: var(--diet-copper);
+  box-shadow: 0 0 0 3px rgba(184, 92, 30, 0.1);
 }
 
 .caseSheetExercise {
@@ -184,11 +200,4 @@
   width: 100%;
 }
 
-.caseSheetExercise {
-    grid-template-columns: 1fr;
-  }
-
-.caseSheetLandscape {
-  grid-template-columns: 1fr;
-}
 

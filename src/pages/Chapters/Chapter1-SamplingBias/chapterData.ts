@@ -13,7 +13,6 @@ export const BRIEFING_SHEETS: Partial<Record<PassageId, BriefingSheet>> = {
     title: "Boundary Drawing Exercise",
     body: "Before you build the real dataset, you need to understand why the original model failed. Here is what the police saw: a single region - Uptown. 20 residents. Draw a boundary that reaches 100% training accuracy before submitting it.",
     notes: [
-      "Green points are Safe. Red points are Threat. Black rings are mistakes.",
       "Slide the slope and shift controls below until the training accuracy is 100%.",
       "Take your time - this is the same task the original data scientists faced.",
       "A perfect score here only means the line fits this small Uptown sample.",

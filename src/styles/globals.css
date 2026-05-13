@@ -10,6 +10,9 @@
   --diet-red-string: #c0392b;
   --diet-ink-faded: #6b5e53;
   --diet-stamp-red: #8b1a1a;
+  --diet-case-teal: #2f6f64;
+  --diet-case-teal-soft: #e2eee9;
+  --diet-case-teal-border: #8fb9a6;
 
   --diet-void: #0a0e14;
   --diet-steel: #141b22;
@@ -51,7 +54,9 @@
   --rui-surface: var(--diet-paper-dark);
   --rui-surface-hover: #ded3bf;
   --rui-blue: var(--diet-holo-blue);
-  --rui-teal: var(--diet-neon-teal);
+  --rui-teal: var(--diet-case-teal);
+  --rui-teal-soft: var(--diet-case-teal-soft);
+  --rui-teal-border: var(--diet-case-teal-border);
   --rui-danger: var(--diet-alert-red);
   --rui-slate: var(--diet-ink-faded);
   --rui-gray: #817468;

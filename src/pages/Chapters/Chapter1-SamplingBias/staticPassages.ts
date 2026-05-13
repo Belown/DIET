@@ -95,6 +95,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "day2-brief": {
+    chatbox: "open",
     chunks: [
       "Day 2. You have another 100 credits and fresh intelligence from yesterday's sweep.",
       "The regions you sampled yesterday gave you a baseline — but you can expand to new zones or double down on what worked.",
@@ -124,6 +125,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "day3-brief": {
+    chatbox: "open",
     chunks: [
       "Day 3. Final day of your investigation.",
       "This is your last chance to fill gaps.",

@@ -142,6 +142,7 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
   const chatboxBehavior = getAdaptivePassage(passage, strategy).chatbox;
   const shouldAutoHidePlannerNarrative = chatboxBehavior === "close" && !hasMoreChunks;
   const shouldForceOpenNarrative = chatboxBehavior === "open";
+  const isDayReportPassage = passage === "day1-debrief" || passage === "day2-debrief" || passage === "day3-debrief";
   const chapterBackground = getChapterBackground(passage);
   const phaseStyle = {
     "--chapter-bg": chapterBackground ? `url(${chapterBackground})` : "none",
@@ -253,6 +254,17 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
     setChunkIndex(0);
   };
 
+  const handleReportContinue = () => {
+    if (passageChoices.length !== 1) return;
+
+    const choice = passageChoices[0];
+    choice.action?.();
+    rememberCurrentChat();
+    setPassage(choice.nextPassage);
+    setChunkIndex(0);
+    setShowChoices(false);
+  };
+
   const sendDetectiveAndAdvance = () => {
     if (!currentPlans.length || dayLocked[currentDay]) return;
     sendDetective();
@@ -328,15 +340,35 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
             overallAcc={overallAcc}
             regionAccs={regionAccs}
             sampledFlags={strategy.sampledFlags}
+            continueLabel={passageChoices[0]?.label}
+            onContinue={handleReportContinue}
             onTutorialOpenChange={setIsMissionTutorialOpen}
           />
         );
 
       case "day2-debrief":
-        return <DayReportPanel dayNumber={2} overallAcc={overallAcc} regionAccs={regionAccs} sampledFlags={strategy.sampledFlags} />;
+        return (
+          <DayReportPanel
+            dayNumber={2}
+            overallAcc={overallAcc}
+            regionAccs={regionAccs}
+            sampledFlags={strategy.sampledFlags}
+            continueLabel={passageChoices[0]?.label}
+            onContinue={handleReportContinue}
+          />
+        );
 
       case "day3-debrief":
-        return <DayReportPanel dayNumber={3} overallAcc={overallAcc} regionAccs={regionAccs} sampledFlags={strategy.sampledFlags} />;
+        return (
+          <DayReportPanel
+            dayNumber={3}
+            overallAcc={overallAcc}
+            regionAccs={regionAccs}
+            sampledFlags={strategy.sampledFlags}
+            continueLabel={passageChoices[0]?.label}
+            onContinue={handleReportContinue}
+          />
+        );
 
       case "verdict":
         return (
@@ -381,7 +413,7 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
           portraitSrc={portraitSrc}
           history={dialogueHistory}
           onHistorySelect={handleHistorySelect}
-          onAdvance={handleAdvance}
+          onAdvance={isDayReportPassage ? undefined : handleAdvance}
           autoCollapseOnTextComplete={shouldAutoHidePlannerNarrative}
           disableKeyboardAdvance={isSheetPopupOpen}
           forceOpen={shouldForceOpenNarrative}

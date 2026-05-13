@@ -1,17 +1,18 @@
 .panel {
-  background: var(--rui-surface);
-  border: 1px solid var(--rui-border);
+  background: rgba(250, 247, 240, 0.98);
+  border: 1px solid rgba(92, 61, 46, 0.28);
   border-radius: var(--radius-card);
   padding: 28px;
+  box-shadow: 0 10px 24px rgba(26, 20, 16, 0.08);
 }
 
 .panelEyebrow {
   font-family: var(--font-display);
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 700;
   letter-spacing: 0.6px;
   text-transform: uppercase;
-  color: var(--rui-gray);
+  color: #6e3c18;
   margin: 0 0 10px;
 }
 
@@ -21,13 +22,13 @@
   font-weight: 500;
   letter-spacing: -0.01em;
   margin: 0 0 12px;
-  color: var(--rui-dark);
+  color: #1a1410;
 }
 
 .panelBody {
   font-size: 15px;
   line-height: 1.65;
-  color: var(--rui-slate);
+  color: #3f332b;
   margin: 0;
   max-width: 68ch;
 }
@@ -35,7 +36,7 @@
 .deployNote {
   margin-top: 12px;
   font-size: 13px;
-  color: var(--rui-slate);
+  color: #4f4036;
   font-style: italic;
 }
 
@@ -56,12 +57,13 @@
   font-size: 13px;
   padding: 8px 12px;
   border-radius: var(--diet-radius-document);
-  background: rgba(77, 201, 246, 0.08);
-  color: var(--diet-holo-blue);
+  background: rgba(47, 111, 100, 0.12);
+  border: 1px solid rgba(47, 111, 100, 0.28);
+  color: #1f5b52;
 }
 
 .scorePill strong {
-  color: var(--rui-dark);
+  color: #1a1410;
 }
 
 .grid2 {
@@ -73,9 +75,9 @@
 .list {
   margin: 0;
   padding-left: 18px;
-  color: var(--rui-slate);
+  color: #3f332b;
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.65;
 }
 
 .list li + li {
@@ -89,9 +91,10 @@
   gap: 20px;
   flex-wrap: wrap;
   padding: 24px 28px;
-  background: var(--rui-surface);
-  border: 1px solid var(--rui-border);
+  background: rgba(250, 247, 240, 0.98);
+  border: 1px solid rgba(92, 61, 46, 0.28);
   border-radius: var(--radius-card);
+  box-shadow: 0 10px 24px rgba(26, 20, 16, 0.08);
 }
 
 .actionRow {
@@ -122,20 +125,20 @@
 
 .accLabel {
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 700;
   font-family: var(--font-display);
 }
 
 .accValue {
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 700;
   font-family: var(--font-mono, monospace);
-  color: var(--rui-slate);
+  color: #1a1410;
 }
 
 .accTrack {
   height: 8px;
-  background: var(--rui-border, #e8eaed);
+  background: rgba(92, 61, 46, 0.18);
   border-radius: 99px;
   overflow: hidden;
 }
@@ -149,7 +152,7 @@
 
 .accNote {
   font-size: 11px;
-  color: var(--rui-gray, #888);
+  color: #5f4c3f;
   font-style: italic;
 }
 

@@ -8,7 +8,7 @@ type Props = {
 export default function Logo({ className }: Props) {
   return (
     <Link to="/" className={`${styles.logo} ${className ?? ""}`.trim()}>
-      Omens<span className={styles.dot}>.</span>
+      <span className={styles.mark}>Θ</span>men<span className={styles.dot}>.</span>
     </Link>
   );
 }

@@ -182,6 +182,7 @@ function day2Brief(s: StrategyResult): Passage {
   };
 
   return {
+    chatbox: "open",
     chunks: variants[label],
     choices: [{ label: "Plan Day 2 mission", nextPassage: "day2-plan" }],
   };
@@ -291,6 +292,7 @@ function day3Brief(s: StrategyResult): Passage {
   };
 
   return {
+    chatbox: "open",
     chunks: variants[label],
     choices: [{ label: "Plan Day 3 mission", nextPassage: "day3-plan" }],
   };

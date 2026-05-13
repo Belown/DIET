@@ -12,6 +12,7 @@ type TutorialPopoverProps = {
   onBack: () => void;
   onNext: () => void;
   titleId?: string;
+  popoverRef?: (node: HTMLElement | null) => void;
 };
 
 export default function TutorialPopover({
@@ -25,11 +26,12 @@ export default function TutorialPopover({
   onBack,
   onNext,
   titleId,
+  popoverRef,
 }: TutorialPopoverProps) {
   if (!open) return null;
 
   return (
-    <div className={styles.popover} style={style} role="dialog" aria-labelledby={titleId}>
+    <div ref={popoverRef} className={styles.popover} style={style} role="dialog" aria-labelledby={titleId}>
       <p className={styles.eyebrow}>
         Step {stepIndex + 1} of {totalSteps}
       </p>

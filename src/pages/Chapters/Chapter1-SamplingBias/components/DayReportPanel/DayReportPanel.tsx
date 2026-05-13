@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ZONE_VISUALS } from "../../../../../assets/image/image";
+import shared from "../../../../../styles/shared.module.css";
 import { REGIONS } from "../../chapterData";
 import styles from "./DayReportPanel.module.css";
 import { useTutorial, type TutorialStep } from "../../hooks/useTutorial";
@@ -10,35 +11,33 @@ type DayReportPanelProps = {
   overallAcc: number;
   regionAccs: number[];
   sampledFlags: boolean[];
+  continueLabel?: string;
+  onContinue?: () => void;
   onTutorialOpenChange?: (open: boolean) => void;
 };
 
 const districtCode = (index: number) => ["UP", "DT", "FZ", "SL"][index] ?? "RG";
 
-type TutorialTarget = "overall" | "districts" | "narrative";
+type TutorialTarget = "continue";
 
 const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
   {
-    target: "overall",
-    title: "Overall accuracy",
-    body: "This pill summarizes how the model performed across the whole city for this day. Color tells you the confidence band at a glance.",
-    offset: { x: -360, y: 120 },
-  },
-  {
-    target: "districts",
-    title: "District breakdown",
-    body: "Each card shows confidence per district. Watch for unsampled zones — those bars are guesses, not evidence.",
-    offset: { x: 120, y: 80 },
-  },
-  {
-    target: "narrative",
-    title: "Narrative log",
-    body: "Plain-language summary of what the model learned today and what to fix tomorrow. Use the recommendation to guide your next plan.",
-    offset: { x: -360, y: 80 },
+    target: "continue",
+    title: "Proceed to the next day",
+    body: "Use this button to move from the report into the next briefing.",
+    placement: "top",
   },
 ];
 
-export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, sampledFlags, onTutorialOpenChange }: DayReportPanelProps) {
+export default function DayReportPanel({
+  dayNumber,
+  overallAcc,
+  regionAccs,
+  sampledFlags,
+  continueLabel,
+  onContinue,
+  onTutorialOpenChange,
+}: DayReportPanelProps) {
   const [barValues, setBarValues] = useState([0, 0, 0, 0]);
   const [typedSummary, setTypedSummary] = useState("");
 
@@ -127,8 +126,7 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
           </p>
         </div>
         <div
-          ref={tutorial.registerTarget("overall")}
-          className={tutorial.getTargetClass("overall", `${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`)}
+          className={`${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`}
         >
           <span className={styles.overallLabel}>Overall Accuracy</span>
           <strong className={styles.overallValue}>{overallPct}%</strong>
@@ -137,8 +135,7 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
 
       <div className={styles.grid}>
         <article
-          ref={tutorial.registerTarget("districts")}
-          className={tutorial.getTargetClass("districts", styles.sectionCard)}
+          className={styles.sectionCard}
         >
           <p className={styles.sectionEyebrow}>District Breakdown</p>
           <div className={styles.zoneGrid}>
@@ -177,8 +174,7 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
         </article>
 
         <article
-          ref={tutorial.registerTarget("narrative")}
-          className={tutorial.getTargetClass("narrative", styles.sectionCard)}
+          className={styles.sectionCard}
         >
           <p className={styles.sectionEyebrow}>Narrative Log</p>
           <div className={styles.typewriterPaper}>
@@ -187,6 +183,22 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
 
         </article>
       </div>
+
+      {onContinue && continueLabel && (
+        <div className={styles.continueRow}>
+          <p className={shared.continueHint}>
+            {dayNumber < 3 ? "Report filed. Move to the next patrol day when ready." : "Final field report filed. Review the closing verdict."}
+          </p>
+          <button
+            ref={tutorial.registerTarget("continue")}
+            type="button"
+            className={tutorial.getTargetClass("continue", shared.continueBtn)}
+            onClick={onContinue}
+          >
+            {continueLabel}
+          </button>
+        </div>
+      )}
 
       {tutorial.step && (
         <TutorialPopover
@@ -200,6 +212,7 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
           onBack={tutorial.goPrev}
           onNext={tutorial.goNext}
           titleId="day-report-tutorial-title"
+          popoverRef={tutorial.registerPopover}
         />
       )}
     </section>

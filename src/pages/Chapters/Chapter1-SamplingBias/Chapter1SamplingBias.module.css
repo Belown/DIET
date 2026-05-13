@@ -4,7 +4,7 @@
   min-height: 100%;
   padding-top: 12px;
   isolation: isolate;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .phaseWithBackground::before {

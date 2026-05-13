@@ -154,7 +154,13 @@ export default function Chapters() {
         </div>
       </div>
 
-      <main className={`${styles.canvas} ${missionTutorialOpen ? styles.canvasTutorialActive : ""}`}>
+      <main
+        className={[
+          styles.canvas,
+          active === "intro" ? styles.canvasIntro : "",
+          missionTutorialOpen ? styles.canvasTutorialActive : "",
+        ].filter(Boolean).join(" ")}
+      >
         <div key={active} className={styles.canvasBody}>
           {active === "intro" && (
             <ChapterIntro
