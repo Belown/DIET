@@ -182,7 +182,7 @@
   height: 100%;
   min-height: 0;
   max-height: none;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   border-radius: 2px;
 }
@@ -549,7 +549,7 @@
   border-radius: 0;
   overflow: hidden;
   border: 0;
-  cursor: pointer;
+  cursor: default;
 }
 
 .finalImage {
@@ -607,6 +607,11 @@
   outline: 0;
 }
 
+.openPickerBtn:disabled {
+  cursor: default;
+  pointer-events: none;
+}
+
 .chapterPickerBackdrop {
   position: absolute;
   inset: 0;
@@ -619,6 +624,7 @@
   backdrop-filter: blur(3px);
   -webkit-backdrop-filter: blur(3px);
   animation: pickerFadeIn 0.22s ease-out both;
+  cursor: default;
 }
 
 .portalPanel {
@@ -628,6 +634,7 @@
   background: transparent;
   box-shadow: none;
   animation: pickerRiseIn 0.34s cubic-bezier(0.18, 0.9, 0.24, 1.12) both;
+  cursor: default;
 }
 
 .portalKicker {

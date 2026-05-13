@@ -98,6 +98,7 @@ export default function VerdictPanel({
 }: VerdictPanelProps) {
   const riskLevel = overallAcc >= 0.8 ? "Low Risk" : overallAcc >= 0.6 ? "Medium Risk" : "High Risk";
   const riskTone: ScoreTone = overallAcc >= 0.8 ? "good" : overallAcc >= 0.6 ? "mid" : "low";
+  const showCelebration = riskTone === "good";
 
   const narrativeInsights = useMemo(() => {
     const lowestIdx = regionAccs.reduce((minI, acc, i, arr) => (acc < arr[minI] ? i : minI), 0);
@@ -123,6 +124,36 @@ export default function VerdictPanel({
 
   return (
     <>
+      {showCelebration && (
+        <div className={styles.celebration} role="status" aria-live="polite">
+          <div className={styles.celebrationRings} aria-hidden="true" />
+          <div className={styles.celebrationBurst} aria-hidden="true">
+            {Array.from({ length: 36 }).map((_, index) => (
+              <span
+                key={index}
+                className={styles.celebrationParticle}
+                style={{
+                  "--particle-index": index,
+                  "--particle-distance": `${140 + (index % 7) * 32}px`,
+                  "--particle-hue": 138 + index * 13,
+                } as React.CSSProperties}
+              />
+            ))}
+          </div>
+          <div className={styles.celebrationCard}>
+            <span className={styles.celebrationSeal} aria-hidden="true">LOW RISK</span>
+            <span className={styles.celebrationKicker}>Timeline stabilized</span>
+            <strong>Congratulations</strong>
+            <p>The final model reached Low Risk. Your investigation built a stronger, fairer dataset.</p>
+            <div className={styles.celebrationStats} aria-hidden="true">
+              <span>Bias reduced</span>
+              <span>Coverage restored</span>
+              <span>Case cleared</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <section className={styles.panel}>
         <p className={styles.panelEyebrow}>Case Closure · Day 3 Final Report</p>
         <h2 className={styles.h2}>AI Justice Investigation Outcome</h2>

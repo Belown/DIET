@@ -498,12 +498,14 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
       ) : (
         <>
           <div className={styles.finalStage}>
-            <div className={styles.finalImageWrap} onClick={openChapterPicker}>
+            <div className={styles.finalImageWrap}>
               <img src={scene.image} alt={scene.title} className={styles.finalImage} />
               <div className={styles.finalCinematicOverlay} aria-hidden="true" />
               <button
                 type="button"
                 className={styles.openPickerBtn}
+                disabled={chapterPickerOpen}
+                aria-expanded={chapterPickerOpen}
                 onClick={(event) => {
                   event.stopPropagation();
                   openChapterPicker();
@@ -515,10 +517,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
               {chapterPickerOpen && (
                 <div
                   className={styles.chapterPickerBackdrop}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setChapterPickerOpen(false);
-                  }}
+                  onClick={(event) => event.stopPropagation()}
                   role="presentation"
                 >
                   <div

@@ -372,6 +372,7 @@ export default function Chapter1SamplingBias({
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
             tutorialDebugEnabled={tutorialDebugEnabled}
+            onTutorialOpenChange={setIsMissionTutorialOpen}
           />
         );
 
@@ -385,6 +386,7 @@ export default function Chapter1SamplingBias({
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
             tutorialDebugEnabled={tutorialDebugEnabled}
+            onTutorialOpenChange={setIsMissionTutorialOpen}
           />
         );
 

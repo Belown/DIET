@@ -5,6 +5,7 @@
   border-radius: var(--radius-card);
   padding: clamp(14px, 1.35vw, 20px);
   animation: reportRootIn 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+  isolation: isolate;
 }
 
 .header {
@@ -13,6 +14,8 @@
   align-items: flex-start;
   gap: 12px;
   flex-wrap: wrap;
+  box-sizing: border-box;
+  padding-right: 190px;
   animation: reportPanelIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
 }
 
@@ -31,6 +34,16 @@
   top: -50px;
   right: 0;
   z-index: 8;
+}
+
+.reportRootTutorialActive .helpButtonSlot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  border-radius: 999px;
+  background: rgba(25, 28, 31, 0.42);
+  pointer-events: none;
 }
 
 .helpButtonTarget {
@@ -114,6 +127,21 @@
   border: 1px solid transparent;
   font-family: var(--font-display);
   box-shadow: 0 8px 16px rgba(25, 28, 31, 0.08);
+}
+
+.overallPillSlot {
+  position: absolute;
+  top: clamp(14px, 1.35vw, 20px);
+  right: clamp(14px, 1.35vw, 20px);
+}
+
+.overallPillTarget {
+  display: flex;
+  border-radius: 16px;
+}
+
+.overallPillTarget .overallPill {
+  width: 100%;
 }
 
 .overallLabel {
@@ -431,22 +459,34 @@
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+  min-height: 42px;
+  padding-right: 190px;
   animation: reportPanelIn 0.46s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
 }
 
+.continueActionSlot {
+  position: absolute;
+  right: clamp(14px, 1.35vw, 20px);
+  bottom: clamp(14px, 1.35vw, 20px);
+}
+
+.continueTarget {
+  display: flex;
+  border-radius: var(--diet-radius-document);
+}
+
 .reportRootTutorialActive {
-  background:
-    linear-gradient(rgba(25, 28, 31, 0.42), rgba(25, 28, 31, 0.42)),
-    var(--rui-surface);
   border-color: rgba(25, 28, 31, 0.42);
 }
 
-.reportRootTutorialActive .eyebrow,
-.reportRootTutorialActive .title,
-.reportRootTutorialActive .subtitle {
-  opacity: 0.58;
-  filter: brightness(0.52) saturate(0.65);
-  transition: opacity 0.24s ease, filter 0.24s ease;
+.reportRootTutorialActive::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  border-radius: inherit;
+  background: rgba(25, 28, 31, 0.42);
+  pointer-events: none;
 }
 
 .reportRootTutorialActive .overallPill_good {
@@ -469,6 +509,11 @@
 
 .reportRootTutorialActive .sectionCard {
   background: var(--rui-white);
+}
+
+.reportRootTutorialActive :global([class*="targetDimmed"]) {
+  opacity: 1;
+  filter: none;
 }
 
 @keyframes reportRootIn {
@@ -500,6 +545,17 @@
 }
 
 @media (max-width: 760px) {
+  .header {
+    padding-right: 0;
+  }
+
+  .overallPillSlot {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 12px;
+  }
+
   .zoneGrid {
     grid-template-columns: 1fr;
     grid-template-rows: none;
@@ -516,6 +572,17 @@
 
   .zoneScore {
     font-size: 44px;
+  }
+
+  .continueRow {
+    padding-right: 0;
+  }
+
+  .continueActionSlot {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 10px;
   }
 }
 

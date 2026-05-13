@@ -169,13 +169,16 @@ export default function DayReportPanel({
               : "Final field-day report before full city verdict review."}
           </p>
         </div>
-        <div
-          className={tutorial.getTargetClass("overall", `${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`)}
-        >
-          <span className={styles.overallLabel}>Overall Accuracy</span>
-          <strong className={styles.overallValue}>{overallPct}%</strong>
-        </div>
       </header>
+
+      <div className={styles.overallPillSlot}>
+        <div className={tutorial.getTargetClass("overall", styles.overallPillTarget)}>
+          <div className={`${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`}>
+            <span className={styles.overallLabel}>Overall Accuracy</span>
+            <strong className={styles.overallValue}>{overallPct}%</strong>
+          </div>
+        </div>
+      </div>
 
       <div className={styles.grid}>
         <article
@@ -261,13 +264,20 @@ export default function DayReportPanel({
           <p className={shared.continueHint}>
             {dayNumber < 3 ? "Report filed. Move to the next patrol day when ready." : "Final field report filed. Review the closing verdict."}
           </p>
-          <button
-            type="button"
-            className={tutorial.getTargetClass("continue", shared.continueBtn)}
-            onClick={onContinue}
-          >
-            {continueLabel}
-          </button>
+        </div>
+      )}
+
+      {onContinue && continueLabel && (
+        <div className={styles.continueActionSlot}>
+          <div className={tutorial.getTargetClass("continue", styles.continueTarget)}>
+            <button
+              type="button"
+              className={shared.continueBtn}
+              onClick={onContinue}
+            >
+              {continueLabel}
+            </button>
+          </div>
         </div>
       )}
 
