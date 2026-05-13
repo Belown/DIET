@@ -407,7 +407,7 @@ export default function Chapter1SamplingBias({ onMissionTutorialOpenChange }: Ch
 
   return (
     <div
-      className={`${styles.phase} ${styles.phaseWithBackground} ${isMissionTutorialOpen ? styles.phaseTutorialActive : ""}`}
+      className={`${styles.phase} ${styles.phaseWithBackground} ${isDayReportPassage ? styles.phaseDayReport : ""} ${isMissionTutorialOpen ? styles.phaseTutorialActive : ""}`}
       style={phaseStyle}
     >
 

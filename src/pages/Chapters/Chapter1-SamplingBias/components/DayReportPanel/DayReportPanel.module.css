@@ -3,7 +3,8 @@
   background: var(--rui-surface);
   border: 1px solid var(--rui-border);
   border-radius: var(--radius-card);
-  padding: 22px;
+  padding: clamp(14px, 1.35vw, 20px);
+  animation: reportRootIn 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .header {
@@ -12,6 +13,7 @@
   align-items: flex-start;
   gap: 12px;
   flex-wrap: wrap;
+  animation: reportPanelIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
 }
 
 .eyebrow {
@@ -26,7 +28,7 @@
 
 .helpButton {
   position: absolute;
-  top: -84px;
+  top: -50px;
   right: 0;
   z-index: 8;
   width: 34px;
@@ -76,16 +78,16 @@
 .title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 22px;
+  font-size: clamp(19px, 1.6vw, 22px);
   font-weight: 500;
   letter-spacing: -0.01em;
   color: var(--rui-dark);
 }
 
 .subtitle {
-  margin: 8px 0 0;
-  font-size: 15px;
-  line-height: 1.6;
+  margin: 6px 0 0;
+  font-size: 14px;
+  line-height: 1.45;
   color: var(--rui-slate);
   max-width: 66ch;
 }
@@ -97,7 +99,7 @@
   justify-content: center;
   gap: 2px;
   min-width: 160px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 16px;
   border: 1px solid transparent;
   font-family: var(--font-display);
@@ -113,7 +115,7 @@
 }
 
 .overallValue {
-  font-size: 32px;
+  font-size: clamp(27px, 2.4vw, 32px);
   line-height: 0.95;
   color: var(--rui-dark);
 }
@@ -137,10 +139,10 @@
 }
 
 .grid {
-  margin-top: 14px;
+  margin-top: 12px;
   display: grid;
   grid-template-columns: 1.2fr 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 .sectionCard {
@@ -148,13 +150,22 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   border: 1px solid var(--rui-border);
-  border-radius: 20px;
-  padding: 14px;
+  border-radius: 16px;
+  padding: 12px;
   background: var(--rui-white);
+  animation: reportPanelIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.sectionCard:nth-child(1) {
+  animation-delay: 0.16s;
+}
+
+.sectionCard:nth-child(2) {
+  animation-delay: 0.24s;
 }
 
 .sectionEyebrow {
-  margin: 0 0 10px;
+  margin: 0 0 8px;
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 600;
@@ -167,7 +178,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-template-rows: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  gap: 8px;
   min-height: 0;
   height: 100%;
 }
@@ -177,7 +188,7 @@
   display: grid;
   grid-template-columns: 48% 52%;
   border: 1px solid rgba(25, 28, 31, 0.12);
-  border-radius: 18px;
+  border-radius: 14px;
   overflow: hidden;
   background: linear-gradient(180deg, #ffffff, #f8f9fb);
 }
@@ -185,16 +196,16 @@
 .zonePhoto {
   width: 100%;
   height: 100%;
-  min-height: 166px;
+  min-height: clamp(126px, 14vh, 154px);
   object-fit: cover;
   background: #f2f3f6;
 }
 
 .zoneInfo {
-  padding: 12px;
+  padding: 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .zoneTop {
@@ -204,15 +215,15 @@
 }
 
 .zoneIcon {
-  width: 27px;
-  height: 27px;
+  width: 24px;
+  height: 24px;
   object-fit: contain;
   flex: 0 0 auto;
 }
 
 .zoneLabel {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   line-height: 1.15;
 }
@@ -225,7 +236,7 @@
 .zoneScore {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 56px;
+  font-size: clamp(42px, 4.6vw, 52px);
   font-weight: 600;
   line-height: 0.92;
 }
@@ -260,8 +271,8 @@
 .receiptPaper {
   position: relative;
   display: grid;
-  gap: 16px;
-  padding: 18px;
+  gap: 12px;
+  padding: 16px;
   border: 1px solid rgba(25, 28, 31, 0.14);
   border-radius: 8px;
   background:
@@ -293,7 +304,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 12px;
+  padding-bottom: 10px;
   border-bottom: 1px dashed rgba(25, 28, 31, 0.22);
   font-family: var(--font-display);
   font-size: 16px;
@@ -312,7 +323,7 @@
 
 .receiptRows {
   display: grid;
-  gap: 8px;
+  gap: 6px;
 }
 
 .receiptRow {
@@ -320,7 +331,7 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 8px;
+  padding-bottom: 6px;
   border-bottom: 1px dotted rgba(25, 28, 31, 0.2);
   color: var(--rui-slate);
   font-size: 13px;
@@ -334,8 +345,8 @@
 
 .attentionBox {
   display: grid;
-  gap: 5px;
-  padding: 14px;
+  gap: 4px;
+  padding: 12px;
   border: 1px solid transparent;
   border-radius: 8px;
 }
@@ -366,7 +377,7 @@
 
 .attentionBox strong {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.1;
 }
 
@@ -392,7 +403,7 @@
 .receiptSection p {
   margin: 0;
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 18px;
   line-height: 1.25;
   color: var(--rui-dark);
 }
@@ -404,12 +415,13 @@
 }
 
 .continueRow {
-  margin-top: 16px;
+  margin-top: 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 14px;
   flex-wrap: wrap;
+  animation: reportPanelIn 0.46s cubic-bezier(0.16, 1, 0.3, 1) 0.32s both;
 }
 
 .reportRootTutorialActive {
@@ -447,6 +459,28 @@
   background: var(--rui-white);
 }
 
+@keyframes reportRootIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes reportPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 @media (max-width: 1160px) {
   .grid {
     grid-template-columns: 1fr;
@@ -470,5 +504,14 @@
 
   .zoneScore {
     font-size: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reportRoot,
+  .header,
+  .sectionCard,
+  .continueRow {
+    animation: none;
   }
 }

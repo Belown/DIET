@@ -89,7 +89,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
       "Day 1 complete. The detective returns with your first batch of data.",
       "The model is already getting smarter — but two days remain, and the budget resets each morning.",
       "Review your choices. Did you sample enough zones? Too few?",
-      "Did you pick useful questions or noisy ones?",
+      "Did each candidate signal earn its place?",
       "Adjust your strategy for Day 2.",
     ],
     choices: [{ label: "Proceed to Day 2", nextPassage: "day2-brief" }],

@@ -36,9 +36,9 @@ export const ZONE_COST = 5;
 export const QUESTION_OPTIONS: QuestionOption[] = [
   {
     key: "daily-routine",
-    label: "Daily Routine (The Useful Context)",
+    label: "Daily Routine",
     tactic: "Check Work ID",
-    why: "Easy and realistic. The detective checks ID to verify whether someone is truly on a registered night shift.",
+    why: "The detective checks ID to record whether someone is on a registered night shift.",
     cost: 10,
     flavor: [
       "Show me your employment pass, please.",
@@ -48,9 +48,9 @@ export const QUESTION_OPTIONS: QuestionOption[] = [
   },
   {
     key: "phone-model",
-    label: "Phone Model (The Useless Noise)",
+    label: "Phone Model",
     tactic: "Pinging Device",
-    why: "Easy to collect, but mostly useless noise that tells little about actual risk behavior.",
+    why: "The detective records the resident's device model as an additional case field.",
     cost: 10,
     flavor: [
       "Pinging local comm-link network...",
@@ -60,9 +60,9 @@ export const QUESTION_OPTIONS: QuestionOption[] = [
   },
   {
     key: "past-police-stops",
-    label: "Past Police Stops (The Bias Trap)",
+    label: "Past Police Stops",
     tactic: "Run Police Record",
-    why: "Instantly available, but can import historical policing bias and distort the model.",
+    why: "The detective records whether prior police stops appear in the resident's file.",
     cost: 10,
     flavor: [
       "Querying New Eden Police Database...",

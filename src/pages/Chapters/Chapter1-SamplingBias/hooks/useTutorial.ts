@@ -106,19 +106,54 @@ export function useTutorial<T extends string>(
 
     const allPlacements: Array<Exclude<TutorialPlacement, "auto">> = ["bottom", "top", "right", "left"];
     const requested = step.placement ?? "auto";
-    const order: Array<Exclude<TutorialPlacement, "auto">> =
-      requested === "auto"
-        ? allPlacements
-        : [requested, opposite[requested], ...allPlacements.filter((p) => p !== requested && p !== opposite[requested])];
 
-    let chosen = order[0];
-    let chosenC = candidateFor(chosen);
-    for (const p of order.slice(1)) {
-      if (chosenC.overflow === 0) break;
-      const c = candidateFor(p);
-      if (c.overflow < chosenC.overflow) {
-        chosen = p;
-        chosenC = c;
+    const fitsAfterClamp = (c: { left: number; top: number }) => {
+      const clampedLeft = Math.min(Math.max(VIEWPORT_PAD, c.left), Math.max(VIEWPORT_PAD, vw - popW - VIEWPORT_PAD));
+      const clampedTop = Math.min(Math.max(VIEWPORT_PAD, c.top), Math.max(VIEWPORT_PAD, vh - popH - VIEWPORT_PAD));
+      const fitsH = popW <= vw - VIEWPORT_PAD * 2;
+      const fitsV = popH <= vh - VIEWPORT_PAD * 2;
+      if (!fitsH || !fitsV) return false;
+      const overlapsH = clampedLeft < rect.right && clampedLeft + popW > rect.left;
+      const overlapsV = clampedTop < rect.bottom && clampedTop + popH > rect.top;
+      return !(overlapsH && overlapsV);
+    };
+
+    let chosen: Exclude<TutorialPlacement, "auto">;
+    let chosenC: { left: number; top: number; overflow: number };
+
+    if (requested !== "auto") {
+      chosen = requested;
+      chosenC = candidateFor(chosen);
+      if (!fitsAfterClamp(chosenC)) {
+        const fallbacks: Array<Exclude<TutorialPlacement, "auto">> = [
+          opposite[requested],
+          ...allPlacements.filter((p) => p !== requested && p !== opposite[requested]),
+        ];
+        for (const p of fallbacks) {
+          const c = candidateFor(p);
+          if (fitsAfterClamp(c)) {
+            chosen = p;
+            chosenC = c;
+            break;
+          }
+          if (c.overflow < chosenC.overflow) {
+            chosen = p;
+            chosenC = c;
+          }
+        }
+      }
+    } else {
+      chosen = allPlacements[0];
+      chosenC = candidateFor(chosen);
+      for (const p of allPlacements.slice(1)) {
+        if (chosenC.overflow === 0 && fitsAfterClamp(chosenC)) break;
+        const c = candidateFor(p);
+        const cFits = fitsAfterClamp(c);
+        const chosenFits = fitsAfterClamp(chosenC);
+        if ((cFits && !chosenFits) || (cFits === chosenFits && c.overflow < chosenC.overflow)) {
+          chosen = p;
+          chosenC = c;
+        }
       }
     }
 
@@ -157,6 +192,27 @@ export function useTutorial<T extends string>(
     window.addEventListener("resize", updatePosition);
     window.addEventListener("scroll", updatePosition, true);
 
+    const animationListeners: Array<() => void> = [];
+    const attachAnimationListener = (node: HTMLElement | null) => {
+      if (!node) return;
+      const handler = () => updatePosition();
+      node.addEventListener("animationend", handler);
+      node.addEventListener("transitionend", handler);
+      animationListeners.push(() => {
+        node.removeEventListener("animationend", handler);
+        node.removeEventListener("transitionend", handler);
+      });
+    };
+    attachAnimationListener(target);
+    let ancestor: HTMLElement | null = target?.parentElement ?? null;
+    let depth = 0;
+    while (ancestor && depth < 6) {
+      const anim = window.getComputedStyle(ancestor).animationName;
+      if (anim && anim !== "none") attachAnimationListener(ancestor);
+      ancestor = ancestor.parentElement;
+      depth += 1;
+    }
+
     let ro: ResizeObserver | undefined;
     if (typeof ResizeObserver !== "undefined" && popoverEl.current) {
       ro = new ResizeObserver(() => updatePosition());
@@ -167,6 +223,7 @@ export function useTutorial<T extends string>(
       window.clearTimeout(timer);
       window.removeEventListener("resize", updatePosition);
       window.removeEventListener("scroll", updatePosition, true);
+      animationListeners.forEach((dispose) => dispose());
       ro?.disconnect();
     };
   }, [stepTarget, open, updatePosition, hiddenPopoverStyle]);

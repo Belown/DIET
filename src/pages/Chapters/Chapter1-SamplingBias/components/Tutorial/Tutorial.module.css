@@ -25,6 +25,7 @@
   box-shadow:
     0 0 0 8px rgba(77, 201, 246, 0.16),
     0 18px 46px rgba(77, 201, 246, 0.22);
+  animation: tutorialTargetIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .popover {
@@ -43,7 +44,7 @@
     0 18px 54px rgba(25, 28, 31, 0.2),
     0 0 0 1px rgba(255, 255, 255, 0.24);
   color: var(--rui-dark);
-  animation: popoverIn 0.22s cubic-bezier(0.18, 0.9, 0.24, 1.08) both;
+  animation: popoverIn 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .eyebrow {
@@ -135,8 +136,23 @@
 }
 
 @keyframes popoverIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes tutorialTargetIn {
+  from {
+    transform: translateY(8px) scale(0.99);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
 }
 
 @media (max-width: 900px) {
@@ -162,5 +178,14 @@
   .ghostBtn,
   .primaryBtn {
     flex: 1 1 auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .target,
+  .targetActive,
+  .popover {
+    animation: none;
+    transition: none;
   }
 }

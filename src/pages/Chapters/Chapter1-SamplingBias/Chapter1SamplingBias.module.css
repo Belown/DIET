@@ -67,6 +67,11 @@
   margin: 0 auto;
 }
 
+.phaseDayReport .scene {
+  padding-top: 14px;
+  padding-bottom: 44px;
+}
+
 .sceneInner {
   display: flex;
   flex-direction: column;

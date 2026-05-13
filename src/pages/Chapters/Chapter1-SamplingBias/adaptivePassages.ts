@@ -281,7 +281,7 @@ function day3Brief(s: StrategyResult): Passage {
       "Day 3. Final day.",
       "I'm going to be blunt: the model is in trouble. It has seen almost nothing of the city it's supposed to serve.",
       "You have 100 credits left. This is your last chance to give the algorithm a dataset that represents New Eden — not just a privileged slice of it.",
-      "Go everywhere. Ask useful questions. Avoid the bias traps. After today, the verdict lands — and there is no appeal.",
+      "Go everywhere. Choose signals with care. After today, the verdict lands — and there is no appeal.",
     ],
     terrible: [
       "Day 3. This is the end of the investigation.",
@@ -315,7 +315,7 @@ function day3Debrief(s: StrategyResult): Passage {
     great: [
       "Three days complete. The dataset is strong — better than the original by a wide margin.",
       `Your best district, ${best}, shows what's possible when data collection is thoughtful.`,
-      "But the neighboring city stress test will expose every shortcut, every unsampled corner, every noisy question you chose.",
+      "But the neighboring city stress test will expose every shortcut, every unsampled corner, every signal choice you made.",
       "Not a failure. Not yet a triumph. A lesson: data collection is never finished, only refined.",
       "Now let's see if it was enough.",
     ],

@@ -24,6 +24,7 @@ export interface DialogueHistoryItem {
 }
 
 const CHAR_SPEED = 25;
+const AUTO_COLLAPSE_DELAY_MS = 900;
 const SHEET_HISTORY_MARKER_TEXT = "Read the sheet carefully. Then draw the best boundary you can.";
 
 export default function Chatbox({
@@ -46,6 +47,7 @@ export default function Chatbox({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openHistoryGroups, setOpenHistoryGroups] = useState<Record<string, boolean>>({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasReportedCompleteRef = useRef(false);
   const wasAutoCollapsedRef = useRef(false);
   const historyGroupRefs = useRef<Record<string, HTMLElement | null>>({});
@@ -103,6 +105,18 @@ export default function Chatbox({
     onTextComplete?.();
   }, [onTextComplete]);
 
+  const clearCollapseTimer = useCallback(() => {
+    if (!collapseTimerRef.current) return;
+    clearTimeout(collapseTimerRef.current);
+    collapseTimerRef.current = null;
+  }, []);
+
+  const collapse = useCallback((autoCollapsed: boolean) => {
+    clearCollapseTimer();
+    wasAutoCollapsedRef.current = autoCollapsed;
+    setIsCollapsed(true);
+  }, [clearCollapseTimer]);
+
   const complete = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
@@ -114,14 +128,15 @@ export default function Chatbox({
   }, [reportComplete, text.length]);
 
   useEffect(() => {
+    clearCollapseTimer();
     setDisplayedLength(0);
     setIsComplete(false);
     setIsHistoryOpen(false);
-    hasReportedCompleteRef.current = false;
-    if (wasAutoCollapsedRef.current && !autoCollapseOnTextComplete) {
+    if (wasAutoCollapsedRef.current || autoCollapseOnTextComplete) {
       wasAutoCollapsedRef.current = false;
       setIsCollapsed(false);
     }
+    hasReportedCompleteRef.current = false;
 
     if (!text.length) {
       setIsComplete(true);
@@ -150,32 +165,33 @@ export default function Chatbox({
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      clearCollapseTimer();
     };
-  }, [reportComplete, text]);
+  }, [autoCollapseOnTextComplete, clearCollapseTimer, reportComplete, text]);
 
   useEffect(() => {
     if (!forceOpen) return;
+    clearCollapseTimer();
     wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
-  }, [forceOpen, text]);
+  }, [clearCollapseTimer, forceOpen, text]);
 
   useEffect(() => {
     if (!reopenSignal) return;
+    clearCollapseTimer();
     wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
-  }, [reopenSignal]);
+  }, [clearCollapseTimer, reopenSignal]);
 
   useEffect(() => {
-    if (!autoCollapseOnTextComplete || !isComplete || isCollapsed || forceOpen) return;
+    if (!autoCollapseOnTextComplete || !isComplete || isCollapsed || forceOpen || isHistoryOpen) return;
 
-    const handleWindowClick = () => {
-      wasAutoCollapsedRef.current = true;
-      setIsCollapsed(true);
-    };
+    collapseTimerRef.current = setTimeout(() => {
+      collapse(true);
+    }, AUTO_COLLAPSE_DELAY_MS);
 
-    window.addEventListener("click", handleWindowClick);
-    return () => window.removeEventListener("click", handleWindowClick);
-  }, [autoCollapseOnTextComplete, forceOpen, isCollapsed, isComplete, text]);
+    return clearCollapseTimer;
+  }, [autoCollapseOnTextComplete, clearCollapseTimer, collapse, forceOpen, isCollapsed, isComplete, isHistoryOpen, text]);
 
   const handleClick = () => {
     if (isCollapsed) return;
@@ -186,11 +202,9 @@ export default function Chatbox({
     }
 
     if (autoCollapseOnTextComplete) {
-      wasAutoCollapsedRef.current = true;
-      setIsCollapsed(true);
+      collapse(true);
     } else if (!onAdvance) {
-      wasAutoCollapsedRef.current = false;
-      setIsCollapsed(true);
+      collapse(false);
     } else {
       onAdvance?.();
     }
@@ -208,12 +222,12 @@ export default function Chatbox({
 
   const handleCollapseClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    wasAutoCollapsedRef.current = false;
-    setIsCollapsed(true);
+    collapse(false);
   };
 
   const handleOpenClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    clearCollapseTimer();
     wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
   };

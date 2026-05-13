@@ -123,7 +123,7 @@ export default function DayReportPanel({
 
     const actions: string[] = [];
     if (sampledCount < 4) actions.push("Add at least one unsampled district tomorrow.");
-    if (overallPct < 65) actions.push("Favor useful context question over noisy signals.");
+    if (overallPct < 65) actions.push("Revisit which candidate signals deserve space in tomorrow's dataset.");
     if (actions.length === 0) actions.push("Keep broad coverage and avoid overfitting one district.");
     actions.push(`Prepare Day ${dayNumber + 1} mission with balanced distribution.`);
     return actions;

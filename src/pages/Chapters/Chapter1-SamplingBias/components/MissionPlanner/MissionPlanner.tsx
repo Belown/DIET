@@ -38,6 +38,8 @@ const getPopulationLabel = (population: PopulationOption) => {
   return "Mass operation";
 };
 
+const getQuestionDisplayLabel = (label: string) => label.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+
 const DAY_RANKS = ["Rookie Sweep", "Field Operator", "Final Command"] as const;
 
 const POPULATION_TIERS: Array<{ value: PopulationOption; title: string; desc: string }> = [
@@ -89,7 +91,7 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
   {
     target: "signals",
     title: "Signals",
-    body: "Night Activity and Group Size are mandatory records. Optional questions cost extra, and some add useful context while others add noise or bias.",
+    body: "Signals are model inputs. Some can sharpen the dataset, some can distract it, and some can carry bias, so choose which extra records belong in the case file.",
     placement: "top",
   },
   {
@@ -118,10 +120,10 @@ const DAY_COPY = [
   },
 ] as const;
 
-const QUESTION_VISUALS: Record<QuestionKey, { icon: string; tag: string }> = {
-  "daily-routine": { icon: QUESTION_IMAGES["daily-routine"], tag: "Useful context" },
-  "phone-model": { icon: QUESTION_IMAGES["phone-model"], tag: "Useless noise" },
-  "past-police-stops": { icon: QUESTION_IMAGES["past-police-stops"], tag: "Bias trap" },
+const QUESTION_VISUALS: Record<QuestionKey, { icon: string }> = {
+  "daily-routine": { icon: QUESTION_IMAGES["daily-routine"] },
+  "phone-model": { icon: QUESTION_IMAGES["phone-model"] },
+  "past-police-stops": { icon: QUESTION_IMAGES["past-police-stops"] },
 };
 
 export default function MissionPlanner({
@@ -272,15 +274,19 @@ export default function MissionPlanner({
 
         <section
           ref={tutorial.registerTarget("signals")}
-          className={tutorial.getTargetClass("signals", `${styles.missionCard} ${styles.missionCardWide}`)}
+          className={tutorial.getTargetClass("signals", `${styles.missionCard} ${styles.missionCardWide} ${styles.signalMissionCard}`)}
         >
           <div className={styles.missionCardHeader}>
             <div>
               <p className={styles.panelEyebrow}>Signals</p>
-              <h3 className={styles.missionCardTitle}>Mandatory signals and optional questions</h3>
+              <h3 className={styles.missionCardTitle}>Model inputs and candidate signals</h3>
             </div>
-            <span className={styles.missionPill}>2 required / {planQuestions.length} extra</span>
+            <span className={styles.missionPill}>2 core / {planQuestions.length} candidate</span>
           </div>
+
+          <p className={styles.signalHint}>
+            Signals shape what the model can learn. More data is not always better, so each added field should earn its place.
+          </p>
 
           <div className={styles.mandatorySignalGrid} aria-label="Mandatory signals">
             {MANDATORY_SIGNALS.map((signal) => (
@@ -295,10 +301,10 @@ export default function MissionPlanner({
             ))}
           </div>
 
-          <p className={styles.signalSectionLabel}>Optional questions</p>
+          <p className={styles.signalSectionLabel}>Candidate signals</p>
           <div className={styles.featureGrid}>
             {QUESTION_OPTIONS.map((f) => {
-              const compactLabel = f.label.replace(/\s*\([^)]*\)\s*/g, " ").trim();
+              const compactLabel = getQuestionDisplayLabel(f.label);
               return (
                 <label
                   key={f.key}
@@ -320,13 +326,13 @@ export default function MissionPlanner({
 
           <div className={styles.featureIntelPanel}>
             {selectedQuestionInfos.length === 0 ? (
-              <p className={styles.featureIntelEmpty}>No extra question selected. Mission still collects mandatory Night Activity and Group Size records.</p>
+              <p className={styles.featureIntelEmpty}>No candidate signal selected. Mission still collects the core Night Activity and Group Size records.</p>
             ) : (
               selectedQuestionInfos.map((q) => (
                 <div className={styles.featureIntelCard} key={q.key}>
-                  <p className={styles.featureIntelTitle}>{q.label}</p>
-                  <p className={styles.featureIntelLine}><strong>The tactic:</strong> {q.tactic}</p>
-                  <p className={styles.featureIntelLine}><strong>Signal impact:</strong> {q.why}</p>
+                  <p className={styles.featureIntelTitle}>{getQuestionDisplayLabel(q.label)}</p>
+                  <p className={styles.featureIntelLine}><strong>Collection method:</strong> {q.tactic}</p>
+                  <p className={styles.featureIntelLine}><strong>Dataset change:</strong> Adds one extra field to each sampled record.</p>
                   <p className={styles.featureIntelFlavor}>"{q.line}"</p>
                 </div>
               ))
@@ -373,10 +379,13 @@ export default function MissionPlanner({
                   <p>{p.population} residents | {p.zones.filter(Boolean).length} zone(s)</p>
                   <p>{REGIONS.filter((_, i) => p.zones[i]).map((z) => z.label).join(", ")}</p>
                   <p>
-                    Mandatory: Night Activity; Group Size | Extra:{" "}
+                    Core: Night Activity; Group Size | Candidate:{" "}
                     {p.questions.length
-                      ? p.questions.map((k) => QUESTION_OPTIONS.find((q) => q.key === k)?.label).join("; ")
-                      : "No extra questions"}
+                      ? p.questions.map((k) => {
+                          const question = QUESTION_OPTIONS.find((q) => q.key === k);
+                          return question ? getQuestionDisplayLabel(question.label) : undefined;
+                        }).filter(Boolean).join("; ")
+                      : "No candidate signals"}
                   </p>
                   {!locked && (
                     <button type="button" className={styles.queueRemoveBtn} onClick={() => removePlan(p.id)}>

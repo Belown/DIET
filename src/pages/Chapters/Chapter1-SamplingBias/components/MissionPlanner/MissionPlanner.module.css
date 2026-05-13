@@ -31,6 +31,7 @@
   position: relative;
   display: grid;
   gap: 18px;
+  animation: missionDashboardIn 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .missionHeader {
@@ -52,6 +53,7 @@
   background: var(--rui-white);
   display: grid;
   align-content: center;
+  animation: missionPanelIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
 }
 
 .commandMeta {
@@ -76,7 +78,6 @@
   font-size: 16px;
   line-height: 1;
   cursor: pointer;
-  box-shadow: 0 8px 18px rgba(25, 28, 31, 0.12);
 }
 
 .helpButton:hover {
@@ -143,6 +144,7 @@
   background: var(--rui-white);
   border: 1px solid rgba(25, 28, 31, 0.12);
   border-radius: 8px;
+  animation: missionPanelIn 0.52s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both;
 }
 
 .budgetRing {
@@ -212,6 +214,19 @@
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 12px 28px rgba(25, 28, 31, 0.06);
+  animation: missionPanelIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.missionCard:nth-child(1) {
+  animation-delay: 0.18s;
+}
+
+.missionCard:nth-child(2) {
+  animation-delay: 0.24s;
+}
+
+.missionCard:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
 .missionCardWide {
@@ -226,6 +241,7 @@
   max-height: calc(100vh - 112px);
   display: grid;
   gap: 14px;
+  animation-delay: 0.26s;
 }
 
 .missionCardHeader {
@@ -402,6 +418,17 @@
   gap: 10px;
 }
 
+.signalHint {
+  margin: -6px 0 16px;
+  padding: 12px 14px;
+  border: 1px solid rgba(37, 58, 143, 0.14);
+  border-radius: 8px;
+  background: rgba(245, 247, 250, 0.9);
+  color: var(--rui-slate);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .mandatorySignalCard {
   display: flex;
   align-items: center;
@@ -461,7 +488,7 @@
 }
 
 .signalSectionLabel {
-  margin: 18px 0 -6px;
+  margin: 20px 0 -6px;
   font-family: var(--font-display);
   font-size: 12px;
   font-weight: 500;
@@ -617,6 +644,28 @@
 .queueDeployBtn {
   justify-self: end;
   margin-top: 4px;
+}
+
+@keyframes missionDashboardIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes missionPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* ─── Region selection ───────────────────────────────────────────────────── */
@@ -849,4 +898,14 @@
     grid-template-columns: 1fr;
   }
 
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .missionDashboard,
+  .commandIntro,
+  .budgetPanel,
+  .missionCard,
+  .missionQueue {
+    animation: none;
+  }
 }

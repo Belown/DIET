@@ -115,7 +115,7 @@ export default function VerdictPanel({
     const actions: string[] = [];
     if (sampledFlags.filter(Boolean).length < 4) actions.push("Run another investigation with full 4-district coverage.");
     if (otherCityOvr < 0.7) actions.push("Add transfer validation before deployment to a new city.");
-    if (overallAcc < 0.75) actions.push("Increase useful context signals and avoid noisy question choices.");
+    if (overallAcc < 0.75) actions.push("Review which collected signals strengthened the dataset and which ones distorted it.");
     if (!actions.length) actions.push("Keep this strategy as baseline and monitor drift each retraining cycle.");
     actions.push("Audit who gets misclassified, not just the average score.");
     return actions;
