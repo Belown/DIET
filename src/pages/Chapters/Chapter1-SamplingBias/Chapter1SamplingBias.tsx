@@ -150,6 +150,8 @@ export default function Chapter1SamplingBias({
   const shouldAutoHidePlannerNarrative = chatboxBehavior === "close" && !hasMoreChunks;
   const shouldForceOpenNarrative = chatboxBehavior === "open";
   const isDayReportPassage = passage === "day1-debrief" || passage === "day2-debrief" || passage === "day3-debrief";
+  const shouldExpectMissionTutorial =
+    passage === "day1-plan" && !hasCompletedMissionTutorial && currentDay === 0 && !dayLocked[currentDay];
   const chapterBackground = getChapterBackground(passage);
   const phaseStyle = {
     "--chapter-bg": chapterBackground ? `url(${chapterBackground})` : "none",
@@ -430,7 +432,7 @@ export default function Chapter1SamplingBias({
         </div>
       </div>
 
-      {!isMissionTutorialOpen && (
+      {!isMissionTutorialOpen && !shouldExpectMissionTutorial && (
         <NarrativeBox
           text={passageText}
           portraitSrc={portraitSrc}

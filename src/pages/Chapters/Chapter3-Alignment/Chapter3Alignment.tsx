@@ -77,7 +77,7 @@ export default function Chapter3Alignment() {
   const [history, setHistory] = useState<number[]>([0]);
   const [outcome, setOutcome] = useState<Outcome>("not-played");
   const [hasInteracted, setHasInteracted] = useState(false);
-  const keyInsightsRef = useRef<HTMLElement | null>(null);
+  const keyInsightsRef = useRef<HTMLElement>(null);
 
   // When the final beat lands, scroll the key takeaways into view and let
   // their highlight animation play. Players see the lesson, not the
@@ -328,7 +328,7 @@ function TakeawaysPanel() {
 const KeyInsightsPanel = ({
   innerRef,
 }: {
-  innerRef: React.RefObject<HTMLElement | null>;
+  innerRef: React.RefObject<HTMLElement>;
 }) => (
   <section ref={innerRef} className={styles.keyPanel}>
     <p className={styles.keyEyebrow}>Take this with you</p>

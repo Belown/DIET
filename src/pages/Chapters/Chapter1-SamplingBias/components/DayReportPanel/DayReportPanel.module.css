@@ -477,6 +477,17 @@
 
 .reportRootTutorialActive {
   border-color: rgba(25, 28, 31, 0.42);
+  animation: none;
+  opacity: 1;
+  transform: none;
+}
+
+.reportRootTutorialActive .header,
+.reportRootTutorialActive .sectionCard,
+.reportRootTutorialActive .continueRow {
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
 .reportRootTutorialActive::before {

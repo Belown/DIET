@@ -53,7 +53,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   "demo-reveal": {
     chunks: [
       "That looked perfect on the training data.",
-      "But when the police deployed the same boundary across all four regions — 1,000 residents — accuracy collapsed.",
+      "But when the police deployed the same boundary across all four regions — 1000 residents — accuracy collapsed.",
       "Region 3, the Factory Zone, is full of safe night-shift workers whose patterns look like threats to a model trained exclusively on Uptown.",
       "This is sampling bias: a boundary tuned on one narrow slice of the city cannot generalize to the whole city.",
       "Now you understand the problem.",

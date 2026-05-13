@@ -21,7 +21,7 @@ function randNormal(rand: () => number, mean: number, std: number): number {
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 const r1 = (v: number) => Math.round(v * 10) / 10;
 
-export const DEMO_BOUNDARY_START: DemoBoundary = { slope: 0.9, intercept: 6 };
+export const DEMO_BOUNDARY_START: DemoBoundary = { slope: 1, intercept: 0 };
 
 export const isFlagged = (p: DPt, b: DemoBoundary) => p.y >= b.slope * p.x + b.intercept;
 

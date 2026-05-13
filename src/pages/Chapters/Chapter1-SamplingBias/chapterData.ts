@@ -11,20 +11,20 @@ export const REGIONS: readonly Region[] = [
 export const BRIEFING_SHEETS: Partial<Record<PassageId, BriefingSheet>> = {
   "demo-intro": {
     title: "Boundary Drawing Exercise",
-    body: "Before you build the real dataset, you need to understand why the original model failed. Here is what the police saw: a single region - Uptown. 20 residents. Draw a boundary that reaches 100% training accuracy before submitting it.",
+    body: "Before you build the real dataset, you need to understand <b>why the original model failed</b>. Here is what the police saw: subset from a single region - Uptown with 20 residents. Draw a boundary that reaches <b> <u>100%</u></b> training accuracy before submitting it.",
     notes: [
       "Slide the slope and shift controls below until the training accuracy is 100%.",
-      "Take your time - this is the same task the original data scientists faced.",
-      "A perfect score here only means the line fits this small Uptown sample.",
+      "Think about what could a perfect score means in this context.",
+      "If the line can separate the dots perfectly, is it then <i>perfect?</i>",
     ],
   },
   "demo-reveal": {
     title: "Deployment Reveal",
-    body: "The same boundary is now tested against the city the model was supposed to serve: all four regions, 1,000 residents, and patterns the Uptown-only sample never showed.",
+    body: "The same boundary is now tested against the city the model was supposed to serve: all <b>four</b> regions, <b>1000</b> residents and patterns the previous sample never showed.",
     notes: [
-      "Region 3 contains many safe night-shift workers in the high-activity zone.",
-      "A model trained only on Uptown can mistake those workers for threats.",
-      "This is sampling bias: a rule tuned on one narrow slice cannot generalize to the whole city.",
+      "Different dataset usually have <b>different characteristics.</b>",
+      "A model trained on single dataset can <b>misclassify</b> patterns from a different dataset.",
+      "This is <b><red>sampling bias</red></b>: a rule tuned on one narrow slice cannot generalize to the general population.",
     ],
   },
 };

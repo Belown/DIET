@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import historyIcon from "../../assets/svgs/history-icon.svg";
+import InlineMarkup, { getInlineMarkupVisibleLength } from "../InlineMarkup/InlineMarkup";
 import styles from "./Chatbox.module.css";
 
 export interface ChatboxProps {
@@ -54,6 +55,7 @@ export default function Chatbox({
   const hasPastDialogue = history.some((item) => !item.current);
   const currentHistoryItem = history.find((item) => item.current);
   const currentHistoryGroupId = currentHistoryItem?.passageId ?? "dialogue";
+  const visibleTextLength = useMemo(() => getInlineMarkupVisibleLength(text), [text]);
 
   const historyGroups = useMemo(() => {
     return history.reduce<Array<{ id: string; label: string; items: Array<DialogueHistoryItem & { index: number }> }>>(
@@ -122,10 +124,10 @@ export default function Chatbox({
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    setDisplayedLength(text.length);
+    setDisplayedLength(visibleTextLength);
     setIsComplete(true);
     reportComplete();
-  }, [reportComplete, text.length]);
+  }, [reportComplete, visibleTextLength]);
 
   useEffect(() => {
     clearCollapseTimer();
@@ -138,7 +140,7 @@ export default function Chatbox({
     }
     hasReportedCompleteRef.current = false;
 
-    if (!text.length) {
+    if (!visibleTextLength) {
       setIsComplete(true);
       reportComplete();
       return;
@@ -147,14 +149,14 @@ export default function Chatbox({
     timerRef.current = setInterval(() => {
       setDisplayedLength((prev) => {
         const next = prev + 1;
-        if (next >= text.length) {
+        if (next >= visibleTextLength) {
           if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
           setIsComplete(true);
           reportComplete();
-          return text.length;
+          return visibleTextLength;
         }
         return next;
       });
@@ -167,7 +169,7 @@ export default function Chatbox({
       }
       clearCollapseTimer();
     };
-  }, [autoCollapseOnTextComplete, clearCollapseTimer, reportComplete, text]);
+  }, [autoCollapseOnTextComplete, clearCollapseTimer, reportComplete, text, visibleTextLength]);
 
   useEffect(() => {
     if (!forceOpen) return;
@@ -339,7 +341,7 @@ export default function Chatbox({
                                   📋
                                 </span>
                               )}
-                              {item.text}
+                              <InlineMarkup text={item.text} />
                             </span>
                           </button>
                         ))}
@@ -370,7 +372,7 @@ export default function Chatbox({
             <img src={portraitSrc} alt="" className={styles.portrait} />
           </div>
           <p className={styles.chatboxText}>
-            {text.slice(0, displayedLength)}
+            <InlineMarkup text={text} maxVisibleChars={displayedLength} />
             {!isComplete && <span className={styles.cursor} aria-hidden="true" />}
           </p>
           {(hasPastDialogue || text.length > 0) && (

@@ -31,7 +31,17 @@
   position: relative;
   display: grid;
   gap: 18px;
-  animation: missionDashboardIn 0.48s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: missionDashboardIn 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.missionDashboardTutorial,
+.missionDashboardTutorial .commandIntro,
+.missionDashboardTutorial .budgetPanel,
+.missionDashboardTutorial .missionCard,
+.missionDashboardTutorial .missionQueue {
+  animation: none;
+  opacity: 1;
+  transform: none;
 }
 
 .missionHeader {

@@ -119,6 +119,10 @@
   min-width: 0;
 }
 
+.caseSheetSpotlightSplit .caseSheetBrief {
+  grid-column: 1 / -1;
+}
+
 .caseSheetKicker {
   margin: 0 0 10px;
   font-family: var(--font-display);
@@ -147,7 +151,7 @@
 }
 
 .caseSheetSpotlightSplit .caseSheetBody {
-  max-width: 58ch;
+  max-width: none;
 }
 
 .caseSheetDivider {

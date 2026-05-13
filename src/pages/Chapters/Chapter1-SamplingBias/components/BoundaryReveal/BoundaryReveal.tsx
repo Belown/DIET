@@ -28,9 +28,9 @@ export default function BoundaryReveal({
     <BriefingSheet sheet={sheet} spotlight={spotlight} spotlightLayout="split">
       <div className={styles.panel}>
         <p className={styles.panelEyebrow}>The reveal · {DEMO_FULL.length} points across 4 regions</p>
-        <h2 className={styles.h2}>Same line. Real-world failure.</h2>
+        <h2 className={styles.h2}>Same line. Turn to a failure.</h2>
         <p className={styles.panelBody}>
-          Your line was tuned on Region 1. Here, it meets the full city.
+          Your line was tuned on one Region. Here, it meets the full city.
         </p>
       </div>
 
