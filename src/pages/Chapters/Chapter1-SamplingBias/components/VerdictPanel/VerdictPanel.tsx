@@ -136,6 +136,7 @@ export default function VerdictPanel({
                   "--particle-index": index,
                   "--particle-distance": `${140 + (index % 7) * 32}px`,
                   "--particle-hue": 138 + index * 13,
+                  "--particle-delay": `${(index % 6) * 0.035}s`,
                 } as React.CSSProperties}
               />
             ))}
@@ -144,7 +145,6 @@ export default function VerdictPanel({
             <span className={styles.celebrationSeal} aria-hidden="true">LOW RISK</span>
             <span className={styles.celebrationKicker}>Timeline stabilized</span>
             <strong>Congratulations</strong>
-            <p>The final model reached Low Risk. Your investigation built a stronger, fairer dataset.</p>
             <div className={styles.celebrationStats} aria-hidden="true">
               <span>Bias reduced</span>
               <span>Coverage restored</span>
