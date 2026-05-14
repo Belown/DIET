@@ -33,6 +33,7 @@ export default function Chapters() {
   const initialChapter = isChapterId(chapterParam) ? chapterParam : "ch1";
   const [active, setActive] = useState<ChapterId>(initialChapter);
   const [timelineOpen, setTimelineOpen] = useState(false);
+  const [chapterTutorialOpen, setChapterTutorialOpen] = useState(false);
   const chromeRef = useRef<HTMLDivElement>(null);
 
   const activeIndex = CHAPTERS.findIndex((c) => c.id === active);
@@ -47,6 +48,7 @@ export default function Chapters() {
 
   const selectChapter = (chapter: ChapterId) => {
     setActive(chapter);
+    setChapterTutorialOpen(false);
     setSearchParams({ chapter });
   };
 
@@ -144,7 +146,9 @@ export default function Chapters() {
         </div>
       </div>
 
-      <main className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""}`}>
+      <main
+        className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""} ${chapterTutorialOpen ? styles.canvasTutorialActive : ""}`}
+      >
         <div key={showStoryIntro ? "story-intro" : active} className={styles.canvasBody}>
           {showStoryIntro ? (
             <StoryIntro
@@ -153,7 +157,11 @@ export default function Chapters() {
             />
           ) : (
             <>
-              {active === "ch1" && <Chapter1SamplingBias />}
+              {active === "ch1" && (
+                <Chapter1SamplingBias
+                  onMissionTutorialOpenChange={setChapterTutorialOpen}
+                />
+              )}
               {active === "ch2" && <Chapter2COMPAS />}
               {active === "ch3" && <Chapter3Alignment />}
             </>
