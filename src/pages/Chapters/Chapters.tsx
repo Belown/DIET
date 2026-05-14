@@ -4,6 +4,7 @@ import Logo from "../../components/Logo/Logo";
 import Chapter1SamplingBias from "./Chapter1-SamplingBias/Chapter1SamplingBias";
 import Chapter2COMPAS from "./Chapter2-COMPAS";
 import Chapter3Alignment from "./Chapter3-Alignment/Chapter3Alignment";
+import StoryIntro from "./components/StoryIntro/StoryIntro";
 import styles from "./Chapters.module.css";
 
 type ChapterId = "ch1" | "ch2" | "ch3";
@@ -28,6 +29,7 @@ const isChapterId = (value: string | null): value is ChapterId =>
 export default function Chapters() {
   const [searchParams, setSearchParams] = useSearchParams();
   const chapterParam = searchParams.get("chapter");
+  const showStoryIntro = searchParams.get("intro") === "story";
   const initialChapter = isChapterId(chapterParam) ? chapterParam : "ch1";
   const [active, setActive] = useState<ChapterId>(initialChapter);
   const [timelineOpen, setTimelineOpen] = useState(false);
@@ -142,11 +144,20 @@ export default function Chapters() {
         </div>
       </div>
 
-      <main className={styles.canvas}>
-        <div key={active} className={styles.canvasBody}>
-          {active === "ch1" && <Chapter1SamplingBias />}
-          {active === "ch2" && <Chapter2COMPAS />}
-          {active === "ch3" && <Chapter3Alignment />}
+      <main className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""}`}>
+        <div key={showStoryIntro ? "story-intro" : active} className={styles.canvasBody}>
+          {showStoryIntro ? (
+            <StoryIntro
+              onStart={() => selectChapter("ch1")}
+              onSelectChapter={selectChapter}
+            />
+          ) : (
+            <>
+              {active === "ch1" && <Chapter1SamplingBias />}
+              {active === "ch2" && <Chapter2COMPAS />}
+              {active === "ch3" && <Chapter3Alignment />}
+            </>
+          )}
         </div>
       </main>
     </div>
