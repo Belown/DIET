@@ -20,6 +20,13 @@ type NarrativeLocation = {
 const isSameNarrativeLocation = (a: NarrativeLocation, b: NarrativeLocation) =>
   a.passage === b.passage && a.chunkIndex === b.chunkIndex;
 
+const upsertNarrativeLocation = (history: NarrativeLocation[], location: NarrativeLocation) => {
+  const existingIndex = history.findIndex((item) => isSameNarrativeLocation(item, location));
+  if (existingIndex === -1) return [...history, location];
+
+  return history.map((item, index) => (index === existingIndex ? location : item));
+};
+
 const getPortraitForText = (text: string) => {
   const lower = text.toLowerCase();
 
@@ -71,6 +78,7 @@ export default function Chapter1SamplingBias({
   const investigation = useInvestigationState();
   const {
     currentDay,
+    dayPlans,
     dayLocked,
     planPopulation,
     planZones,
@@ -157,39 +165,31 @@ export default function Chapter1SamplingBias({
     "--chapter-bg": chapterBackground ? `url(${chapterBackground})` : "none",
   } as CSSProperties;
 
+  const createCurrentNarrativeLocation = (): NarrativeLocation => ({
+    passage,
+    chunkIndex,
+    text: passageText,
+    snapshot: createSnapshot(),
+  });
+
   const rememberCurrentChat = () => {
-    const currentLocation: NarrativeLocation = {
-      passage,
-      chunkIndex,
-      text: passageText,
-      snapshot: createSnapshot(),
-    };
-    setNarrativeHistory((prev) => {
-      if (prev.some((item) => isSameNarrativeLocation(item, currentLocation))) return prev;
-      return [...prev, currentLocation];
-    });
+    const currentLocation = createCurrentNarrativeLocation();
+    setNarrativeHistory((prev) => upsertNarrativeLocation(prev, currentLocation));
   };
 
-  const dialogueHistory = useMemo(() => {
-    const currentLocation: NarrativeLocation = {
-      passage,
-      chunkIndex,
-      text: passageText,
-      snapshot: createSnapshot(),
-    };
-    const hasCurrent = narrativeHistory.some((item) => isSameNarrativeLocation(item, currentLocation));
-    const history = hasCurrent ? narrativeHistory : [...narrativeHistory, currentLocation];
+  const currentLocation = createCurrentNarrativeLocation();
+  const historyWithCurrent = upsertNarrativeLocation(narrativeHistory, currentLocation);
 
-    return history.map((item) => ({
-      ...item,
-      passageId: item.passage,
-      current: isSameNarrativeLocation(item, currentLocation),
-    }));
-  }, [chunkIndex, narrativeHistory, passage, passageText]);
+  const dialogueHistory = historyWithCurrent.map((item) => ({
+    ...item,
+    passageId: item.passage,
+    current: isSameNarrativeLocation(item, currentLocation),
+  }));
 
   const handleHistorySelect = (index: number) => {
     const selected = dialogueHistory[index];
     if (!selected || selected.current) return;
+    setNarrativeHistory((prev) => upsertNarrativeLocation(prev, currentLocation));
     restoreSnapshot(selected.snapshot);
     setPassage(selected.passage);
     setChunkIndex(selected.chunkIndex);
@@ -324,6 +324,7 @@ export default function Chapter1SamplingBias({
         return (
           <MissionPlanner
             currentDay={currentDay}
+            dayPlans={dayPlans}
             currentPlans={currentPlans}
             dayLocked={dayLocked}
             spentToday={spentToday}
