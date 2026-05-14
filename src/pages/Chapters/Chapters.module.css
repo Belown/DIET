@@ -272,6 +272,10 @@
   padding-bottom: 24px;
 }
 
+.canvasChapter3 {
+  padding: 12px 0 0;
+}
+
 .canvasTutorialActive::before {
   content: "";
   position: fixed;

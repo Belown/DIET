@@ -217,6 +217,7 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  min-height: clamp(620px, 72vh, 820px);
   padding: clamp(18px, 2.4vw, 28px) clamp(16px, 2.4vw, 28px);
   border-radius: var(--radius-card);
   background:
@@ -384,6 +385,10 @@
 }
 
 @media (max-width: 720px) {
+  .gameArea {
+    min-height: 560px;
+  }
+
   .tableRow {
     grid-template-columns: 56px 1fr 56px;
     gap: 10px;

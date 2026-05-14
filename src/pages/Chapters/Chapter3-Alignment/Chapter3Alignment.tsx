@@ -77,20 +77,24 @@ export default function Chapter3Alignment() {
   const [history, setHistory] = useState<number[]>([0]);
   const [outcome, setOutcome] = useState<Outcome>("not-played");
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [isDialogueComplete, setIsDialogueComplete] = useState(false);
   const keyInsightsRef = useRef<HTMLElement>(null);
+  const hasSceneContent = step >= 3;
+  const showSceneContent = hasSceneContent && isDialogueComplete;
+  const shouldShowChatbox = !showSceneContent;
 
   // When the final beat lands, scroll the key takeaways into view and let
   // their highlight animation play. Players see the lesson, not the
   // dialogue tail.
   useEffect(() => {
-    if (step < 9) return;
+    if (step < 9 || !showSceneContent) return;
     const node = keyInsightsRef.current;
     if (!node) return;
     const t = window.setTimeout(() => {
       node.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 250);
     return () => window.clearTimeout(t);
-  }, [step]);
+  }, [step, showSceneContent]);
 
   const resolveDialogue = (idx: number): Dialogue =>
     idx === 4 ? BEAT_FOUR[outcome] : DIALOGUES[idx];
@@ -108,6 +112,10 @@ export default function Chapter3Alignment() {
 
   const isGameGate = step === 3 && !hasInteracted;
 
+  useEffect(() => {
+    setIsDialogueComplete(false);
+  }, [step]);
+
   const rememberStep = (next: number) =>
     setHistory((prev) => (prev.includes(next) ? prev : [...prev, next]));
 
@@ -118,6 +126,10 @@ export default function Chapter3Alignment() {
   };
 
   const handleAdvance = () => {
+    if (hasSceneContent) {
+      setIsDialogueComplete(true);
+      return;
+    }
     if (isGameGate) return;
     advanceTo(step + 1);
   };
@@ -133,10 +145,16 @@ export default function Chapter3Alignment() {
     setStep(entry);
   };
 
+  const handleContentContinue = () => {
+    advanceTo(step + 1);
+  };
+
   return (
     <div className={styles.phase}>
-      <div className={styles.scene}>
-        <div className={styles.sceneInner}>
+      <div className={`${styles.scene} ${showSceneContent ? styles.sceneContentOpen : styles.sceneDialogueOnly}`}>
+        <div className={`${styles.sceneInner} ${showSceneContent ? styles.sceneInnerOpen : ""}`}>
+          {showSceneContent && (
+            <>
           {step >= 3 && (
             <CardStack
               onComplete={(o) => {
@@ -165,21 +183,32 @@ export default function Chapter3Alignment() {
           {step >= 5 && <RaterCardsPanel />}
           {step >= 6 && <StatStripPanel />}
           {step >= 7 && <LoopPanel />}
-          {step >= 8 && <TakeawaysPanel />}
-          {step >= 9 && <KeyInsightsPanel innerRef={keyInsightsRef} />}
-          {step >= 9 && <ReferencesPanel />}
+              {step >= 8 && <TakeawaysPanel />}
+              {step >= 9 && <KeyInsightsPanel innerRef={keyInsightsRef} />}
+              {step >= 9 && <ReferencesPanel />}
+              {step >= 4 && step < DIALOGUES.length - 1 && (
+                <div className={styles.contentContinueRow}>
+                  <button type="button" className={styles.contentContinueButton} onClick={handleContentContinue}>
+                    Continue
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
-      <Chatbox
-        text={dialogue.text}
-        portraitSrc={dialogue.portrait}
-        history={dialogueHistory}
-        onHistorySelect={handleHistorySelect}
-        onAdvance={handleAdvance}
-        disableKeyboardAdvance={isGameGate}
-        speakerName="Detective"
-      />
+      {shouldShowChatbox && (
+        <Chatbox
+          text={dialogue.text}
+          portraitSrc={dialogue.portrait}
+          history={dialogueHistory}
+          onHistorySelect={handleHistorySelect}
+          onAdvance={handleAdvance}
+          disableKeyboardAdvance={isGameGate}
+          speakerName="Detective"
+        />
+      )}
     </div>
   );
 }

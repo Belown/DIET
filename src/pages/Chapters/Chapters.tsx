@@ -147,7 +147,7 @@ export default function Chapters() {
       </div>
 
       <main
-        className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""} ${chapterTutorialOpen ? styles.canvasTutorialActive : ""}`}
+        className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""} ${chapterTutorialOpen ? styles.canvasTutorialActive : ""} ${active === "ch3" ? styles.canvasChapter3 : ""}`}
       >
         <div key={showStoryIntro ? "story-intro" : active} className={styles.canvasBody}>
           {showStoryIntro ? (
