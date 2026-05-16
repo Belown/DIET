@@ -11,6 +11,8 @@ export interface ChatboxProps {
   onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
   onSkipToImportantInstruction?: () => void;
+  externalAdvanceSignal?: number;
+  onCollapsedChange?: (collapsed: boolean) => void;
   onTextComplete?: () => void;
   autoCollapseOnTextComplete?: boolean;
   speakerName?: string;
@@ -37,6 +39,8 @@ export default function Chatbox({
   onHistorySelect,
   onAdvance,
   onSkipToImportantInstruction,
+  externalAdvanceSignal = 0,
+  onCollapsedChange,
   onTextComplete,
   autoCollapseOnTextComplete = false,
   speakerName = "Detective",
@@ -198,7 +202,7 @@ export default function Chatbox({
     return clearCollapseTimer;
   }, [autoCollapseOnTextComplete, clearCollapseTimer, collapse, forceOpen, isCollapsed, isComplete, isHistoryOpen, text]);
 
-  const handleClick = () => {
+  const handleClick = useCallback(() => {
     if (isCollapsed) return;
 
     if (!isComplete) {
@@ -213,7 +217,19 @@ export default function Chatbox({
     } else {
       onAdvance?.();
     }
-  };
+  }, [autoCollapseOnTextComplete, collapse, complete, isCollapsed, isComplete, onAdvance]);
+
+  const lastExternalAdvanceSignalRef = useRef(externalAdvanceSignal);
+
+  useEffect(() => {
+    if (externalAdvanceSignal === lastExternalAdvanceSignalRef.current) return;
+    lastExternalAdvanceSignalRef.current = externalAdvanceSignal;
+    handleClick();
+  }, [externalAdvanceSignal, handleClick]);
+
+  useEffect(() => {
+    onCollapsedChange?.(isCollapsed);
+  }, [isCollapsed, onCollapsedChange]);
 
   const handleAdvanceClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -286,7 +302,7 @@ export default function Chatbox({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [complete, disableKeyboardAdvance, disablePreviousNavigation, history, isCollapsed, isComplete, isHistoryOpen, onAdvance, onHistorySelect]);
+  }, [disableKeyboardAdvance, disablePreviousNavigation, handleClick, history, isCollapsed, isHistoryOpen, onHistorySelect]);
 
   return (
     <>

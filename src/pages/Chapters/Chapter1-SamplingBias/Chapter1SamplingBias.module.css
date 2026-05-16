@@ -79,6 +79,18 @@
   animation: sceneIn 0.9s ease-out both;
 }
 
+.narrativeClickProxy {
+  appearance: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
 @keyframes sceneIn {
   from { opacity: 0; }
   to   { opacity: 1; }

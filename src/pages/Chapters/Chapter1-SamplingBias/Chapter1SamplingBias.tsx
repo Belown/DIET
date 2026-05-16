@@ -124,6 +124,8 @@ export default function Chapter1SamplingBias({
   const [hasCompletedMissionTutorial, setHasCompletedMissionTutorial] = useState(false);
   const [hasCompletedDayReportTutorial, setHasCompletedDayReportTutorial] = useState(false);
   const [chatboxReopenSignal, setChatboxReopenSignal] = useState(0);
+  const [sceneAdvanceSignal, setSceneAdvanceSignal] = useState(0);
+  const [isNarrativeCollapsed, setIsNarrativeCollapsed] = useState(false);
 
   useEffect(() => {
     onTutorialOverlayOpenChange?.(isActive && isTutorialOverlayOpen);
@@ -137,6 +139,7 @@ export default function Chapter1SamplingBias({
 
   useEffect(() => {
     setShowChoices(false);
+    setIsNarrativeCollapsed(false);
   }, [passage]);
 
   const passageChoices = useMemo((): Choice[] => {
@@ -160,6 +163,10 @@ export default function Chapter1SamplingBias({
   const isDayReportPassage = passage === "day1-debrief" || passage === "day2-debrief" || passage === "day3-debrief";
   const shouldExpectMissionTutorial =
     passage === "day1-plan" && !hasCompletedMissionTutorial && currentDay === 0 && !dayLocked[currentDay];
+  const shouldProxySceneClicksToNarrative =
+    !isTutorialOverlayOpen &&
+    !isNarrativeCollapsed &&
+    !shouldExpectMissionTutorial;
   const chapterBackground = getChapterBackground(passage);
   const phaseStyle = {
     "--chapter-bg": chapterBackground ? `url(${chapterBackground})` : "none",
@@ -453,6 +460,15 @@ export default function Chapter1SamplingBias({
         </div>
       </div>
 
+      {shouldProxySceneClicksToNarrative && (
+        <button
+          type="button"
+          className={styles.narrativeClickProxy}
+          onClick={() => setSceneAdvanceSignal((signal) => signal + 1)}
+          aria-label="Continue narrative"
+        />
+      )}
+
       {!isTutorialOverlayOpen && !shouldExpectMissionTutorial && (
         <NarrativeBox
           text={passageText}
@@ -461,6 +477,8 @@ export default function Chapter1SamplingBias({
           onHistorySelect={handleHistorySelect}
           onAdvance={isDayReportPassage ? undefined : handleAdvance}
           onSkipToImportantInstruction={nextImportantInstruction ? skipToImportantInstruction : undefined}
+          externalAdvanceSignal={sceneAdvanceSignal}
+          onCollapsedChange={setIsNarrativeCollapsed}
           autoCollapseOnTextComplete={shouldAutoHidePlannerNarrative}
           disableKeyboardAdvance={isSheetPopupOpen}
           forceOpen={shouldForceOpenNarrative}
