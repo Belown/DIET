@@ -5,6 +5,7 @@
   width: 100%;
   min-height: 100%;
   padding-top: 12px;
+  scroll-margin-top: 112px;
 }
 
 .scene {
@@ -35,9 +36,30 @@
   animation: sceneIn 0.4s ease-out both;
 }
 
+.scrollTarget {
+  scroll-margin-top: 112px;
+}
+
+.dialogueBackdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background:
+    radial-gradient(ellipse at 50% 82%, rgba(73, 79, 223, 0.1), transparent 42%),
+    rgba(8, 16, 12, 0.28);
+  backdrop-filter: blur(1px);
+  pointer-events: auto;
+  animation: dialogueBackdropIn 0.18s ease-out both;
+}
+
 @keyframes sceneIn {
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes dialogueBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 @media (max-width: 640px) {

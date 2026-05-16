@@ -82,10 +82,20 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
   const [outcome, setOutcome] = useState<Outcome>("not-played");
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isDialogueComplete, setIsDialogueComplete] = useState(false);
+  const phaseRef = useRef<HTMLDivElement>(null);
+  const raterCardsRef = useRef<HTMLDivElement>(null);
+  const statStripRef = useRef<HTMLDivElement>(null);
+  const loopRef = useRef<HTMLDivElement>(null);
+  const takeawaysRef = useRef<HTMLDivElement>(null);
   const keyInsightsRef = useRef<HTMLElement>(null);
+  const pendingLearningScrollRef = useRef(false);
+  const pendingContentScrollStepRef = useRef<number | null>(null);
+  const autoRevealContentStepRef = useRef<number | null>(null);
   const hasSceneContent = step >= 3;
-  const showSceneContent = hasSceneContent && isDialogueComplete;
-  const shouldShowChatbox = !showSceneContent;
+  const shouldKeepSceneContentVisible = hasInteracted && step >= 4;
+  const showSceneContent = hasSceneContent && (isDialogueComplete || shouldKeepSceneContentVisible);
+  const shouldShowChatbox = !isDialogueComplete;
+  const shouldDimSceneBehindChatbox = shouldShowChatbox && shouldKeepSceneContentVisible;
 
   // When the final beat lands, scroll the key takeaways into view and let
   // their highlight animation play. Players see the lesson, not the
@@ -117,8 +127,44 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
   const isGameGate = step === 3 && !hasInteracted;
 
   useEffect(() => {
+    if (autoRevealContentStepRef.current === step) {
+      autoRevealContentStepRef.current = null;
+      setIsDialogueComplete(true);
+      return;
+    }
     setIsDialogueComplete(false);
   }, [step]);
+
+  useEffect(() => {
+    if (!isActive || !pendingLearningScrollRef.current || step !== 4 || !shouldShowChatbox) return;
+    pendingLearningScrollRef.current = false;
+    const t = window.setTimeout(() => {
+      phaseRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 60);
+    return () => window.clearTimeout(t);
+  }, [isActive, shouldShowChatbox, step]);
+
+  useEffect(() => {
+    if (!isActive || pendingContentScrollStepRef.current !== step || !showSceneContent) return;
+    pendingContentScrollStepRef.current = null;
+    const target =
+      step === 5
+        ? raterCardsRef.current
+        : step === 6
+          ? statStripRef.current
+          : step === 7
+            ? loopRef.current
+            : step === 8
+              ? takeawaysRef.current
+              : step >= 9
+                ? keyInsightsRef.current
+                : null;
+    if (!target) return;
+    const t = window.setTimeout(() => {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+    return () => window.clearTimeout(t);
+  }, [isActive, showSceneContent, step]);
 
   const rememberStep = (next: number) =>
     setHistory((prev) => (prev.includes(next) ? prev : [...prev, next]));
@@ -131,6 +177,12 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
 
   const handleAdvance = () => {
     if (hasSceneContent) {
+      if (step === 4) {
+        autoRevealContentStepRef.current = 5;
+        pendingContentScrollStepRef.current = 5;
+        advanceTo(5);
+        return;
+      }
       setIsDialogueComplete(true);
       return;
     }
@@ -150,11 +202,13 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
   };
 
   const handleContentContinue = () => {
-    advanceTo(step + 1);
+    const next = step + 1;
+    pendingContentScrollStepRef.current = next;
+    advanceTo(next);
   };
 
   return (
-    <div className={styles.phase}>
+    <div ref={phaseRef} className={styles.phase}>
       <div className={`${styles.scene} ${showSceneContent ? styles.sceneContentOpen : styles.sceneDialogueOnly}`}>
         <div className={`${styles.sceneInner} ${showSceneContent ? styles.sceneInnerOpen : ""}`}>
           {showSceneContent && (
@@ -172,6 +226,7 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
                 // recap (4). Subsequent panels reveal as the player clicks
                 // through the chatbox.
                 if (step <= 3) {
+                  pendingLearningScrollRef.current = true;
                   rememberStep(4);
                   setStep(4);
                 }
@@ -185,10 +240,10 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
               </button>
             </div>
           )}
-          {step >= 5 && <RaterCardsPanel />}
-          {step >= 6 && <StatStripPanel />}
-          {step >= 7 && <LoopPanel />}
-              {step >= 8 && <TakeawaysPanel />}
+          {step >= 5 && <div ref={raterCardsRef} className={styles.scrollTarget}><RaterCardsPanel /></div>}
+          {step >= 6 && <div ref={statStripRef} className={styles.scrollTarget}><StatStripPanel /></div>}
+          {step >= 7 && <div ref={loopRef} className={styles.scrollTarget}><LoopPanel /></div>}
+              {step >= 8 && <div ref={takeawaysRef} className={styles.scrollTarget}><TakeawaysPanel /></div>}
               {step >= 9 && <KeyInsightsPanel innerRef={keyInsightsRef} />}
               {step >= 9 && <ReferencesPanel />}
               {step >= 4 && step < DIALOGUES.length - 1 && (
@@ -204,15 +259,18 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
       </div>
 
       {shouldShowChatbox && (
-        <Chatbox
-          text={dialogue.text}
-          portraitSrc={dialogue.portrait}
-          history={dialogueHistory}
-          onHistorySelect={handleHistorySelect}
-          onAdvance={handleAdvance}
-          disableKeyboardAdvance={!isActive || isGameGate}
-          speakerName="Detective"
-        />
+        <>
+          {shouldDimSceneBehindChatbox && <div className={styles.dialogueBackdrop} aria-hidden="true" />}
+          <Chatbox
+            text={dialogue.text}
+            portraitSrc={dialogue.portrait}
+            history={dialogueHistory}
+            onHistorySelect={handleHistorySelect}
+            onAdvance={handleAdvance}
+            disableKeyboardAdvance={!isActive || isGameGate}
+            speakerName="Detective"
+          />
+        </>
       )}
     </div>
   );

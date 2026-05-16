@@ -284,6 +284,22 @@ export default function CardStack({
     setDemoAnnotation(null);
   };
 
+  const jumpToWinningEnd = () => {
+    completedRef.current = false;
+    firstPickRef.current = true;
+    setMeters({ truth: TRUTH_THRESHOLD + 7, majority: 68, minority: 60 });
+    setIndex(GAME_SIZE);
+    setHistory([]);
+    setEarlyEnd(null);
+    setLastDeltas(null);
+    setPickTick((t) => t + 1);
+    setPending(null);
+    setShowRules(false);
+    setDemoMode(false);
+    setDemoAnnotation(null);
+    onFirstPick?.();
+  };
+
   const startDemo = () => {
     const { deck: planDeck, choices } = planWinningDemo();
     demoPlanRef.current = choices;
@@ -365,6 +381,15 @@ export default function CardStack({
                 title="Show rules"
               >
                 ?
+              </button>
+              <button
+                type="button"
+                className={styles.debugBtn}
+                onClick={jumpToWinningEnd}
+                aria-label="Debug: jump to winning end"
+                title="Debug: jump to winning end"
+              >
+                Win
               </button>
               <span className={styles.tableCount}>
                 Card {index + 1} <span className={styles.tableCountSep}>/</span> {GAME_SIZE}
