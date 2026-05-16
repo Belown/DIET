@@ -6,9 +6,9 @@ import styles from "./Chapter3Alignment.module.css";
 
 type Dialogue = { text: string; portrait: string };
 
-type Outcome = GameOutcome | "not-played";
+type OutcomeKey = "not-played" | "survived" | "truth" | "majority" | "minority";
 
-const BEAT_FOUR: Record<Outcome, Dialogue> = {
+const BEAT_FOUR: Record<OutcomeKey, Dialogue> = {
   "not-played": {
     portrait: portraits.thoughtful,
     text: "You skipped past the cards — that's fine. Most learners who do play discover the meters fight each other. Truth pulls one way, the mainstream raters pull another, and the overlooked groups pull a third. Let me walk you through what they would have shown you.",
@@ -74,12 +74,16 @@ const DIALOGUES: Dialogue[] = [
 
 type Chapter3AlignmentProps = {
   isActive?: boolean;
+  onChapterComplete?: (result: { completed: boolean; passed: boolean; scoreLabel?: string }) => void;
 };
 
-export default function Chapter3Alignment({ isActive = true }: Chapter3AlignmentProps) {
+const getOutcomeKey = (outcome: GameOutcome): OutcomeKey =>
+  outcome.kind === "early" ? outcome.meter : "survived";
+
+export default function Chapter3Alignment({ isActive = true, onChapterComplete }: Chapter3AlignmentProps) {
   const [step, setStep] = useState(0);
   const [history, setHistory] = useState<number[]>([0]);
-  const [outcome, setOutcome] = useState<Outcome>("not-played");
+  const [outcome, setOutcome] = useState<OutcomeKey>("not-played");
   const [hasInteracted, setHasInteracted] = useState(false);
   const [isDialogueComplete, setIsDialogueComplete] = useState(false);
   const phaseRef = useRef<HTMLDivElement>(null);
@@ -91,6 +95,7 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
   const pendingLearningScrollRef = useRef(false);
   const pendingContentScrollStepRef = useRef<number | null>(null);
   const autoRevealContentStepRef = useRef<number | null>(null);
+  const hasReportedCompletionRef = useRef(false);
   const hasSceneContent = step >= 3;
   const shouldKeepSceneContentVisible = hasInteracted && step >= 4;
   const showSceneContent = hasSceneContent && (isDialogueComplete || shouldKeepSceneContentVisible);
@@ -218,7 +223,15 @@ export default function Chapter3Alignment({ isActive = true }: Chapter3Alignment
               isActive={isActive}
               onComplete={(o) => {
                 setHasInteracted(true);
-                setOutcome(o);
+                setOutcome(getOutcomeKey(o));
+                if (!hasReportedCompletionRef.current) {
+                  hasReportedCompletionRef.current = true;
+                  onChapterComplete?.({
+                    completed: true,
+                    passed: o.kind === "final" && o.verdict === "honest-even",
+                    scoreLabel: o.kind === "final" ? o.verdict : `${o.meter} crashed`,
+                  });
+                }
               }}
               onFirstPick={() => setHasInteracted(true)}
               onContinue={() => {

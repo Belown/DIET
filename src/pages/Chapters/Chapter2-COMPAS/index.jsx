@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Chatbox from "../../../components/Chatbox/Chatbox";
 import { portraits } from "../../../assets/detective/portraits";
 import ReportCard from "./components/ReportCard";
@@ -61,7 +61,7 @@ const DIALOGUES = [
   },
 ];
 
-export default function Chapter2COMPAS({ isActive = true } = {}) {
+export default function Chapter2COMPAS({ isActive = true, onChapterComplete } = {}) {
   const [step, setStep] = useState(0);
   const [history, setHistory] = useState([0]);
   const [resultsLoaded, setResultsLoaded] = useState(false);
@@ -69,6 +69,7 @@ export default function Chapter2COMPAS({ isActive = true } = {}) {
   const [activityClosed, setActivityClosed] = useState(false);
   const [activitiesDone, setActivitiesDone] = useState(false);
   const [fairnessConfirmed, setFairnessConfirmed] = useState(false);
+  const hasReportedCompletionRef = useRef(false);
 
   const dialogue = DIALOGUES[step];
   const dialogueHistory = useMemo(() => {
@@ -87,6 +88,16 @@ export default function Chapter2COMPAS({ isActive = true } = {}) {
     if (step === 10) return fairnessConfirmed;
     return true;
   }, [activitiesDone, activityClosed, fairnessConfirmed, fieryReady, resultsLoaded, step]);
+
+  useEffect(() => {
+    if (step < DIALOGUES.length - 1 || hasReportedCompletionRef.current) return;
+    hasReportedCompletionRef.current = true;
+    onChapterComplete?.({
+      completed: true,
+      passed: true,
+      scoreLabel: "Fairness lesson complete",
+    });
+  }, [onChapterComplete, step]);
 
   const rememberStep = (nextStep) => {
     setHistory((prev) => (prev.includes(nextStep) ? prev : [...prev, nextStep]));

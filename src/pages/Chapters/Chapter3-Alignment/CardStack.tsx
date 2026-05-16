@@ -22,6 +22,7 @@ import {
   type MeterDelta,
   type MeterKey,
   type MeterState,
+  type Verdict,
 } from "./alignmentCards";
 import styles from "./CardStack.module.css";
 
@@ -73,7 +74,9 @@ const TAG_LABEL: Record<Card["tag"], string> = {
   stereotype: "stereotype default",
 };
 
-export type GameOutcome = "survived" | MeterKey;
+export type GameOutcome =
+  | { kind: "early"; meter: MeterKey }
+  | { kind: "final"; verdict: Verdict };
 
 // Beam search across a deck's choices to find a path that ends in the
 // "honest-even" verdict without ever crashing a meter. If the current deck
@@ -229,12 +232,12 @@ export default function CardStack({
     if (demoMode) return;
     if (earlyEnd) {
       completedRef.current = true;
-      onComplete?.(earlyEnd.meter);
+      onComplete?.({ kind: "early", meter: earlyEnd.meter });
     } else if (done) {
       completedRef.current = true;
-      onComplete?.("survived");
+      onComplete?.({ kind: "final", verdict: computeVerdict(meters) });
     }
-  }, [done, earlyEnd, demoMode, onComplete]);
+  }, [done, earlyEnd, demoMode, meters, onComplete]);
 
   const pick = (which: "A" | "B") => {
     if (!card || pending) return;

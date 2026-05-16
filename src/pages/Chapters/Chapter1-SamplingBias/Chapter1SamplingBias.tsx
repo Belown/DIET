@@ -74,12 +74,14 @@ type ImportantInstructionTarget = {
 type Chapter1SamplingBiasProps = {
   isActive?: boolean;
   onTutorialOverlayOpenChange?: (open: boolean) => void;
+  onChapterComplete?: (result: { completed: boolean; passed: boolean; scoreLabel?: string }) => void;
   tutorialDebugEnabled?: boolean;
 };
 
 export default function Chapter1SamplingBias({
   isActive = true,
   onTutorialOverlayOpenChange,
+  onChapterComplete,
   tutorialDebugEnabled = false,
 }: Chapter1SamplingBiasProps) {
   const [, setSearchParams] = useSearchParams();
@@ -438,6 +440,11 @@ export default function Chapter1SamplingBias({
               setChatboxReopenSignal((signal) => signal + 1);
             }}
             onNextChapter={() => {
+              onChapterComplete?.({
+                completed: true,
+                passed: overallAcc >= 0.8,
+                scoreLabel: pct(overallAcc),
+              });
               setSearchParams({ chapter: "ch2" });
             }}
           />
