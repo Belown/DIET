@@ -9,7 +9,7 @@ export const REGIONS: readonly Region[] = [
 ] as const;
 
 export const BRIEFING_SHEETS: Partial<Record<PassageId, BriefingSheet>> = {
-  "demo-intro": {
+  "demo-exercise": {
     title: "Boundary Drawing Exercise",
     body: "Before you build the real dataset, you need to understand <b>why the original model failed</b>. Here is what the police saw: subset from a single region - Uptown with 20 residents. Draw a boundary that reaches <b> <u>100%</u></b> training accuracy before submitting it.",
     notes: [
@@ -18,7 +18,7 @@ export const BRIEFING_SHEETS: Partial<Record<PassageId, BriefingSheet>> = {
       "If the line can separate the dots perfectly, is it then <i>perfect?</i>",
     ],
   },
-  "demo-reveal": {
+  "demo-reveal-sheet": {
     title: "Deployment Reveal",
     body: "The same boundary is now tested against the city the model was supposed to serve: all <b>four</b> regions, <b>1000</b> residents and patterns the previous sample never showed.",
     notes: [

@@ -72,7 +72,11 @@ const DIALOGUES: Dialogue[] = [
   },
 ];
 
-export default function Chapter3Alignment() {
+type Chapter3AlignmentProps = {
+  isActive?: boolean;
+};
+
+export default function Chapter3Alignment({ isActive = true }: Chapter3AlignmentProps) {
   const [step, setStep] = useState(0);
   const [history, setHistory] = useState<number[]>([0]);
   const [outcome, setOutcome] = useState<Outcome>("not-played");
@@ -87,14 +91,14 @@ export default function Chapter3Alignment() {
   // their highlight animation play. Players see the lesson, not the
   // dialogue tail.
   useEffect(() => {
-    if (step < 9 || !showSceneContent) return;
+    if (!isActive || step < 9 || !showSceneContent) return;
     const node = keyInsightsRef.current;
     if (!node) return;
     const t = window.setTimeout(() => {
       node.scrollIntoView({ behavior: "smooth", block: "start" });
     }, 250);
     return () => window.clearTimeout(t);
-  }, [step, showSceneContent]);
+  }, [isActive, step, showSceneContent]);
 
   const resolveDialogue = (idx: number): Dialogue =>
     idx === 4 ? BEAT_FOUR[outcome] : DIALOGUES[idx];
@@ -157,6 +161,7 @@ export default function Chapter3Alignment() {
             <>
           {step >= 3 && (
             <CardStack
+              isActive={isActive}
               onComplete={(o) => {
                 setHasInteracted(true);
                 setOutcome(o);
@@ -205,7 +210,7 @@ export default function Chapter3Alignment() {
           history={dialogueHistory}
           onHistorySelect={handleHistorySelect}
           onAdvance={handleAdvance}
-          disableKeyboardAdvance={isGameGate}
+          disableKeyboardAdvance={!isActive || isGameGate}
           speakerName="Detective"
         />
       )}

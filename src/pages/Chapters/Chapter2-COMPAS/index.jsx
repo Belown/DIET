@@ -61,7 +61,7 @@ const DIALOGUES = [
   },
 ];
 
-export default function Chapter2COMPAS() {
+export default function Chapter2COMPAS({ isActive = true } = {}) {
   const [step, setStep] = useState(0);
   const [history, setHistory] = useState([0]);
   const [resultsLoaded, setResultsLoaded] = useState(false);
@@ -112,6 +112,7 @@ export default function Chapter2COMPAS() {
         <div className={styles.sceneInner}>
           {(step === 0 || step === 1) && !activitiesDone && (
             <RecidivismGame
+              isActive={isActive}
               onComplete={() => setActivitiesDone(true)}
               onActivity1Complete={() => {
                 setHistory(prev => prev.includes(1) ? prev : [...prev, 1]);
@@ -158,6 +159,7 @@ export default function Chapter2COMPAS() {
         history={dialogueHistory}
         onHistorySelect={handleHistorySelect}
         onAdvance={handleAdvance}
+        disableKeyboardAdvance={!isActive}
         speakerName="Consultant"
       />
     </div>

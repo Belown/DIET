@@ -69,20 +69,17 @@ type ImportantInstructionTarget = {
   id: "boundary-exercise" | "boundary-reveal" | "day1-plan" | "day2-plan" | "day3-plan";
   passage: PassageId;
   chunkIndex?: number;
-  boundarySheetOpen?: boolean;
-  revealSheetMode?: "hidden" | "spotlight";
-  hasSeenRevealSheet?: boolean;
 };
 
 type Chapter1SamplingBiasProps = {
   isActive?: boolean;
-  onMissionTutorialOpenChange?: (open: boolean) => void;
+  onTutorialOverlayOpenChange?: (open: boolean) => void;
   tutorialDebugEnabled?: boolean;
 };
 
 export default function Chapter1SamplingBias({
   isActive = true,
-  onMissionTutorialOpenChange,
+  onTutorialOverlayOpenChange,
   tutorialDebugEnabled = false,
 }: Chapter1SamplingBiasProps) {
   const [, setSearchParams] = useSearchParams();
@@ -123,19 +120,16 @@ export default function Chapter1SamplingBias({
   const [passage, setPassage] = useState<PassageId>("intro");
   const [chunkIndex, setChunkIndex] = useState(0);
   const [narrativeHistory, setNarrativeHistory] = useState<NarrativeLocation[]>([]);
-  const [isBoundarySheetOpen, setIsBoundarySheetOpen] = useState(false);
-  const [revealSheetMode, setRevealSheetMode] = useState<"hidden" | "spotlight">("hidden");
-  const [hasSeenRevealSheet, setHasSeenRevealSheet] = useState(false);
-  const [isMissionTutorialOpen, setIsMissionTutorialOpen] = useState(false);
+  const [isTutorialOverlayOpen, setIsTutorialOverlayOpen] = useState(false);
   const [hasCompletedMissionTutorial, setHasCompletedMissionTutorial] = useState(false);
   const [hasCompletedDayReportTutorial, setHasCompletedDayReportTutorial] = useState(false);
   const [chatboxReopenSignal, setChatboxReopenSignal] = useState(0);
 
   useEffect(() => {
-    onMissionTutorialOpenChange?.(isActive && isMissionTutorialOpen);
+    onTutorialOverlayOpenChange?.(isActive && isTutorialOverlayOpen);
 
-    return () => onMissionTutorialOpenChange?.(false);
-  }, [isActive, isMissionTutorialOpen, onMissionTutorialOpenChange]);
+    return () => onTutorialOverlayOpenChange?.(false);
+  }, [isActive, isTutorialOverlayOpen, onTutorialOverlayOpenChange]);
 
   const pct = (v: number) => `${Math.round(v * 100)}%`;
 
@@ -143,13 +137,6 @@ export default function Chapter1SamplingBias({
 
   useEffect(() => {
     setShowChoices(false);
-    if (passage !== "demo-intro") {
-      setIsBoundarySheetOpen(false);
-    }
-    if (passage !== "demo-reveal") {
-      setRevealSheetMode("hidden");
-      setHasSeenRevealSheet(false);
-    }
   }, [passage]);
 
   const passageChoices = useMemo((): Choice[] => {
@@ -166,7 +153,7 @@ export default function Chapter1SamplingBias({
     const chunks = getAdaptivePassage(passage, strategy).chunks;
     return Boolean(chunks && chunkIndex < chunks.length - 1);
   }, [passage, chunkIndex, strategy]);
-  const isSheetPopupOpen = isBoundarySheetOpen || revealSheetMode === "spotlight";
+  const isSheetPopupOpen = passage === "demo-exercise" || passage === "demo-reveal-sheet";
   const chatboxBehavior = getAdaptivePassage(passage, strategy).chatbox;
   const shouldAutoHidePlannerNarrative = chatboxBehavior === "close" && !hasMoreChunks;
   const shouldForceOpenNarrative = chatboxBehavior === "open";
@@ -195,31 +182,23 @@ export default function Chapter1SamplingBias({
       case "intro":
         return {
           id: "boundary-exercise",
-          passage: "demo-intro",
-          boundarySheetOpen: true,
+          passage: "demo-exercise",
         };
       case "demo-intro":
-        return isBoundarySheetOpen
-          ? null
-          : {
-              id: "boundary-exercise",
-              passage: "demo-intro",
-              boundarySheetOpen: true,
-            };
+        return {
+          id: "boundary-exercise",
+          passage: "demo-exercise",
+        };
       case "demo-reveal":
-        if (revealSheetMode === "spotlight") return null;
-        return hasSeenRevealSheet
-          ? {
-              id: "day1-plan",
-              passage: "day1-plan",
-            }
-          : {
-              id: "boundary-reveal",
-              passage: "demo-reveal",
-              chunkIndex: Math.max(chunkIndex, 1),
-              revealSheetMode: "spotlight",
-              hasSeenRevealSheet: false,
-            };
+        return {
+          id: "boundary-reveal",
+          passage: "demo-reveal-sheet",
+        };
+      case "demo-reveal-analysis":
+        return {
+          id: "day1-plan",
+          passage: "day1-plan",
+        };
       case "day1-brief":
         return {
           id: "day1-plan",
@@ -238,24 +217,16 @@ export default function Chapter1SamplingBias({
       default:
         return null;
     }
-  }, [chunkIndex, hasSeenRevealSheet, isBoundarySheetOpen, passage, revealSheetMode]);
+  }, [passage]);
 
   const skipToImportantInstruction = () => {
     if (!nextImportantInstruction) return;
 
     rememberCurrentChat();
     setShowChoices(false);
-    setIsBoundarySheetOpen(false);
-    setRevealSheetMode("hidden");
 
     setPassage(nextImportantInstruction.passage);
     setChunkIndex(nextImportantInstruction.chunkIndex ?? 0);
-    setIsBoundarySheetOpen(nextImportantInstruction.boundarySheetOpen ?? false);
-    setRevealSheetMode(nextImportantInstruction.revealSheetMode ?? "hidden");
-
-    if (nextImportantInstruction.hasSeenRevealSheet !== undefined) {
-      setHasSeenRevealSheet(nextImportantInstruction.hasSeenRevealSheet);
-    }
   };
 
   const currentLocation = createCurrentNarrativeLocation();
@@ -278,16 +249,6 @@ export default function Chapter1SamplingBias({
   };
 
   const handleAdvance = () => {
-    if (passage === "demo-intro") {
-      setIsBoundarySheetOpen(true);
-      return;
-    }
-
-    if (passage === "demo-reveal" && chunkIndex > 0 && !hasSeenRevealSheet && revealSheetMode === "hidden") {
-      setRevealSheetMode("spotlight");
-      return;
-    }
-
     if (hasMoreChunks) {
       rememberCurrentChat();
       setChunkIndex((idx) => idx + 1);
@@ -306,33 +267,15 @@ export default function Chapter1SamplingBias({
   };
 
   const closeRevealSheetAndAdvance = () => {
-    if (passage !== "demo-reveal") {
-      setRevealSheetMode("hidden");
-      return;
-    }
-
-    setRevealSheetMode("hidden");
-    setHasSeenRevealSheet(true);
-
-    if (hasMoreChunks) {
-      rememberCurrentChat();
-      setChunkIndex((idx) => idx + 1);
-      return;
-    }
-
-    if (passageChoices.length === 1) {
-      const c = passageChoices[0];
-      c.action?.();
-      rememberCurrentChat();
-      setPassage(c.nextPassage);
-      setChunkIndex(0);
-    }
+    if (passage !== "demo-reveal-sheet") return;
+    rememberCurrentChat();
+    setPassage("demo-reveal-analysis");
+    setChunkIndex(0);
   };
 
   const submitBoundaryExercise = () => {
-    if (passage !== "demo-intro") return;
+    if (passage !== "demo-exercise") return;
     rememberCurrentChat();
-    setHasSeenRevealSheet(false);
     setPassage("demo-reveal");
     setChunkIndex(0);
   };
@@ -370,9 +313,7 @@ export default function Chapter1SamplingBias({
 
   const characterContent = (() => {
     switch (passage) {
-      case "demo-intro": {
-        if (!isBoundarySheetOpen) return null;
-
+      case "demo-exercise": {
         return (
           <BoundaryExercise
             boundary={demoBoundary}
@@ -384,14 +325,12 @@ export default function Chapter1SamplingBias({
         );
       }
 
-      case "demo-reveal":
+      case "demo-reveal-sheet":
       {
-        if (revealSheetMode === "hidden") return null;
-
         return (
           <BoundaryReveal
             boundary={demoBoundary}
-            spotlight={revealSheetMode === "spotlight"}
+            spotlight
             onReturnToPage={closeRevealSheetAndAdvance}
             realWorldAccuracy={pct(demoFullAcc)}
             trainingAccuracy={pct(demoTrainAcc)}
@@ -425,7 +364,7 @@ export default function Chapter1SamplingBias({
             sendDetectiveAndAdvance={sendDetectiveAndAdvance}
             tutorialEnabled={!hasCompletedMissionTutorial}
             tutorialDebugEnabled={tutorialDebugEnabled}
-            onTutorialOpenChange={setIsMissionTutorialOpen}
+            onTutorialOpenChange={setIsTutorialOverlayOpen}
             onTutorialDismiss={() => setHasCompletedMissionTutorial(true)}
           />
         );
@@ -441,7 +380,7 @@ export default function Chapter1SamplingBias({
             onContinue={handleReportContinue}
             tutorialEnabled={!hasCompletedDayReportTutorial}
             tutorialDebugEnabled={tutorialDebugEnabled}
-            onTutorialOpenChange={setIsMissionTutorialOpen}
+            onTutorialOpenChange={setIsTutorialOverlayOpen}
             onTutorialDismiss={() => setHasCompletedDayReportTutorial(true)}
           />
         );
@@ -456,7 +395,7 @@ export default function Chapter1SamplingBias({
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
             tutorialDebugEnabled={tutorialDebugEnabled}
-            onTutorialOpenChange={setIsMissionTutorialOpen}
+            onTutorialOpenChange={setIsTutorialOverlayOpen}
           />
         );
 
@@ -470,7 +409,7 @@ export default function Chapter1SamplingBias({
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
             tutorialDebugEnabled={tutorialDebugEnabled}
-            onTutorialOpenChange={setIsMissionTutorialOpen}
+            onTutorialOpenChange={setIsTutorialOverlayOpen}
           />
         );
 
@@ -504,7 +443,7 @@ export default function Chapter1SamplingBias({
 
   return (
     <div
-      className={`${styles.phase} ${styles.phaseWithBackground} ${isDayReportPassage ? styles.phaseDayReport : ""} ${isMissionTutorialOpen ? styles.phaseTutorialActive : ""}`}
+      className={`${styles.phase} ${styles.phaseWithBackground} ${isDayReportPassage ? styles.phaseDayReport : ""} ${isTutorialOverlayOpen ? styles.phaseTutorialActive : ""}`}
       style={phaseStyle}
     >
 
@@ -514,7 +453,7 @@ export default function Chapter1SamplingBias({
         </div>
       </div>
 
-      {!isMissionTutorialOpen && !shouldExpectMissionTutorial && (
+      {!isTutorialOverlayOpen && !shouldExpectMissionTutorial && (
         <NarrativeBox
           text={passageText}
           portraitSrc={portraitSrc}

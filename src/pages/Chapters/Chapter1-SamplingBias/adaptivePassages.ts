@@ -8,7 +8,7 @@
  * Integration:
  *   1. Import { getAdaptivePassage } from "./adaptivePassages"
  *   2. Replace PASSAGES[passage] calls with getAdaptivePassage(passage, strategy)
- *   3. The "intro", "demo-intro", "demo-reveal", and plan passages stay fixed
+ *   3. The "intro", demo passages, and plan passages stay fixed
  *      (they are pre-gameplay or are purely instructional UI states).
  *
  * StrategyResult shape matches what summarizeStrategy() already returns.

@@ -32,8 +32,13 @@ export default function Chapters() {
   const showStoryIntro = searchParams.get("intro") === "story";
   const initialChapter = isChapterId(chapterParam) ? chapterParam : "ch1";
   const [active, setActive] = useState<ChapterId>(initialChapter);
+  const [visitedChapters, setVisitedChapters] = useState<Record<ChapterId, boolean>>({
+    ch1: initialChapter === "ch1",
+    ch2: initialChapter === "ch2",
+    ch3: initialChapter === "ch3",
+  });
   const [timelineOpen, setTimelineOpen] = useState(false);
-  const [chapterTutorialOpen, setChapterTutorialOpen] = useState(false);
+  const [chapterTutorialOverlayOpen, setChapterTutorialOverlayOpen] = useState(false);
   const chromeRef = useRef<HTMLDivElement>(null);
 
   const activeIndex = CHAPTERS.findIndex((c) => c.id === active);
@@ -46,9 +51,13 @@ export default function Chapters() {
     }
   }, [active, searchParams]);
 
+  useEffect(() => {
+    setVisitedChapters((prev) => (prev[active] ? prev : { ...prev, [active]: true }));
+  }, [active]);
+
   const selectChapter = (chapter: ChapterId) => {
     setActive(chapter);
-    setChapterTutorialOpen(false);
+    setChapterTutorialOverlayOpen(false);
     setSearchParams({ chapter });
   };
 
@@ -147,7 +156,7 @@ export default function Chapters() {
       </div>
 
       <main
-        className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""} ${chapterTutorialOpen ? styles.canvasTutorialActive : ""} ${active === "ch3" ? styles.canvasChapter3 : ""}`}
+        className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""} ${chapterTutorialOverlayOpen ? styles.canvasTutorialActive : ""} ${active === "ch3" ? styles.canvasChapter3 : ""}`}
       >
         <div className={styles.canvasBody}>
           {showStoryIntro ? (
@@ -160,17 +169,17 @@ export default function Chapters() {
               <section className={styles.chapterPanel} hidden={active !== "ch1"} aria-hidden={active !== "ch1"}>
                 <Chapter1SamplingBias
                   isActive={active === "ch1"}
-                  onMissionTutorialOpenChange={setChapterTutorialOpen}
+                  onTutorialOverlayOpenChange={setChapterTutorialOverlayOpen}
                 />
               </section>
-              {active === "ch2" && (
-                <section className={styles.chapterPanel}>
-                  <Chapter2COMPAS />
+              {visitedChapters.ch2 && (
+                <section className={styles.chapterPanel} hidden={active !== "ch2"} aria-hidden={active !== "ch2"}>
+                  <Chapter2COMPAS isActive={active === "ch2"} />
                 </section>
               )}
-              {active === "ch3" && (
-                <section className={styles.chapterPanel}>
-                  <Chapter3Alignment />
+              {visitedChapters.ch3 && (
+                <section className={styles.chapterPanel} hidden={active !== "ch3"} aria-hidden={active !== "ch3"}>
+                  <Chapter3Alignment isActive={active === "ch3"} />
                 </section>
               )}
             </>

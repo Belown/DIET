@@ -189,10 +189,12 @@ function planWinningDemo(): Plan {
 }
 
 export default function CardStack({
+  isActive = true,
   onComplete,
   onFirstPick,
   onContinue,
 }: {
+  isActive?: boolean;
   onComplete?: (outcome: GameOutcome) => void;
   onFirstPick?: () => void;
   onContinue?: () => void;
@@ -305,7 +307,7 @@ export default function CardStack({
   // so the player has time to read the inline callout. Manual click on the
   // reaction's "Next card →" still advances immediately.
   useEffect(() => {
-    if (!demoMode || done || earlyEnd) return;
+    if (!isActive || !demoMode || done || earlyEnd) return;
     if (pending) {
       const delay = demoAnnotation ? 6500 : 2400;
       const t = setTimeout(continueAfterReaction, delay);
@@ -318,7 +320,7 @@ export default function CardStack({
     }, 1800);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demoMode, pending, demoAnnotation, card?.id, done, earlyEnd, index]);
+  }, [isActive, demoMode, pending, demoAnnotation, card?.id, done, earlyEnd, index]);
 
   const remaining = Math.max(0, GAME_SIZE - index);
 
@@ -340,7 +342,7 @@ export default function CardStack({
         />
       ) : !done ? (
         <div className={styles.gameArea}>
-          {showRules && <RulesOverlay onDismiss={() => setShowRules(false)} />}
+          {showRules && <RulesOverlay isActive={isActive} onDismiss={() => setShowRules(false)} />}
           {demoMode && (
             <div className={styles.demoBanner} role="status">
               <span className={styles.demoBannerDot} aria-hidden="true" />
@@ -376,6 +378,7 @@ export default function CardStack({
                 <>
                   <Reaction
                     key={`react-${pickTick}`}
+                    isActive={isActive}
                     pending={pending}
                     onContinue={continueAfterReaction}
                   />
@@ -527,8 +530,9 @@ function Meters({
   );
 }
 
-function RulesOverlay({ onDismiss }: { onDismiss: () => void }) {
+function RulesOverlay({ isActive, onDismiss }: { isActive: boolean; onDismiss: () => void }) {
   useEffect(() => {
+    if (!isActive) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
         e.preventDefault();
@@ -537,7 +541,7 @@ function RulesOverlay({ onDismiss }: { onDismiss: () => void }) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onDismiss]);
+  }, [isActive, onDismiss]);
 
   return (
     <div className={styles.rulesOverlay} role="dialog" aria-labelledby="rules-title" aria-modal="true">
@@ -619,9 +623,11 @@ function InlineAnnotation({ text }: { text: string }) {
 }
 
 function Reaction({
+  isActive,
   pending,
   onContinue,
 }: {
+  isActive: boolean;
   pending: {
     card: Card;
     which: "A" | "B";
@@ -635,6 +641,7 @@ function Reaction({
   const meterKeys: MeterKey[] = ["truth", "majority", "minority"];
 
   useEffect(() => {
+    if (!isActive) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " " || e.key === "ArrowRight") {
         e.preventDefault();
@@ -643,7 +650,7 @@ function Reaction({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onContinue]);
+  }, [isActive, onContinue]);
 
   return (
     <article className={styles.reaction}>

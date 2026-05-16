@@ -26,7 +26,7 @@ export default function BoundaryExercise({
 }: BoundaryExerciseProps) {
   const [submitError, setSubmitError] = useState("");
   const intercept = clampIntercept(boundary.intercept);
-  const sheet = BRIEFING_SHEETS["demo-intro"];
+  const sheet = BRIEFING_SHEETS["demo-exercise"];
   const hasPerfectAccuracy = trainingAccuracyValue >= 1;
 
   useEffect(() => {

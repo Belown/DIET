@@ -21,7 +21,7 @@ export default function BoundaryReveal({
   realWorldAccuracy,
   trainingAccuracy,
 }: BoundaryRevealProps) {
-  const sheet = BRIEFING_SHEETS["demo-reveal"];
+  const sheet = BRIEFING_SHEETS["demo-reveal-sheet"];
   if (!sheet) return null;
 
   return (
