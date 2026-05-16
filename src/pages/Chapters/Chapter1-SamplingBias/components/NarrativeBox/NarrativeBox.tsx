@@ -6,6 +6,7 @@ interface NarrativeBoxProps {
   history?: DialogueHistoryItem[];
   onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
+  onSkipToImportantInstruction?: () => void;
   onTextComplete?: () => void;
   autoCollapseOnTextComplete?: boolean;
   disableKeyboardAdvance?: boolean;

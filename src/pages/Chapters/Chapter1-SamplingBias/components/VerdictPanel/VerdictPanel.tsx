@@ -145,11 +145,11 @@ export default function VerdictPanel({
             <span className={styles.celebrationSeal} aria-hidden="true">LOW RISK</span>
             <span className={styles.celebrationKicker}>Timeline stabilized</span>
             <strong>Congratulations</strong>
-            <div className={styles.celebrationStats} aria-hidden="true">
+            {/* <div className={styles.celebrationStats} aria-hidden="true">
               <span>Bias reduced</span>
               <span>Coverage restored</span>
               <span>Case cleared</span>
-            </div>
+            </div> */}
           </div>
         </div>
       )}

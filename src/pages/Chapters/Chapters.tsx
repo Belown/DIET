@@ -149,7 +149,7 @@ export default function Chapters() {
       <main
         className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""} ${chapterTutorialOpen ? styles.canvasTutorialActive : ""} ${active === "ch3" ? styles.canvasChapter3 : ""}`}
       >
-        <div key={showStoryIntro ? "story-intro" : active} className={styles.canvasBody}>
+        <div className={styles.canvasBody}>
           {showStoryIntro ? (
             <StoryIntro
               onStart={() => selectChapter("ch1")}
@@ -157,13 +157,22 @@ export default function Chapters() {
             />
           ) : (
             <>
-              {active === "ch1" && (
+              <section className={styles.chapterPanel} hidden={active !== "ch1"} aria-hidden={active !== "ch1"}>
                 <Chapter1SamplingBias
+                  isActive={active === "ch1"}
                   onMissionTutorialOpenChange={setChapterTutorialOpen}
                 />
+              </section>
+              {active === "ch2" && (
+                <section className={styles.chapterPanel}>
+                  <Chapter2COMPAS />
+                </section>
               )}
-              {active === "ch2" && <Chapter2COMPAS />}
-              {active === "ch3" && <Chapter3Alignment />}
+              {active === "ch3" && (
+                <section className={styles.chapterPanel}>
+                  <Chapter3Alignment />
+                </section>
+              )}
             </>
           )}
         </div>

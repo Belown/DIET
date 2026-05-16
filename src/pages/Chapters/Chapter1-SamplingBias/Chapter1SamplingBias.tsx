@@ -65,12 +65,23 @@ const getChapterBackground = (passage: PassageId): string | null => {
   }
 };
 
+type ImportantInstructionTarget = {
+  id: "boundary-exercise" | "boundary-reveal" | "day1-plan" | "day2-plan" | "day3-plan";
+  passage: PassageId;
+  chunkIndex?: number;
+  boundarySheetOpen?: boolean;
+  revealSheetMode?: "hidden" | "spotlight";
+  hasSeenRevealSheet?: boolean;
+};
+
 type Chapter1SamplingBiasProps = {
+  isActive?: boolean;
   onMissionTutorialOpenChange?: (open: boolean) => void;
   tutorialDebugEnabled?: boolean;
 };
 
 export default function Chapter1SamplingBias({
+  isActive = true,
   onMissionTutorialOpenChange,
   tutorialDebugEnabled = false,
 }: Chapter1SamplingBiasProps) {
@@ -121,10 +132,10 @@ export default function Chapter1SamplingBias({
   const [chatboxReopenSignal, setChatboxReopenSignal] = useState(0);
 
   useEffect(() => {
-    onMissionTutorialOpenChange?.(isMissionTutorialOpen);
+    onMissionTutorialOpenChange?.(isActive && isMissionTutorialOpen);
 
     return () => onMissionTutorialOpenChange?.(false);
-  }, [isMissionTutorialOpen, onMissionTutorialOpenChange]);
+  }, [isActive, isMissionTutorialOpen, onMissionTutorialOpenChange]);
 
   const pct = (v: number) => `${Math.round(v * 100)}%`;
 
@@ -132,9 +143,11 @@ export default function Chapter1SamplingBias({
 
   useEffect(() => {
     setShowChoices(false);
-    setIsBoundarySheetOpen(false);
-    setRevealSheetMode("hidden");
+    if (passage !== "demo-intro") {
+      setIsBoundarySheetOpen(false);
+    }
     if (passage !== "demo-reveal") {
+      setRevealSheetMode("hidden");
       setHasSeenRevealSheet(false);
     }
   }, [passage]);
@@ -175,6 +188,74 @@ export default function Chapter1SamplingBias({
   const rememberCurrentChat = () => {
     const currentLocation = createCurrentNarrativeLocation();
     setNarrativeHistory((prev) => upsertNarrativeLocation(prev, currentLocation));
+  };
+
+  const nextImportantInstruction = useMemo((): ImportantInstructionTarget | null => {
+    switch (passage) {
+      case "intro":
+        return {
+          id: "boundary-exercise",
+          passage: "demo-intro",
+          boundarySheetOpen: true,
+        };
+      case "demo-intro":
+        return isBoundarySheetOpen
+          ? null
+          : {
+              id: "boundary-exercise",
+              passage: "demo-intro",
+              boundarySheetOpen: true,
+            };
+      case "demo-reveal":
+        if (revealSheetMode === "spotlight") return null;
+        return hasSeenRevealSheet
+          ? {
+              id: "day1-plan",
+              passage: "day1-plan",
+            }
+          : {
+              id: "boundary-reveal",
+              passage: "demo-reveal",
+              chunkIndex: Math.max(chunkIndex, 1),
+              revealSheetMode: "spotlight",
+              hasSeenRevealSheet: false,
+            };
+      case "day1-brief":
+        return {
+          id: "day1-plan",
+          passage: "day1-plan",
+        };
+      case "day2-brief":
+        return {
+          id: "day2-plan",
+          passage: "day2-plan",
+        };
+      case "day3-brief":
+        return {
+          id: "day3-plan",
+          passage: "day3-plan",
+        };
+      default:
+        return null;
+    }
+  }, [chunkIndex, hasSeenRevealSheet, isBoundarySheetOpen, passage, revealSheetMode]);
+
+  const skipToImportantInstruction = () => {
+    if (!nextImportantInstruction) return;
+
+    rememberCurrentChat();
+    setShowChoices(false);
+    setIsBoundarySheetOpen(false);
+    setRevealSheetMode("hidden");
+
+    setPassage(nextImportantInstruction.passage);
+    setChunkIndex(nextImportantInstruction.chunkIndex ?? 0);
+    setIsBoundarySheetOpen(nextImportantInstruction.boundarySheetOpen ?? false);
+    setRevealSheetMode(nextImportantInstruction.revealSheetMode ?? "hidden");
+
+    if (nextImportantInstruction.hasSeenRevealSheet !== undefined) {
+      setHasSeenRevealSheet(nextImportantInstruction.hasSeenRevealSheet);
+    }
   };
 
   const currentLocation = createCurrentNarrativeLocation();
@@ -440,6 +521,7 @@ export default function Chapter1SamplingBias({
           history={dialogueHistory}
           onHistorySelect={handleHistorySelect}
           onAdvance={isDayReportPassage ? undefined : handleAdvance}
+          onSkipToImportantInstruction={nextImportantInstruction ? skipToImportantInstruction : undefined}
           autoCollapseOnTextComplete={shouldAutoHidePlannerNarrative}
           disableKeyboardAdvance={isSheetPopupOpen}
           forceOpen={shouldForceOpenNarrative}

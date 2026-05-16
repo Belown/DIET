@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import historyIcon from "../../assets/svgs/history-icon.svg";
+import skipIcon from "../../assets/svgs/skip-icon.svg";
 import InlineMarkup, { getInlineMarkupVisibleLength } from "../InlineMarkup/InlineMarkup";
 import styles from "./Chatbox.module.css";
 
@@ -9,6 +10,7 @@ export interface ChatboxProps {
   history?: DialogueHistoryItem[];
   onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
+  onSkipToImportantInstruction?: () => void;
   onTextComplete?: () => void;
   autoCollapseOnTextComplete?: boolean;
   speakerName?: string;
@@ -34,6 +36,7 @@ export default function Chatbox({
   history = [],
   onHistorySelect,
   onAdvance,
+  onSkipToImportantInstruction,
   onTextComplete,
   autoCollapseOnTextComplete = false,
   speakerName = "Detective",
@@ -222,6 +225,16 @@ export default function Chatbox({
     setIsHistoryOpen((prev) => !prev);
   };
 
+  const handleSkipClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    complete();
+    setIsHistoryOpen(false);
+    clearCollapseTimer();
+    wasAutoCollapsedRef.current = false;
+    setIsCollapsed(false);
+    onSkipToImportantInstruction?.();
+  };
+
   const handleCollapseClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     collapse(false);
@@ -377,15 +390,26 @@ export default function Chatbox({
           </p>
           {(hasPastDialogue || text.length > 0) && (
             <div className={styles.navControls}>
+              {onSkipToImportantInstruction && (
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  onClick={handleSkipClick}
+                  aria-label="Skip to next important instruction"
+                  title="Skip to next important instruction"
+                >
+                  <img src={skipIcon} alt="" className={styles.controlIcon} aria-hidden="true" />
+                </button>
+              )}
               {hasPastDialogue && (
                 <button
                   type="button"
-                  className={styles.historyBtn}
+                  className={styles.iconBtn}
                   onClick={handleHistoryClick}
                   aria-label="Show dialogue history"
                   aria-expanded={isHistoryOpen}
                 >
-                  <img src={historyIcon} alt="" className={styles.historyIcon} aria-hidden="true" />
+                  <img src={historyIcon} alt="" className={styles.controlIcon} aria-hidden="true" />
                 </button>
               )}
               {text.length > 0 && (!isComplete || onAdvance) && (

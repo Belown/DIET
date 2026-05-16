@@ -292,6 +292,14 @@
   animation: phaseEnter 0.35s ease-out both;
 }
 
+.chapterPanel {
+  display: block;
+}
+
+.chapterPanel[hidden] {
+  display: none;
+}
+
 @keyframes canvasTutorialBackdropIn {
   from { opacity: 0; }
   to { opacity: 1; }
