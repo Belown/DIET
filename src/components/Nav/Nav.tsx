@@ -1,4 +1,5 @@
 import { type MouseEvent, useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import Button from "../Button/Button";
 import Logo from "../Logo/Logo";
 import styles from "./Nav.module.css";
@@ -6,7 +7,9 @@ import styles from "./Nav.module.css";
 const NAV_OFFSET = 88;
 
 export default function Nav() {
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
+  const showLandingLinks = location.pathname === "/";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -33,11 +36,13 @@ export default function Nav() {
   return (
     <header className={`${styles.nav} ${scrolled ? styles.scrolled : ""}`}>
       <Logo />
-      <nav className={styles.links}>
-        <a href="#concept" onClick={(event) => handleSectionClick(event, "concept")}>What's this?</a>
-        <a href="#chapters" onClick={(event) => handleSectionClick(event, "chapters")}>Chapters</a>
-        <a href="#audience" onClick={(event) => handleSectionClick(event, "audience")}>Why it matters</a>
-      </nav>
+      {showLandingLinks && (
+        <nav className={styles.links}>
+          <a href="#concept" onClick={(event) => handleSectionClick(event, "concept")}>What's this?</a>
+          <a href="#chapters" onClick={(event) => handleSectionClick(event, "chapters")}>Chapters</a>
+          <a href="#audience" onClick={(event) => handleSectionClick(event, "audience")}>Why it matters</a>
+        </nav>
+      )}
       <div className={styles.cta}>
         <Button variant="ghost-dark" to="/about">
           About

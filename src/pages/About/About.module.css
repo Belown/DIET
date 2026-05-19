@@ -262,8 +262,29 @@
 }
 
 .placeholder {
+  position: relative;
   border-style: dashed;
-  background: rgba(255, 255, 255, 0.42);
+  border-color: rgba(180, 83, 9, 0.58);
+  background: rgba(255, 247, 237, 0.78);
+  box-shadow: 0 10px 26px rgba(180, 83, 9, 0.1);
+}
+
+.placeholder::before {
+  content: "Placeholder";
+  display: inline-flex;
+  width: max-content;
+  margin-bottom: 8px;
+  padding: 4px 8px;
+  border: 1px solid rgba(180, 83, 9, 0.34);
+  border-radius: var(--diet-radius-document);
+  background: rgba(255, 255, 255, 0.72);
+  color: #92400e;
+  font-family: var(--font-case-file);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  text-transform: uppercase;
 }
 
 .teamGrid {
