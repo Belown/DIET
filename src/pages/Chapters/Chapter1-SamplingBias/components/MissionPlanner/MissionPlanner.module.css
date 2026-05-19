@@ -592,11 +592,13 @@
 }
 
 .queueList {
+  --queue-item-preview-height: 176px;
   display: grid;
   gap: 10px;
-  max-height: 520px;
-  overflow: auto;
-  padding-right: 2px;
+  max-height: calc(var(--queue-item-preview-height) * 2 + 10px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 6px;
 }
 
 .queueItem {
@@ -697,8 +699,15 @@
   display: grid;
   gap: 10px;
   max-height: 260px;
-  overflow: auto;
-  padding-right: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0;
+  scrollbar-width: none;
+}
+
+.previousDecisionList::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 .previousDecisionDay {

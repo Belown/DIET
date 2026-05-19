@@ -379,7 +379,7 @@ export default function MissionPlanner({
             Add Sortie
           </button>
 
-          <div className={styles.queueList}>
+          <div className={`${styles.queueList} prettyScrollbar`}>
             {currentPlans.length === 0 ? (
               <p className={styles.featureIntelEmpty}>No missions queued for Day {currentDay + 1}.</p>
             ) : (

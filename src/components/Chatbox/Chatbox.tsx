@@ -29,7 +29,6 @@ export interface DialogueHistoryItem {
 }
 
 const CHAR_SPEED = 25;
-const AUTO_COLLAPSE_DELAY_MS = 900;
 const SHEET_HISTORY_MARKER_TEXT = "Read the sheet carefully. Then draw the best boundary you can.";
 
 export default function Chatbox({
@@ -191,16 +190,6 @@ export default function Chatbox({
     wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
   }, [clearCollapseTimer, reopenSignal]);
-
-  useEffect(() => {
-    if (!autoCollapseOnTextComplete || !isComplete || isCollapsed || forceOpen || isHistoryOpen) return;
-
-    collapseTimerRef.current = setTimeout(() => {
-      collapse(true);
-    }, AUTO_COLLAPSE_DELAY_MS);
-
-    return clearCollapseTimer;
-  }, [autoCollapseOnTextComplete, clearCollapseTimer, collapse, forceOpen, isCollapsed, isComplete, isHistoryOpen, text]);
 
   const handleClick = useCallback(() => {
     if (isCollapsed) return;
