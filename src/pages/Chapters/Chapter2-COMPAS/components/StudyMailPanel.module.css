@@ -1,0 +1,93 @@
+.panel {
+  border-radius: 10px;
+  border: 1px solid rgba(25, 28, 31, 0.12);
+  background: rgba(250, 248, 242, 0.92);
+  padding: 16px 18px;
+}
+
+.title {
+  margin: 0 0 10px;
+  font-family: var(--font-display, serif);
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 600;
+  color: var(--rui-dark);
+}
+
+.empty {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(25, 28, 31, 0.65);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(25, 28, 31, 0.1);
+}
+
+.cardTop {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.metricName {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--rui-dark);
+}
+
+.badge {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(73, 79, 223, 0.12);
+  color: rgba(40, 44, 120, 0.95);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.colLabel {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(25, 28, 31, 0.55);
+  margin-bottom: 4px;
+}
+
+.number {
+  font-family: var(--font-display, serif);
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.note {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(25, 28, 31, 0.72);
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

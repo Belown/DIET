@@ -1,0 +1,98 @@
+.panel {
+  border-radius: 12px;
+  border: 1px solid rgba(25, 28, 31, 0.14);
+  background: rgba(255, 255, 255, 0.94);
+  padding: 22px 22px 20px;
+  max-width: 820px;
+  margin: 0 auto;
+  box-shadow: 0 18px 40px rgba(25, 28, 31, 0.12);
+}
+
+.scoreBlock {
+  margin-bottom: 20px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(25, 28, 31, 0.1);
+}
+
+.title {
+  margin: 0 0 6px;
+  font-family: var(--font-display, serif);
+  font-size: 22px;
+}
+
+.score {
+  margin: 0;
+  font-family: var(--font-display, serif);
+  font-size: clamp(36px, 6vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.scoreNote {
+  margin: 10px 0 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(25, 28, 31, 0.72);
+}
+
+.legacyBlock {
+  margin-bottom: 22px;
+}
+
+.subhead {
+  margin: 16px 0 6px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(25, 28, 31, 0.55);
+}
+
+.subhead:first-child {
+  margin-top: 0;
+}
+
+.stance {
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: rgba(25, 28, 31, 0.88);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.primary,
+.secondary {
+  appearance: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid rgba(25, 28, 31, 0.2);
+}
+
+.primary {
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  border-color: var(--rui-dark);
+}
+
+.secondary {
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--rui-dark);
+}
+
+.primary:hover,
+.secondary:hover {
+  transform: translateY(-1px);
+}

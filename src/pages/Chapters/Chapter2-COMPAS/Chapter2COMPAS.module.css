@@ -3,42 +3,50 @@
   width: 100%;
   min-height: 100%;
   padding-top: 12px;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.phaseWithBackground::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-image: var(--chapter-bg);
+  background-size: min(85vw, 2000px) auto;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.02);
+}
+
+.phaseWithBackground::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(180deg, rgba(250, 247, 240, 0.2), rgba(10, 14, 20, 0.34)),
+    radial-gradient(circle at 50% 18%, rgba(250, 247, 240, 0.1), transparent 42%);
+  background-repeat: no-repeat;
+}
+
+.phaseWithBackground .sceneInner {
+  position: relative;
+  z-index: 1;
 }
 
 .scene {
-  padding: 20px clamp(20px, 4vw, 48px) 232px;
-  max-width: 1200px;
+  padding: 20px clamp(12px, 2vw, 28px) 232px;
+  max-width: 1600px;
   margin: 0 auto;
 }
 
 .sceneInner {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 20px;
   animation: sceneIn 0.4s ease-out both;
-}
-
-.loadButton {
-  appearance: none;
-  border: 1px solid var(--rui-border);
-  background: linear-gradient(180deg, var(--rui-white), rgba(245, 247, 250, 0.92));
-  color: var(--rui-dark);
-  font-family: var(--font-display);
-  font-size: clamp(18px, 2vw, 24px);
-  font-weight: 500;
-  letter-spacing: 0;
-  border-radius: 10px;
-  padding: 18px 26px;
-  align-self: center;
-  box-shadow: 0 16px 32px rgba(25, 28, 31, 0.16);
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-}
-
-.loadButton:hover {
-  transform: translateY(-2px);
-  border-color: rgba(73, 79, 223, 0.55);
-  box-shadow: 0 20px 36px rgba(25, 28, 31, 0.2);
 }
 
 @keyframes sceneIn {
@@ -52,6 +60,137 @@
   }
 }
 
+.overlayChoices {
+  position: fixed;
+  bottom: 224px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  animation: choicesUp 0.3s ease-out both;
+  padding: 12px;
+  width: min(960px, calc(100vw - 24px));
+}
+
+.choiceCard {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(25, 28, 31, 0.16);
+  border-radius: 10px;
+  padding: 14px 16px 16px;
+  box-shadow: 0 16px 34px rgba(25, 28, 31, 0.16);
+  backdrop-filter: blur(10px);
+  width: 100%;
+}
+
+.choiceLead {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--rui-dark);
+}
+
+.choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+}
+
+.choice {
+  appearance: none;
+  text-align: left;
+  border: 1px solid rgba(25, 28, 31, 0.72);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--rui-dark);
+  font-family: var(--font-display);
+  border-radius: 7px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.15s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.choice:hover {
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  border-color: var(--rui-dark);
+  transform: translateY(-1px);
+}
+
+.choiceTitle {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.choiceBody {
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0.92;
+}
+
+.dayActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.primaryBtn {
+  appearance: none;
+  border: 1px solid var(--rui-dark);
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 12px 22px;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 12px 26px rgba(25, 28, 31, 0.18);
+}
+
+.primaryBtn:hover {
+  transform: translateY(-1px);
+}
+
+.primaryBtn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.warn {
+  font-size: 13px;
+  color: #7a1e1e;
+  align-self: center;
+}
+
+.daySummary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(25, 28, 31, 0.1);
+  background: rgba(255, 255, 255, 0.85);
+}
+
+@keyframes choicesUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
 @media (max-width: 640px) {
   .phase {
     padding-top: 16px;
@@ -62,12 +201,13 @@
     padding-bottom: 248px;
   }
 
-  .sceneInner {
-    gap: 16px;
+  .overlayChoices {
+    bottom: 232px;
+    width: calc(100vw - 16px);
+    padding-inline: 0;
   }
 
-  .loadButton {
-    width: 100%;
-    font-size: 18px;
+  .choiceGrid {
+    grid-template-columns: 1fr;
   }
 }
