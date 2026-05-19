@@ -53,14 +53,14 @@ const SECTIONS = [
 
 const NAV_OFFSET = 88;
 const SCROLL_DURATION_MS = 760;
-const WHEEL_QUIET_MS = 220;
+const WHEEL_COOLDOWN_MS = 120;
 
 const easeInOutCubic = (t: number) =>
   t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
 
 export default function Landing() {
   const animationFrameRef = useRef<number | null>(null);
-  const wheelQuietTimerRef = useRef<number | null>(null);
+  const wheelCooldownTimerRef = useRef<number | null>(null);
   const wheelLockedRef = useRef(false);
   const isAnimatingRef = useRef(false);
   const [activeSection, setActiveSection] = useState(0);
@@ -69,15 +69,15 @@ export default function Landing() {
     document.documentElement.classList.add("landingPagedScroll");
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    const unlockWheelAfterQuiet = () => {
-      if (wheelQuietTimerRef.current !== null) {
-        window.clearTimeout(wheelQuietTimerRef.current);
+    const armWheelCooldown = (extraDelay: number) => {
+      if (wheelCooldownTimerRef.current !== null) {
+        window.clearTimeout(wheelCooldownTimerRef.current);
       }
-
-      wheelQuietTimerRef.current = window.setTimeout(() => {
+      wheelLockedRef.current = true;
+      wheelCooldownTimerRef.current = window.setTimeout(() => {
         wheelLockedRef.current = false;
-        wheelQuietTimerRef.current = null;
-      }, WHEEL_QUIET_MS);
+        wheelCooldownTimerRef.current = null;
+      }, extraDelay + WHEEL_COOLDOWN_MS);
     };
 
     const getSectionTargets = () =>
@@ -137,13 +137,13 @@ export default function Landing() {
     };
 
     const onWheel = (event: WheelEvent) => {
-      if (isAnimatingRef.current || wheelLockedRef.current) {
-        event.preventDefault();
-        unlockWheelAfterQuiet();
-        return;
-      }
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
 
-      if (Math.abs(event.deltaY) < 12 || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+      event.preventDefault();
+
+      if (isAnimatingRef.current || wheelLockedRef.current) return;
+
+      if (Math.abs(event.deltaY) < 12) return;
 
       const targets = getSectionTargets();
       if (targets.length < 2) return;
@@ -156,9 +156,7 @@ export default function Landing() {
 
       if (nextIndex === currentIndex) return;
 
-      event.preventDefault();
-      wheelLockedRef.current = true;
-      unlockWheelAfterQuiet();
+      armWheelCooldown(reduceMotion ? 0 : SCROLL_DURATION_MS);
       animateTo(targets[nextIndex], nextIndex);
     };
 
@@ -172,8 +170,8 @@ export default function Landing() {
       window.removeEventListener("wheel", onWheel);
       window.removeEventListener("scroll", updateActiveSection);
       window.removeEventListener("resize", updateActiveSection);
-      if (wheelQuietTimerRef.current !== null) {
-        window.clearTimeout(wheelQuietTimerRef.current);
+      if (wheelCooldownTimerRef.current !== null) {
+        window.clearTimeout(wheelCooldownTimerRef.current);
       }
       if (animationFrameRef.current !== null) {
         window.cancelAnimationFrame(animationFrameRef.current);
