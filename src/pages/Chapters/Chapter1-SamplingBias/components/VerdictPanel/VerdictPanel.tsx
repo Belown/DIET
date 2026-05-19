@@ -46,7 +46,7 @@ const scoreTone = (value: number): ScoreTone => {
 const scoreStatus = (value: number) => {
   if (value >= 0.75) return "Strong";
   if (value >= 0.6) return "Watch";
-  return "Needs attention";
+  return "At Risk";
 };
 
 const districtName = (label: string) => label.replace(/\s+/g, " ").trim();
@@ -242,7 +242,7 @@ export default function VerdictPanel({
 
         <div className={styles.heroScoreDeck}>
           <ScoreRing label="New Eden" value={overallAcc} tone={scoreTone(overallAcc)} pct={pct} />
-          <ScoreRing label="Neighbor City" value={otherCityOvr} tone={scoreTone(otherCityOvr)} pct={pct} />
+          <ScoreRing label="Neighbor" value={otherCityOvr} tone={scoreTone(otherCityOvr)} pct={pct} />
           <div className={`${styles.transferDelta} ${styles[`transferDelta_${transferDeltaTone}`]}`}>
             <span>Transfer shift</span>
             <strong>{transferDeltaLabel}</strong>
