@@ -3,12 +3,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import Logo from "../../components/Logo/Logo";
 import Chapter1SamplingBias from "./Chapter1-SamplingBias/Chapter1SamplingBias";
 import Chapter2COMPAS from "./Chapter2-COMPAS";
-import Chapter3Placeholder from "./Chapter3-Placeholder/Chapter3Placeholder";
+import Chapter3Alignment from "./Chapter3-Alignment/Chapter3Alignment";
 import StoryIntro from "./components/StoryIntro/StoryIntro";
 import styles from "./Chapters.module.css";
 
 type ChapterId = "ch1" | "ch2" | "ch3";
-type ActiveView = ChapterId | "intro";
 
 type ChapterMeta = {
   id: ChapterId;
@@ -18,47 +17,147 @@ type ChapterMeta = {
   status: "ready" | "draft";
 };
 
+type ChapterResult = {
+  completed: boolean;
+  passed: boolean;
+  scoreLabel?: string;
+};
+
+type EndingTier = "good" | "medium" | "bad";
+type EndingRoute = EndingTier | "final";
+
 const CHAPTERS: ChapterMeta[] = [
   { id: "ch1", num: "01", title: "Sampling Bias", hint: "Data collection shapes outcomes", status: "ready" },
   { id: "ch2", num: "02", title: "COMPAS Trade-offs", hint: "Fairness definitions collide", status: "ready" },
-  { id: "ch3", num: "03", title: "TBD", hint: "TBD", status: "draft" },
+  { id: "ch3", num: "03", title: "LLM Alignment", hint: "Who teaches the model what's 'good'?", status: "ready" },
 ];
+
+const PREVIEW_PASS_COUNT: Record<EndingTier, number> = {
+  good: 3,
+  medium: 2,
+  bad: 1,
+};
 
 const isChapterId = (value: string | null): value is ChapterId =>
   value === "ch1" || value === "ch2" || value === "ch3";
 
+const isEndingTier = (value: string | null): value is EndingTier =>
+  value === "good" || value === "medium" || value === "bad";
+
+const isEndingRoute = (value: string | null): value is EndingRoute =>
+  value === "final" || isEndingTier(value);
+
+const createPreviewResults = (passCount: number): Record<ChapterId, ChapterResult | null> => ({
+  ch1: {
+    completed: true,
+    passed: passCount >= 1,
+    scoreLabel: passCount >= 1 ? "Low Risk" : "Review needed",
+  },
+  ch2: {
+    completed: true,
+    passed: passCount >= 2,
+    scoreLabel: passCount >= 2 ? "Fairness lesson complete" : "Review needed",
+  },
+  ch3: {
+    completed: true,
+    passed: passCount >= 3,
+    scoreLabel: passCount >= 3 ? "honest-even" : "alignment drift",
+  },
+});
+
 export default function Chapters() {
   const [searchParams, setSearchParams] = useSearchParams();
   const chapterParam = searchParams.get("chapter");
-  const shouldShowIntro = searchParams.get("intro") === "story" || !chapterParam;
-  const initialView: ActiveView = shouldShowIntro ? "intro" : isChapterId(chapterParam) ? chapterParam : "ch1";
-  const [active, setActive] = useState<ActiveView>(initialView);
+  const endingParam = searchParams.get("ending");
+  const showStoryIntro = searchParams.get("intro") === "story";
+  const initialChapter = isChapterId(chapterParam) ? chapterParam : "ch1";
+  const [active, setActive] = useState<ChapterId>(initialChapter);
+  const [visitedChapters, setVisitedChapters] = useState<Record<ChapterId, boolean>>({
+    ch1: initialChapter === "ch1",
+    ch2: initialChapter === "ch2",
+    ch3: initialChapter === "ch3",
+  });
   const [timelineOpen, setTimelineOpen] = useState(false);
-  const [missionTutorialOpen, setMissionTutorialOpen] = useState(false);
+  const [chapterTutorialOverlayOpen, setChapterTutorialOverlayOpen] = useState(false);
+  const [chapterResults, setChapterResults] = useState<Record<ChapterId, ChapterResult | null>>({
+    ch1: null,
+    ch2: null,
+    ch3: null,
+  });
   const chromeRef = useRef<HTMLDivElement>(null);
+  const endingRef = useRef<HTMLDivElement>(null);
+  const hasScrolledToEndingRef = useRef(false);
+  const chapterPanelRefs = useRef<Record<ChapterId, HTMLElement | null>>({
+    ch1: null,
+    ch2: null,
+    ch3: null,
+  });
+  const pendingChapterScrollRef = useRef<ChapterId | null>(null);
 
-  const activeIndex = active === "intro" ? -1 : CHAPTERS.findIndex((c) => c.id === active);
-  const progress = activeIndex < 0 ? 0 : ((activeIndex + 0.5) / CHAPTERS.length) * 100;
+  const activeIndex = CHAPTERS.findIndex((c) => c.id === active);
+  const progress = ((activeIndex + 0.5) / CHAPTERS.length) * 100;
+  const completedResults = CHAPTERS.map((chapter) => chapterResults[chapter.id]);
+  const isCaseComplete = completedResults.every(Boolean);
+  const passCount = completedResults.filter((result) => result?.passed).length;
+  const endingRoute = isEndingRoute(endingParam) ? endingParam : null;
+  const isEndingPage = endingRoute !== null && (endingRoute !== "final" || isCaseComplete);
+  const endingPagePassCount =
+    endingRoute === "final" ? passCount : endingRoute ? PREVIEW_PASS_COUNT[endingRoute] : passCount;
+  const endingPageResults =
+    endingRoute === "final" ? chapterResults : createPreviewResults(endingPagePassCount);
 
   useEffect(() => {
     const chapter = searchParams.get("chapter");
-    const nextView: ActiveView =
-      searchParams.get("intro") === "story" || !chapter ? "intro" : isChapterId(chapter) ? chapter : "ch1";
-
-    if (nextView !== active) setActive(nextView);
+    if (isChapterId(chapter) && chapter !== active) {
+      setActive(chapter);
+    }
   }, [active, searchParams]);
 
   useEffect(() => {
-    if (active !== "ch1") {
-      setMissionTutorialOpen(false);
-    }
+    setVisitedChapters((prev) => (prev[active] ? prev : { ...prev, [active]: true }));
   }, [active]);
 
+  useEffect(() => {
+    if (isEndingPage || showStoryIntro || pendingChapterScrollRef.current !== active) return;
+
+    const panel = chapterPanelRefs.current[active];
+    if (!panel) return;
+
+    pendingChapterScrollRef.current = null;
+    window.requestAnimationFrame(() => {
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [active, isEndingPage, showStoryIntro, visitedChapters]);
+
   const selectChapter = (chapter: ChapterId) => {
+    pendingChapterScrollRef.current = chapter;
     setActive(chapter);
-    setTimelineOpen(false);
+    setChapterTutorialOverlayOpen(false);
     setSearchParams({ chapter });
+
+    if (chapter === active) {
+      window.requestAnimationFrame(() => {
+        chapterPanelRefs.current[chapter]?.scrollIntoView({ behavior: "smooth", block: "start" });
+        pendingChapterScrollRef.current = null;
+      });
+    }
   };
+
+  const recordChapterResult = (chapter: ChapterId, result: ChapterResult) => {
+    setChapterResults((prev) => {
+      if (prev[chapter]?.completed) return prev;
+      return { ...prev, [chapter]: result };
+    });
+  };
+
+  useEffect(() => {
+    if (!isCaseComplete || hasScrolledToEndingRef.current) return;
+    hasScrolledToEndingRef.current = true;
+    const timer = window.setTimeout(() => {
+      setSearchParams({ ending: "final" });
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [isCaseComplete, setSearchParams]);
 
   useEffect(() => {
     if (!timelineOpen) return;
@@ -154,33 +253,136 @@ export default function Chapters() {
         </div>
       </div>
 
-      <main className={`${styles.canvas} ${missionTutorialOpen ? styles.canvasTutorialActive : ""}`}>
-        <div key={active} className={styles.canvasBody}>
-          {active === "intro" && (
-            <ChapterIntro
+      <main
+        className={`${styles.canvas} ${showStoryIntro ? styles.canvasIntro : ""} ${chapterTutorialOverlayOpen ? styles.canvasTutorialActive : ""} ${active === "ch3" && !isEndingPage ? styles.canvasChapter3 : ""}`}
+      >
+        <div className={styles.canvasBody}>
+          {isEndingPage ? (
+            <div ref={endingRef} className={styles.endingPage}>
+              <EndingPanel
+                mode={endingRoute === "final" ? "final" : "preview"}
+                passCount={endingPagePassCount}
+                chapterResults={endingPageResults}
+                onReviewChapters={() => setTimelineOpen(true)}
+              />
+            </div>
+          ) : showStoryIntro ? (
+            <StoryIntro
               onStart={() => selectChapter("ch1")}
               onSelectChapter={selectChapter}
             />
+          ) : (
+            <>
+              <section
+                ref={(node) => {
+                  chapterPanelRefs.current.ch1 = node;
+                }}
+                id="chapter-ch1"
+                className={styles.chapterPanel}
+                hidden={active !== "ch1"}
+                aria-hidden={active !== "ch1"}
+              >
+                <Chapter1SamplingBias
+                  isActive={active === "ch1"}
+                  onTutorialOverlayOpenChange={setChapterTutorialOverlayOpen}
+                  onChapterComplete={(result) => recordChapterResult("ch1", result)}
+                />
+              </section>
+              {visitedChapters.ch2 && (
+                <section
+                  ref={(node) => {
+                    chapterPanelRefs.current.ch2 = node;
+                  }}
+                  id="chapter-ch2"
+                  className={styles.chapterPanel}
+                  hidden={active !== "ch2"}
+                  aria-hidden={active !== "ch2"}
+                >
+                  <Chapter2COMPAS
+                    isActive={active === "ch2"}
+                    onChapterComplete={(result) => recordChapterResult("ch2", result)}
+                  />
+                </section>
+              )}
+              {visitedChapters.ch3 && (
+                <section
+                  ref={(node) => {
+                    chapterPanelRefs.current.ch3 = node;
+                  }}
+                  id="chapter-ch3"
+                  className={styles.chapterPanel}
+                  hidden={active !== "ch3"}
+                  aria-hidden={active !== "ch3"}
+                >
+                  <Chapter3Alignment
+                    isActive={active === "ch3"}
+                    onChapterComplete={(result) => recordChapterResult("ch3", result)}
+                  />
+                </section>
+              )}
+            </>
           )}
-          {active === "ch1" && <Chapter1SamplingBias onMissionTutorialOpenChange={setMissionTutorialOpen} />}
-          {active === "ch2" && <Chapter2COMPAS />}
-          {active === "ch3" && <Chapter3Placeholder />}
         </div>
       </main>
     </div>
   );
 }
 
-type ChapterIntroProps = {
-  onStart: () => void;
-  onSelectChapter: (chapter: ChapterId) => void;
-};
+function EndingPanel({
+  passCount,
+  chapterResults,
+  onReviewChapters,
+  mode = "final",
+}: {
+  passCount: number;
+  chapterResults: Record<ChapterId, ChapterResult | null>;
+  onReviewChapters: () => void;
+  mode?: "final" | "preview";
+}) {
+  const tier = passCount === 3 ? "good" : passCount === 2 ? "medium" : "bad";
+  const title = tier === "good" ? "Case Cleared" : tier === "medium" ? "Case Reopened" : "Case Unstable";
+  const verdict =
+    tier === "good"
+      ? "You built a stronger record across data collection, fairness trade-offs, and alignment pressure. The system is not perfect, but it is ready for monitored deployment."
+      : tier === "medium"
+        ? "You solved part of the case, but one weak chapter still leaves the system exposed. Deployment needs another review before anyone relies on it."
+        : "The case file is still dangerous. Too many failures remain across the pipeline, and the system should not be deployed.";
 
-function ChapterIntro({ onStart, onSelectChapter }: ChapterIntroProps) {
   return (
-    <StoryIntro
-      onStart={onStart}
-      onSelectChapter={onSelectChapter}
-    />
+    <section className={`${styles.endingPanel} ${styles[`endingPanel_${tier}`]}`} aria-live="polite">
+      <p className={styles.endingEyebrow}>{mode === "preview" ? "Ending preview" : "Final case review"}</p>
+      <div className={styles.endingHeader}>
+        <div>
+          <h2 className={styles.endingTitle}>{title}</h2>
+          <p className={styles.endingBody}>{verdict}</p>
+        </div>
+        <div className={styles.endingScore}>
+          <strong>{passCount}/3</strong>
+          <span>chapters passed</span>
+        </div>
+      </div>
+
+      <div className={styles.endingGrid}>
+        {CHAPTERS.map((chapter) => {
+          const result = chapterResults[chapter.id];
+          return (
+            <article key={chapter.id} className={styles.endingCard}>
+              <span className={styles.endingChapterNum}>Chapter {chapter.num}</span>
+              <h3>{chapter.title}</h3>
+              <p className={result?.passed ? styles.endingPass : styles.endingFail}>
+                {result?.passed ? "Pass" : "Review needed"}
+              </p>
+              {result?.scoreLabel ? <span className={styles.endingDetail}>{result.scoreLabel}</span> : null}
+            </article>
+          );
+        })}
+      </div>
+
+      <div className={styles.endingActions}>
+        <button type="button" className={styles.endingButton} onClick={onReviewChapters}>
+          Review chapters
+        </button>
+      </div>
+    </section>
   );
 }

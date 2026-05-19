@@ -1,50 +1,82 @@
 import { useEffect, useMemo, useState } from "react";
 import { ZONE_VISUALS } from "../../../../../assets/image/image";
+import shared from "../../../../../styles/shared.module.css";
 import { REGIONS } from "../../chapterData";
 import styles from "./DayReportPanel.module.css";
 import { useTutorial, type TutorialStep } from "../../hooks/useTutorial";
 import TutorialPopover from "../Tutorial/TutorialPopover";
+import TutorialDebugOverlay from "../Tutorial/TutorialDebugOverlay";
 
 type DayReportPanelProps = {
   dayNumber: 1 | 2 | 3;
   overallAcc: number;
   regionAccs: number[];
   sampledFlags: boolean[];
+  continueLabel?: string;
+  onContinue?: () => void;
+  tutorialEnabled?: boolean;
+  tutorialDebugEnabled?: boolean;
   onTutorialOpenChange?: (open: boolean) => void;
+  onTutorialDismiss?: () => void;
 };
 
 const districtCode = (index: number) => ["UP", "DT", "FZ", "SL"][index] ?? "RG";
+const districtName = (label: string) => label.replace(/\s+/g, " ").trim();
 
-type TutorialTarget = "overall" | "districts" | "narrative";
+type TutorialTarget = "overall" | "districts" | "narrative" | "continue" | "help";
 
 const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
   {
     target: "overall",
-    title: "Overall accuracy",
-    body: "This pill summarizes how the model performed across the whole city for this day. Color tells you the confidence band at a glance.",
-    offset: { x: -360, y: 120 },
+    title: "Overall checkpoint",
+    body: "This is the model's current accuracy after today's committed patrols. Low scores mean the dataset still has blind spots.",
+    placement: "right",
   },
   {
     target: "districts",
     title: "District breakdown",
-    body: "Each card shows confidence per district. Watch for unsampled zones — those bars are guesses, not evidence.",
-    offset: { x: 120, y: 80 },
+    body: "Each district shows its own confidence score. Compare sampled and unsampled districts before planning the next day.",
+    placement: "right",
   },
   {
     target: "narrative",
-    title: "Narrative log",
-    body: "Plain-language summary of what the model learned today and what to fix tomorrow. Use the recommendation to guide your next plan.",
-    offset: { x: -360, y: 80 },
+    title: "Audit receipt",
+    body: "This receipt shows the totals, the districts needing attention, and the next action to take.",
+    placement: "left",
+  },
+  {
+    target: "continue",
+    title: "Proceed to the next day",
+    body: "Use this button to move from the report into the next briefing.",
+    placement: "top",
+  },
+  {
+    target: "help",
+    title: "Replay the guide",
+    body: "Use this help button any time you want to reopen the day report walkthrough from the beginning.",
+    placement: "bottom",
   },
 ];
 
-export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, sampledFlags, onTutorialOpenChange }: DayReportPanelProps) {
+export default function DayReportPanel({
+  dayNumber,
+  overallAcc,
+  regionAccs,
+  sampledFlags,
+  continueLabel,
+  onContinue,
+  tutorialEnabled = true,
+  tutorialDebugEnabled = false,
+  onTutorialOpenChange,
+  onTutorialDismiss,
+}: DayReportPanelProps) {
   const [barValues, setBarValues] = useState([0, 0, 0, 0]);
-  const [typedSummary, setTypedSummary] = useState("");
 
   const tutorial = useTutorial(TUTORIAL_STEPS, {
-    enabled: dayNumber === 1,
+    enabled: tutorialEnabled && dayNumber === 1,
+    debugEnabled: tutorialDebugEnabled,
     onOpenChange: onTutorialOpenChange,
+    onDismiss: onTutorialDismiss,
   });
 
   useEffect(() => {
@@ -64,6 +96,33 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
   const overallPct = Math.round(overallAcc * 100);
   const sampledCount = sampledFlags.filter(Boolean).length;
   const overallTone = overallPct >= 75 ? "good" : overallPct >= 60 ? "mid" : "low";
+  const strongZones = useMemo(
+    () => REGIONS.filter((_, i) => (regionAccs[i] ?? 0) >= 0.75).map((r) => districtName(r.label)),
+    [regionAccs],
+  );
+  const lowZones = useMemo(
+    () => REGIONS.filter((_, i) => (regionAccs[i] ?? 0) < 0.6).map((r) => districtName(r.label)),
+    [regionAccs],
+  );
+  const unseenZones = useMemo(
+    () => REGIONS.filter((_, i) => !sampledFlags[i]).map((r) => districtName(r.label)),
+    [sampledFlags],
+  );
+  const attentionTone = unseenZones.length > 0 || overallPct < 60 ? "critical" : lowZones.length > 0 ? "warning" : "stable";
+  const attentionTitle =
+    unseenZones.length > 0
+      ? "Coverage blind spot"
+      : lowZones.length > 0
+        ? "Weak district confidence"
+        : "No urgent gaps";
+  const attentionDetail =
+    unseenZones.length > 0
+      ? unseenZones.join(", ")
+      : lowZones.length > 0
+        ? lowZones.join(", ")
+        : strongZones.length > 0
+          ? strongZones.join(", ")
+          : "All sampled districts";
 
   const suggestedActions = useMemo(() => {
     if (dayNumber === 3) {
@@ -73,40 +132,11 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
 
     const actions: string[] = [];
     if (sampledCount < 4) actions.push("Add at least one unsampled district tomorrow.");
-    if (overallPct < 65) actions.push("Favor useful context question over noisy signals.");
+    if (overallPct < 65) actions.push("Revisit which candidate signals deserve space in tomorrow's dataset.");
     if (actions.length === 0) actions.push("Keep broad coverage and avoid overfitting one district.");
     actions.push(`Prepare Day ${dayNumber + 1} mission with balanced distribution.`);
     return actions;
   }, [dayNumber, overallPct, sampledCount]);
-
-  const summaryText = useMemo(() => {
-    const strongZones = REGIONS.filter((_, i) => (regionAccs[i] ?? 0) >= 0.75).map((r) => r.label);
-    const lowZones = REGIONS.filter((_, i) => (regionAccs[i] ?? 0) < 0.6).map((r) => r.label);
-    const unseenZones = REGIONS.filter((_, i) => !sampledFlags[i]).map((r) => r.label);
-
-    const lines: string[] = [];
-    lines.push(`Day ${dayNumber} closed.`);
-    lines.push(`Dataset coverage: ${sampledCount}/4 districts sampled.`);
-    lines.push("");
-    if (strongZones.length) lines.push(`Strong confidence in ${strongZones.join(", ")}.`);
-    if (lowZones.length) lines.push(`Weak confidence in ${lowZones.join(", ")}.`);
-    if (unseenZones.length) lines.push(`Blind spots remain in ${unseenZones.join(", ")}.`);
-    lines.push("");
-    lines.push(`Recommendation: ${suggestedActions[0]}`);
-    if (suggestedActions[1]) lines.push(suggestedActions[1]);
-    return lines.join("\n");
-  }, [dayNumber, regionAccs, sampledCount, sampledFlags, suggestedActions]);
-
-  useEffect(() => {
-    setTypedSummary("");
-    let index = 0;
-    const timer = window.setInterval(() => {
-      index += 1;
-      setTypedSummary(summaryText.slice(0, index));
-      if (index >= summaryText.length) window.clearInterval(timer);
-    }, 14);
-    return () => window.clearInterval(timer);
-  }, [summaryText]);
 
   const confidenceLabel = (score: number) => {
     if (score >= 75) return "Strong confidence";
@@ -116,6 +146,19 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
 
   return (
     <section className={`${styles.reportRoot} ${tutorial.open ? styles.reportRootTutorialActive : ""}`}>
+      <div className={styles.helpButtonSlot}>
+        <div className={tutorial.getTargetClass("help", styles.helpButtonTarget)}>
+          <button
+            type="button"
+            className={styles.helpButton}
+            onClick={tutorial.restart}
+            aria-label="Replay day report intro"
+            data-tooltip="Replay intro tutorial"
+          >
+            ?
+          </button>
+        </div>
+      </div>
       <header className={styles.header}>
         <div>
           <p className={styles.eyebrow}>Case File · Temporal Bias Unit</p>
@@ -126,18 +169,19 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
               : "Final field-day report before full city verdict review."}
           </p>
         </div>
-        <div
-          ref={tutorial.registerTarget("overall")}
-          className={tutorial.getTargetClass("overall", `${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`)}
-        >
-          <span className={styles.overallLabel}>Overall Accuracy</span>
-          <strong className={styles.overallValue}>{overallPct}%</strong>
-        </div>
       </header>
+
+      <div className={styles.overallPillSlot}>
+        <div className={tutorial.getTargetClass("overall", styles.overallPillTarget)}>
+          <div className={`${styles.overallPill} ${styles[`overallPill_${overallTone}`]}`}>
+            <span className={styles.overallLabel}>Overall Accuracy</span>
+            <strong className={styles.overallValue}>{overallPct}%</strong>
+          </div>
+        </div>
+      </div>
 
       <div className={styles.grid}>
         <article
-          ref={tutorial.registerTarget("districts")}
           className={tutorial.getTargetClass("districts", styles.sectionCard)}
         >
           <p className={styles.sectionEyebrow}>District Breakdown</p>
@@ -177,16 +221,65 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
         </article>
 
         <article
-          ref={tutorial.registerTarget("narrative")}
           className={tutorial.getTargetClass("narrative", styles.sectionCard)}
         >
-          <p className={styles.sectionEyebrow}>Narrative Log</p>
-          <div className={styles.typewriterPaper}>
-            <p className={styles.typewriterText}>{typedSummary}<span className={styles.cursor}>|</span></p>
-          </div>
+          <p className={styles.sectionEyebrow}>Audit Receipt</p>
+          <div className={styles.receiptPaper}>
+            <div className={styles.receiptHeader}>
+              <span>Day {dayNumber} closed</span>
+              <strong className={styles.receiptStamp}>Filed</strong>
+            </div>
 
+            <div className={styles.receiptRows} aria-label="Report totals">
+              <div className={styles.receiptRow}>
+                <span>Overall accuracy</span>
+                <strong>{overallPct}%</strong>
+              </div>
+              <div className={styles.receiptRow}>
+                <span>District coverage</span>
+                <strong>{sampledCount}/4</strong>
+              </div>
+              <div className={styles.receiptRow}>
+                <span>Strong districts</span>
+                <strong>{strongZones.length || 0}</strong>
+              </div>
+            </div>
+
+            <div className={`${styles.attentionBox} ${styles[`attentionBox_${attentionTone}`]}`}>
+              <strong>{attentionTitle}</strong>
+              <p>{attentionDetail}</p>
+            </div>
+
+            <div className={styles.receiptSection}>
+              <span className={styles.receiptSectionLabel}>Next action</span>
+              <p>{suggestedActions[0]}</p>
+              {suggestedActions[1] && <small>{suggestedActions[1]}</small>}
+            </div>
+          </div>
         </article>
       </div>
+
+      {onContinue && continueLabel && (
+        <div className={styles.continueRow}>
+          <p className={shared.continueHint}>
+            {dayNumber < 3 ? "Report filed. Move to the next patrol day when ready." : "Final field report filed. Review the closing verdict."}
+          </p>
+        </div>
+      )}
+
+      {onContinue && continueLabel && (
+        <div className={styles.continueActionSlot}>
+          <div className={tutorial.getTargetClass("continue", styles.continueTarget)}>
+            <button
+              type="button"
+              className={shared.continueBtn}
+              onClick={onContinue}
+            >
+              {continueLabel}
+            </button>
+          </div>
+        </div>
+      )}
 
       {tutorial.step && (
         <TutorialPopover
@@ -200,8 +293,10 @@ export default function DayReportPanel({ dayNumber, overallAcc, regionAccs, samp
           onBack={tutorial.goPrev}
           onNext={tutorial.goNext}
           titleId="day-report-tutorial-title"
+          popoverRef={tutorial.registerPopover}
         />
       )}
+      {tutorialDebugEnabled && tutorial.open && <TutorialDebugOverlay info={tutorial.debugInfo} />}
     </section>
   );
 }

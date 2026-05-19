@@ -1,70 +1,398 @@
-.page {
-  min-height: calc(100vh - 120px);
+:global(html.aboutHideScrollbar) {
+  scrollbar-width: none;
 }
 
+:global(html.aboutHideScrollbar body) {
+  overscroll-behavior-y: contain;
+}
+
+:global(html.aboutHideScrollbar::-webkit-scrollbar) {
+  width: 0;
+  height: 0;
+}
+
+.page {
+  min-height: calc(100vh - 120px);
+  background: var(--diet-cream);
+  color: var(--diet-ink);
+}
+
+.pageSection {
+  scroll-margin-top: 88px;
+}
+
+.progressDots {
+  position: fixed;
+  top: 50%;
+  right: clamp(18px, 2.4vw, 34px);
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transform: translateY(-50%);
+}
+
+.progressDot {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: 1px solid rgba(26, 20, 16, 0.34);
+  border-radius: 50%;
+  background: rgba(250, 247, 240, 0.74);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.progressDot::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  background: transparent;
+  transition: background 0.2s ease;
+}
+
+.progressDot span {
+  position: absolute;
+  top: 50%;
+  right: 22px;
+  width: max-content;
+  max-width: 180px;
+  padding: 6px 9px;
+  border: 1px solid var(--diet-file-tab);
+  border-radius: var(--diet-radius-document);
+  background: rgba(250, 247, 240, 0.94);
+  color: var(--diet-ink);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.3;
+  text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(8px, -50%);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.progressDot:hover,
+.progressDot:focus-visible {
+  border-color: var(--diet-copper);
+  transform: scale(1.12);
+}
+
+.progressDot:hover span,
+.progressDot:focus-visible span {
+  opacity: 1;
+  transform: translate(0, -50%);
+}
+
+.progressDotActive {
+  border-color: var(--diet-red-string);
+  background: var(--diet-paper);
+}
+
+.progressDotActive::after {
+  background: var(--diet-red-string);
+}
+
+.hero,
 .section {
-  padding: clamp(80px, 10vw, 140px) var(--gutter);
-  max-width: 900px;
+  width: min(1040px, calc(100% - 2 * var(--gutter)));
   margin: 0 auto;
+  padding: clamp(42px, 6vw, 76px) 0;
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: clamp(56px, 7vw, 88px);
 }
 
 .title {
+  max-width: 780px;
+  margin: 0 0 22px;
   font-family: var(--font-display);
-  font-size: clamp(44px, 7vw, 96px);
-  font-weight: 500;
-  line-height: 1.05;
-  letter-spacing: -0.02em;
-  margin: 0 0 32px;
+  font-size: clamp(42px, 6vw, 76px);
+  font-weight: 560;
+  line-height: 1.04;
+  letter-spacing: 0;
 }
 
 .lede {
-  font-size: clamp(18px, 1.4vw, 22px);
-  line-height: 1.55;
-  color: var(--rui-slate);
-  max-width: 62ch;
-  margin: 0 0 56px;
+  max-width: 68ch;
+  margin: 0 0 28px;
+  color: var(--diet-ink-faded);
+  font-size: clamp(17px, 1.2vw, 20px);
+  line-height: 1.56;
 }
 
-.facts {
+.summaryGrid,
+.rationaleGrid,
+.teamGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 24px;
-  margin-bottom: 56px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
 }
 
-.fact {
-  padding-top: 24px;
-  border-top: 1px solid var(--rui-border);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.summaryGrid {
+  margin-bottom: 28px;
 }
 
-.factK {
+.sectionHeader {
+  max-width: 780px;
+  margin-bottom: 24px;
+}
+
+.sectionHeader h2 {
+  margin: 0;
+  color: var(--diet-ink);
   font-family: var(--font-display);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--rui-blue);
+  font-size: clamp(30px, 4vw, 52px);
+  font-weight: 560;
+  line-height: 1.08;
+  letter-spacing: 0;
 }
 
-.factV {
+.sectionHeader > p:last-child {
+  max-width: 70ch;
+  margin: 14px 0 0;
+  color: var(--diet-ink-faded);
   font-size: 16px;
-  line-height: 1.6;
-  color: var(--rui-dark);
+  line-height: 1.58;
+}
+
+.infoCard,
+.teamCard,
+.relatedItem,
+.faqItem,
+.callout {
+  border: 1px solid rgba(92, 61, 46, 0.22);
+  border-radius: 8px;
+  background: rgba(250, 247, 240, 0.72);
+  box-shadow: 0 12px 30px rgba(33, 24, 18, 0.07);
+}
+
+.infoCard,
+.teamCard,
+.relatedItem {
+  padding: 16px;
+}
+
+.infoCard span,
+.teamCard span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--diet-copper);
+  font-family: var(--font-case-file);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.infoCard p,
+.teamCard p,
+.relatedItem p {
+  margin: 0;
+  color: var(--diet-ink-faded);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.callout {
+  max-width: 780px;
+  padding: 15px 16px;
+  color: var(--diet-ink-faded);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.callout strong {
+  color: var(--diet-stamp-red);
+}
+
+.objectiveList {
+  display: grid;
+  gap: 10px;
+  max-width: 880px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: objectives;
+}
+
+.objectiveList li {
+  position: relative;
+  min-height: 58px;
+  padding: 14px 18px 14px 64px;
+  border: 1px solid rgba(92, 61, 46, 0.22);
+  border-radius: 8px;
+  background: var(--diet-paper);
+  color: var(--diet-ink-faded);
+  font-size: 16px;
+  line-height: 1.48;
+  counter-increment: objectives;
+}
+
+.objectiveList li::before {
+  content: counter(objectives, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 14px;
+  color: var(--diet-red-string);
+  font-family: var(--font-case-file);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.relatedList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.relatedItem h3 {
+  margin: 0 0 7px;
+  color: var(--diet-ink);
+  font-family: var(--font-case-file);
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.placeholder {
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.42);
+}
+
+.teamGrid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.faqHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.faqControls {
+  display: flex;
+  gap: 8px;
+  padding-top: 26px;
+}
+
+.faqControls button {
+  appearance: none;
+  border: 1px solid rgba(92, 61, 46, 0.24);
+  border-radius: var(--diet-radius-document);
+  background: var(--diet-paper);
+  color: var(--diet-ink);
+  font-family: var(--font-case-file);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.4px;
+  padding: 8px 11px;
+  cursor: pointer;
+}
+
+.faqControls button:hover {
+  border-color: var(--diet-copper);
+  color: var(--diet-stamp-red);
+}
+
+.faqList {
+  display: grid;
+  gap: 9px;
+}
+
+.faqItem {
+  overflow: hidden;
+}
+
+.faqQuestion {
+  appearance: none;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--diet-ink);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 15px 16px;
+  text-align: left;
+  font-family: var(--font-case-file);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.faqQuestion span:last-child {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 1px solid rgba(92, 61, 46, 0.24);
+  border-radius: 50%;
+  color: var(--diet-stamp-red);
+  flex: 0 0 auto;
+}
+
+.faqAnswer {
+  margin: 0;
+  padding: 0 16px 16px;
+  color: var(--diet-ink-faded);
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .back {
   display: inline-block;
+  align-self: flex-start;
+  color: var(--diet-ink);
+  border-bottom: 2px solid var(--diet-red-string);
   font-family: var(--font-display);
   font-size: 18px;
-  font-weight: 500;
-  color: var(--rui-dark);
-  border-bottom: 2px solid var(--rui-blue);
+  font-weight: 600;
   padding-bottom: 4px;
 }
 
 .back:hover {
-  color: var(--rui-blue);
+  color: var(--diet-stamp-red);
+}
+
+@media (max-width: 900px) {
+  .progressDots {
+    display: none;
+  }
+
+  .summaryGrid,
+  .rationaleGrid,
+  .relatedList {
+    grid-template-columns: 1fr;
+  }
+
+  .faqHeader {
+    display: block;
+  }
+
+  .faqControls {
+    padding-top: 0;
+    margin-bottom: 18px;
+  }
+}
+
+@media (max-width: 640px) {
+  .hero,
+  .section {
+    width: min(100% - 36px, 1080px);
+    padding: 40px 0;
+  }
+
+  .objectiveList li {
+    padding-left: 22px;
+    padding-top: 52px;
+  }
 }

@@ -1,5 +1,5 @@
 import styles from "./ChoiceList.module.css";
-import type { Choice, PassageId } from "../../passages";
+import type { Choice, PassageId } from "../../staticPassages";
 
 interface ChoiceListProps {
   choices: Choice[];

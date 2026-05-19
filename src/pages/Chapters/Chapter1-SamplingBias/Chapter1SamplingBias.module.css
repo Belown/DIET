@@ -4,7 +4,7 @@
   min-height: 100%;
   padding-top: 12px;
   isolation: isolate;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .phaseWithBackground::before {
@@ -67,11 +67,28 @@
   margin: 0 auto;
 }
 
+.phaseDayReport .scene {
+  padding-top: 14px;
+  padding-bottom: 44px;
+}
+
 .sceneInner {
   display: flex;
   flex-direction: column;
   gap: 32px;
-  animation: sceneIn 0.4s ease-out both;
+  animation: sceneIn 0.9s ease-out both;
+}
+
+.narrativeClickProxy {
+  appearance: none;
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: block;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
 }
 
 @keyframes sceneIn {

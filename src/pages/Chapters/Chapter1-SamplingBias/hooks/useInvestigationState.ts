@@ -153,6 +153,7 @@ export function useInvestigationState() {
   };
 
   const resetInvestigation = () => {
+    setDemoBoundary(DEMO_BOUNDARY_START);
     setCurrentDay(0);
     setDayPlans([[], [], []]);
     setDayLocked([false, false, false]);

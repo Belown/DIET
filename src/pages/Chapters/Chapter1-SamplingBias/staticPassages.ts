@@ -1,7 +1,10 @@
 export type PassageId =
   | "intro" 
   | "demo-intro"
+  | "demo-exercise"
   | "demo-reveal"
+  | "demo-reveal-sheet"
+  | "demo-reveal-analysis"
   | "day1-brief" | "day1-plan" | "day1-debrief"
   | "day2-brief" | "day2-plan" | "day2-debrief"
   | "day3-brief" | "day3-plan" | "day3-debrief"
@@ -22,6 +25,7 @@ export interface Passage {
 
 export const PASSAGES: Record<PassageId, Passage> = {
   "intro": {
+    chatbox: "open",
     chunks: [
       "Listen carefully. We don't have much time.",
       "Ten years from now, a machine convicts us.",
@@ -46,13 +50,28 @@ export const PASSAGES: Record<PassageId, Passage> = {
 
   "demo-intro": {
     text: "Read the sheet carefully. Then draw the best boundary you can.",
-    choices: [{ label: "I'm satisfied with this boundary", nextPassage: "demo-reveal" }],
+    choices: [{ label: "Open the boundary exercise", nextPassage: "demo-exercise" }],
+  },
+
+  "demo-exercise": {
+    chatbox: "close",
+    text: "Draw the best boundary you can. The exercise will continue once your training accuracy reaches 100%.",
+    choices: [],
   },
 
   "demo-reveal": {
+    text: "That looked perfect on the training data.",
+    choices: [{ label: "Test it against the whole city", nextPassage: "demo-reveal-sheet" }],
+  },
+
+  "demo-reveal-sheet": {
+    chatbox: "close",
+    text: "But when the police deployed the same boundary across all four regions - 1000 residents - accuracy collapsed.",
+    choices: [],
+  },
+
+  "demo-reveal-analysis": {
     chunks: [
-      "That looked perfect on the training data.",
-      "But when the police deployed the same boundary across all four regions — 1,000 residents — accuracy collapsed.",
       "Region 3, the Factory Zone, is full of safe night-shift workers whose patterns look like threats to a model trained exclusively on Uptown.",
       "This is sampling bias: a boundary tuned on one narrow slice of the city cannot generalize to the whole city.",
       "Now you understand the problem.",
@@ -88,13 +107,14 @@ export const PASSAGES: Record<PassageId, Passage> = {
       "Day 1 complete. The detective returns with your first batch of data.",
       "The model is already getting smarter — but two days remain, and the budget resets each morning.",
       "Review your choices. Did you sample enough zones? Too few?",
-      "Did you pick useful questions or noisy ones?",
+      "Did each candidate signal earn its place?",
       "Adjust your strategy for Day 2.",
     ],
     choices: [{ label: "Proceed to Day 2", nextPassage: "day2-brief" }],
   },
 
   "day2-brief": {
+    chatbox: "open",
     chunks: [
       "Day 2. You have another 100 credits and fresh intelligence from yesterday's sweep.",
       "The regions you sampled yesterday gave you a baseline — but you can expand to new zones or double down on what worked.",
@@ -124,6 +144,7 @@ export const PASSAGES: Record<PassageId, Passage> = {
   },
 
   "day3-brief": {
+    chatbox: "open",
     chunks: [
       "Day 3. Final day of your investigation.",
       "This is your last chance to fill gaps.",

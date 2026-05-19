@@ -79,6 +79,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   const flipBookRef = useRef<FlipBookHandle | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioStartTokenRef = useRef(0);
+  const ignoreBookEventsRef = useRef(false);
   const typewriterTimerRef = useRef<number | null>(null);
   const fallbackTimerRef = useRef<number | null>(null);
   const pendingBookPageRef = useRef<number | null>(null);
@@ -261,6 +262,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   };
 
   const skipToFinalScene = () => {
+    ignoreBookEventsRef.current = true;
     setIsFlipping(false);
     pendingBookPageRef.current = null;
     stopCurrentAudio();
@@ -281,6 +283,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   };
 
   const goPrevPage = () => {
+    ignoreBookEventsRef.current = false;
     stopCurrentAudio();
     pendingBookPageRef.current = getBookPageForScene(Math.max(sceneIndex - 1, 0));
     setIsFlipping(true);
@@ -288,6 +291,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   };
 
   const goNextPage = () => {
+    ignoreBookEventsRef.current = false;
     stopCurrentAudio();
     if (isLastBookScene) {
       setIsFlipping(false);
@@ -301,6 +305,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   };
 
   const goPrevScene = () => {
+    ignoreBookEventsRef.current = false;
     stopCurrentAudio();
     pendingBookPageRef.current = null;
     setIsFlipping(false);
@@ -308,6 +313,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   };
 
   const goNextScene = () => {
+    ignoreBookEventsRef.current = false;
     stopCurrentAudio();
     pendingBookPageRef.current = null;
     setIsFlipping(false);
@@ -348,6 +354,8 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
   };
 
   const handleFlip = (event: { data: number }) => {
+    if (ignoreBookEventsRef.current) return;
+
     const intendedPage = pendingBookPageRef.current;
     const normalizedPage = intendedPage ?? event.data - (event.data % 2);
     pendingBookPageRef.current = null;
@@ -452,6 +460,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
               renderOnlyPageLengthChange={false}
               onFlip={handleFlip}
               onChangeState={(event: { data: string }) => {
+                if (ignoreBookEventsRef.current) return;
                 if (event.data === "flipping") setIsFlipping(true);
                 if (event.data === "read") setIsFlipping(false);
               }}
@@ -489,12 +498,14 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
       ) : (
         <>
           <div className={styles.finalStage}>
-            <div className={styles.finalImageWrap} onClick={openChapterPicker}>
+            <div className={styles.finalImageWrap}>
               <img src={scene.image} alt={scene.title} className={styles.finalImage} />
               <div className={styles.finalCinematicOverlay} aria-hidden="true" />
               <button
                 type="button"
                 className={styles.openPickerBtn}
+                disabled={chapterPickerOpen}
+                aria-expanded={chapterPickerOpen}
                 onClick={(event) => {
                   event.stopPropagation();
                   openChapterPicker();
@@ -506,10 +517,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
               {chapterPickerOpen && (
                 <div
                   className={styles.chapterPickerBackdrop}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    setChapterPickerOpen(false);
-                  }}
+                  onClick={(event) => event.stopPropagation()}
                   role="presentation"
                 >
                   <div

@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import historyIcon from "../../assets/svgs/history-icon.svg";
+import skipIcon from "../../assets/svgs/skip-icon.svg";
+import InlineMarkup, { getInlineMarkupVisibleLength } from "../InlineMarkup/InlineMarkup";
 import styles from "./Chatbox.module.css";
 
 export interface ChatboxProps {
@@ -8,12 +10,16 @@ export interface ChatboxProps {
   history?: DialogueHistoryItem[];
   onHistorySelect?: (index: number) => void;
   onAdvance?: () => void;
+  onSkipToImportantInstruction?: () => void;
+  externalAdvanceSignal?: number;
+  onCollapsedChange?: (collapsed: boolean) => void;
   onTextComplete?: () => void;
   autoCollapseOnTextComplete?: boolean;
   speakerName?: string;
   disableKeyboardAdvance?: boolean;
   disablePreviousNavigation?: boolean;
   forceOpen?: boolean;
+  reopenSignal?: number;
 }
 
 export interface DialogueHistoryItem {
@@ -23,6 +29,7 @@ export interface DialogueHistoryItem {
 }
 
 const CHAR_SPEED = 25;
+const AUTO_COLLAPSE_DELAY_MS = 900;
 const SHEET_HISTORY_MARKER_TEXT = "Read the sheet carefully. Then draw the best boundary you can.";
 
 export default function Chatbox({
@@ -31,12 +38,16 @@ export default function Chatbox({
   history = [],
   onHistorySelect,
   onAdvance,
+  onSkipToImportantInstruction,
+  externalAdvanceSignal = 0,
+  onCollapsedChange,
   onTextComplete,
   autoCollapseOnTextComplete = false,
   speakerName = "Detective",
   disableKeyboardAdvance = false,
   disablePreviousNavigation = false,
   forceOpen = false,
+  reopenSignal = 0,
 }: ChatboxProps) {
   const [displayedLength, setDisplayedLength] = useState(0);
   const [isComplete, setIsComplete] = useState(false);
@@ -44,12 +55,14 @@ export default function Chatbox({
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [openHistoryGroups, setOpenHistoryGroups] = useState<Record<string, boolean>>({});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const collapseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasReportedCompleteRef = useRef(false);
   const wasAutoCollapsedRef = useRef(false);
   const historyGroupRefs = useRef<Record<string, HTMLElement | null>>({});
   const hasPastDialogue = history.some((item) => !item.current);
   const currentHistoryItem = history.find((item) => item.current);
   const currentHistoryGroupId = currentHistoryItem?.passageId ?? "dialogue";
+  const visibleTextLength = useMemo(() => getInlineMarkupVisibleLength(text), [text]);
 
   const historyGroups = useMemo(() => {
     return history.reduce<Array<{ id: string; label: string; items: Array<DialogueHistoryItem & { index: number }> }>>(
@@ -101,27 +114,40 @@ export default function Chatbox({
     onTextComplete?.();
   }, [onTextComplete]);
 
+  const clearCollapseTimer = useCallback(() => {
+    if (!collapseTimerRef.current) return;
+    clearTimeout(collapseTimerRef.current);
+    collapseTimerRef.current = null;
+  }, []);
+
+  const collapse = useCallback((autoCollapsed: boolean) => {
+    clearCollapseTimer();
+    wasAutoCollapsedRef.current = autoCollapsed;
+    setIsCollapsed(true);
+  }, [clearCollapseTimer]);
+
   const complete = useCallback(() => {
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    setDisplayedLength(text.length);
+    setDisplayedLength(visibleTextLength);
     setIsComplete(true);
     reportComplete();
-  }, [reportComplete, text.length]);
+  }, [reportComplete, visibleTextLength]);
 
   useEffect(() => {
+    clearCollapseTimer();
     setDisplayedLength(0);
     setIsComplete(false);
     setIsHistoryOpen(false);
-    hasReportedCompleteRef.current = false;
-    if (wasAutoCollapsedRef.current && !autoCollapseOnTextComplete) {
+    if (wasAutoCollapsedRef.current || autoCollapseOnTextComplete) {
       wasAutoCollapsedRef.current = false;
       setIsCollapsed(false);
     }
+    hasReportedCompleteRef.current = false;
 
-    if (!text.length) {
+    if (!visibleTextLength) {
       setIsComplete(true);
       reportComplete();
       return;
@@ -130,14 +156,14 @@ export default function Chatbox({
     timerRef.current = setInterval(() => {
       setDisplayedLength((prev) => {
         const next = prev + 1;
-        if (next >= text.length) {
+        if (next >= visibleTextLength) {
           if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
           setIsComplete(true);
           reportComplete();
-          return text.length;
+          return visibleTextLength;
         }
         return next;
       });
@@ -148,28 +174,35 @@ export default function Chatbox({
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
+      clearCollapseTimer();
     };
-  }, [reportComplete, text]);
+  }, [autoCollapseOnTextComplete, clearCollapseTimer, reportComplete, text, visibleTextLength]);
 
   useEffect(() => {
     if (!forceOpen) return;
+    clearCollapseTimer();
     wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
-  }, [forceOpen, text]);
+  }, [clearCollapseTimer, forceOpen, text]);
 
   useEffect(() => {
-    if (!autoCollapseOnTextComplete || !isComplete || isCollapsed || forceOpen) return;
+    if (!reopenSignal) return;
+    clearCollapseTimer();
+    wasAutoCollapsedRef.current = false;
+    setIsCollapsed(false);
+  }, [clearCollapseTimer, reopenSignal]);
 
-    const handleWindowClick = () => {
-      wasAutoCollapsedRef.current = true;
-      setIsCollapsed(true);
-    };
+  useEffect(() => {
+    if (!autoCollapseOnTextComplete || !isComplete || isCollapsed || forceOpen || isHistoryOpen) return;
 
-    window.addEventListener("click", handleWindowClick);
-    return () => window.removeEventListener("click", handleWindowClick);
-  }, [autoCollapseOnTextComplete, forceOpen, isCollapsed, isComplete, text]);
+    collapseTimerRef.current = setTimeout(() => {
+      collapse(true);
+    }, AUTO_COLLAPSE_DELAY_MS);
 
-  const handleClick = () => {
+    return clearCollapseTimer;
+  }, [autoCollapseOnTextComplete, clearCollapseTimer, collapse, forceOpen, isCollapsed, isComplete, isHistoryOpen, text]);
+
+  const handleClick = useCallback(() => {
     if (isCollapsed) return;
 
     if (!isComplete) {
@@ -178,12 +211,25 @@ export default function Chatbox({
     }
 
     if (autoCollapseOnTextComplete) {
-      wasAutoCollapsedRef.current = true;
-      setIsCollapsed(true);
+      collapse(true);
+    } else if (!onAdvance) {
+      collapse(false);
     } else {
       onAdvance?.();
     }
-  };
+  }, [autoCollapseOnTextComplete, collapse, complete, isCollapsed, isComplete, onAdvance]);
+
+  const lastExternalAdvanceSignalRef = useRef(externalAdvanceSignal);
+
+  useEffect(() => {
+    if (externalAdvanceSignal === lastExternalAdvanceSignalRef.current) return;
+    lastExternalAdvanceSignalRef.current = externalAdvanceSignal;
+    handleClick();
+  }, [externalAdvanceSignal, handleClick]);
+
+  useEffect(() => {
+    onCollapsedChange?.(isCollapsed);
+  }, [isCollapsed, onCollapsedChange]);
 
   const handleAdvanceClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -195,14 +241,24 @@ export default function Chatbox({
     setIsHistoryOpen((prev) => !prev);
   };
 
+  const handleSkipClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    complete();
+    setIsHistoryOpen(false);
+    clearCollapseTimer();
+    wasAutoCollapsedRef.current = false;
+    setIsCollapsed(false);
+    onSkipToImportantInstruction?.();
+  };
+
   const handleCollapseClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    wasAutoCollapsedRef.current = false;
-    setIsCollapsed(true);
+    collapse(false);
   };
 
   const handleOpenClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    clearCollapseTimer();
     wasAutoCollapsedRef.current = false;
     setIsCollapsed(false);
   };
@@ -246,7 +302,7 @@ export default function Chatbox({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [complete, disableKeyboardAdvance, disablePreviousNavigation, history, isCollapsed, isComplete, isHistoryOpen, onAdvance, onHistorySelect]);
+  }, [disableKeyboardAdvance, disablePreviousNavigation, handleClick, history, isCollapsed, isHistoryOpen, onHistorySelect]);
 
   return (
     <>
@@ -314,7 +370,7 @@ export default function Chatbox({
                                   📋
                                 </span>
                               )}
-                              {item.text}
+                              <InlineMarkup text={item.text} />
                             </span>
                           </button>
                         ))}
@@ -345,23 +401,34 @@ export default function Chatbox({
             <img src={portraitSrc} alt="" className={styles.portrait} />
           </div>
           <p className={styles.chatboxText}>
-            {text.slice(0, displayedLength)}
+            <InlineMarkup text={text} maxVisibleChars={displayedLength} />
             {!isComplete && <span className={styles.cursor} aria-hidden="true" />}
           </p>
           {(hasPastDialogue || text.length > 0) && (
             <div className={styles.navControls}>
+              {onSkipToImportantInstruction && (
+                <button
+                  type="button"
+                  className={styles.iconBtn}
+                  onClick={handleSkipClick}
+                  aria-label="Skip to next important instruction"
+                  title="Skip to next important instruction"
+                >
+                  <img src={skipIcon} alt="" className={styles.controlIcon} aria-hidden="true" />
+                </button>
+              )}
               {hasPastDialogue && (
                 <button
                   type="button"
-                  className={styles.historyBtn}
+                  className={styles.iconBtn}
                   onClick={handleHistoryClick}
                   aria-label="Show dialogue history"
                   aria-expanded={isHistoryOpen}
                 >
-                  <img src={historyIcon} alt="" className={styles.historyIcon} aria-hidden="true" />
+                  <img src={historyIcon} alt="" className={styles.controlIcon} aria-hidden="true" />
                 </button>
               )}
-              {text.length > 0 && (
+              {text.length > 0 && (!isComplete || onAdvance) && (
                 <button type="button" className={styles.navBtn} onClick={handleAdvanceClick} aria-label="Advance">
                   {">"}
                 </button>

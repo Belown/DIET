@@ -7,6 +7,8 @@ import type { DemoBoundary } from "../../types";
 import BriefingSheet from "../BriefingSheet/BriefingSheet";
 import ScatterPlot from "../ScatterPlot/ScatterPlot";
 
+const clampIntercept = (intercept: number) => Math.max(-40, Math.min(120, intercept));
+
 type BoundaryExerciseProps = {
   boundary: DemoBoundary;
   setBoundary: Dispatch<SetStateAction<DemoBoundary>>;
@@ -23,10 +25,9 @@ export default function BoundaryExercise({
   onSubmit,
 }: BoundaryExerciseProps) {
   const [submitError, setSubmitError] = useState("");
-  const sheet = BRIEFING_SHEETS["demo-intro"];
+  const intercept = clampIntercept(boundary.intercept);
+  const sheet = BRIEFING_SHEETS["demo-exercise"];
   const hasPerfectAccuracy = trainingAccuracyValue >= 1;
-  const boundaryShift = boundary.slope === 0 ? 50 : -boundary.intercept / boundary.slope;
-  const sliderShift = Math.max(-40, Math.min(120, boundaryShift));
 
   useEffect(() => {
     if (hasPerfectAccuracy) {
@@ -58,10 +59,10 @@ export default function BoundaryExercise({
           </span>
         </div>
 
-        <p className={styles.boundaryBody}>
+        {/* <p className={styles.boundaryBody}>
           Move the line to separate Safe from Threat. You need 100% training accuracy before this boundary can be submitted.
           Black rings mark mistakes.
-        </p>
+        </p> */}
 
         <div className={styles.boundaryInteractive}>
           <div className={styles.boundaryPlot}>
@@ -80,27 +81,27 @@ export default function BoundaryExercise({
                   value={boundary.slope}
                   onChange={(e) => {
                     const slope = parseFloat(e.target.value);
-                    setBoundary((b) => ({ ...b, slope, intercept: -slope * boundaryShift }));
+                    setBoundary((b) => ({ ...b, slope }));
                   }}
                   className={shared.sliderInput}
                 />
                 <span className={shared.sliderValue}>{boundary.slope.toFixed(2)}</span>
               </div>
               <div className={shared.sliderRow}>
-                <span className={shared.sliderLabel}>X-shift</span>
+                <span className={shared.sliderLabel}>Intercept</span>
                 <input
                   type="range"
                   min={-40}
                   max={120}
                   step={1}
-                  value={sliderShift}
+                  value={intercept}
                   onChange={(e) => {
-                    const shift = parseFloat(e.target.value);
-                    setBoundary((b) => ({ ...b, intercept: -b.slope * shift }));
+                    const intercept = parseFloat(e.target.value);
+                    setBoundary((b) => ({ ...b, intercept }));
                   }}
                   className={shared.sliderInput}
                 />
-                <span className={shared.sliderValue}>{boundaryShift.toFixed(0)}</span>
+                <span className={shared.sliderValue}>{intercept.toFixed(0)}</span>
               </div>
             </div>
 

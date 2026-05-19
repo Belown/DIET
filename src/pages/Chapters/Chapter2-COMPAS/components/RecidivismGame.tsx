@@ -446,7 +446,15 @@ function FairnessActivity({ onRestart, onActivity3 }: { onRestart: () => void; o
 }
 
 // ─── Main Component ────────────────────────────────────────────────────────────
-export default function RecidivismGame({ onComplete, onActivity1Complete }: { onComplete?: () => void; onActivity1Complete?: () => void }) {
+export default function RecidivismGame({
+  isActive = true,
+  onComplete,
+  onActivity1Complete,
+}: {
+  isActive?: boolean;
+  onComplete?: () => void;
+  onActivity1Complete?: () => void;
+}) {
   const [phase, setPhase]         = useState<GamePhase>("intro");
   const [timerSecs]              = useState(5);
   const [deck, setDeck]           = useState<Profile[]>([]);
@@ -477,7 +485,10 @@ export default function RecidivismGame({ onComplete, onActivity1Complete }: { on
   }, [clearTimer, choices, current, advance]);
 
   useEffect(() => {
-    if (phase !== "game") return;
+    if (!isActive || phase !== "game") {
+      clearTimer();
+      return;
+    }
     setTimeLeft(timerSecs);
     intRef.current = setInterval(() => {
       setTimeLeft(t => {
@@ -487,7 +498,7 @@ export default function RecidivismGame({ onComplete, onActivity1Complete }: { on
     }, 1000);
     return clearTimer;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [phase, current]);
+  }, [clearTimer, isActive, phase, current]);
 
   function startGame() {
     setDeck(shuffle(ALL_PROFILES));

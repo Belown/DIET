@@ -215,7 +215,7 @@
   transform: translateY(-2px);
 }
 
-.historyBtn {
+.iconBtn {
   appearance: none;
   width: 34px;
   height: 34px;
@@ -231,7 +231,7 @@
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
 }
 
-.historyBtn:hover {
+.iconBtn:hover {
   background: var(--rui-blue);
   color: var(--rui-white);
   transform: translateY(-2px);
@@ -297,7 +297,7 @@
   transform: translateY(8px);
 }
 
-.historyIcon {
+.controlIcon {
   width: 16px;
   height: 16px;
   display: block;
