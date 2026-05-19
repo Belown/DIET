@@ -1,6 +1,6 @@
 .panelEyebrow {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.6px;
   text-transform: uppercase;
@@ -118,7 +118,7 @@
   background: rgba(25, 28, 31, 0.94);
   color: var(--rui-white);
   font-family: var(--font-body);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.2;
   opacity: 0;
   pointer-events: none;
@@ -139,7 +139,7 @@
   padding: 7px 11px;
   border-radius: 999px;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1;
 }
 
@@ -189,7 +189,7 @@
 }
 
 .budgetRing small {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--rui-gray);
 }
 
@@ -198,7 +198,7 @@
   align-content: center;
   gap: 10px;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 15px;
   color: var(--rui-slate);
   white-space: nowrap;
 }
@@ -292,7 +292,7 @@
   background: rgba(73, 79, 223, 0.14);
   color: #253a8f;
   font-family: var(--font-display);
-  font-size: 15px;
+  font-size: 14px;
   line-height: 1;
   white-space: nowrap;
 }
@@ -339,7 +339,7 @@
 
 .regionCode {
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--rui-gray);
   text-transform: uppercase;
 }
@@ -354,7 +354,7 @@
   background: rgba(25, 28, 31, 0.06);
   color: var(--rui-slate);
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
 }
 
 .sampleTierGrid {
@@ -405,7 +405,7 @@
 .sampleTierKicker {
   grid-column: 2 / -1;
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 12px;
   color: var(--rui-gray);
   text-transform: uppercase;
 }
@@ -422,14 +422,14 @@
   grid-column: 3;
   justify-self: end;
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 14px;
   color: var(--rui-dark);
 }
 
 .sampleTier small {
   grid-column: 2 / -1;
   color: var(--rui-slate);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .mandatorySignalGrid {
@@ -445,7 +445,7 @@
   border-radius: 8px;
   background: rgba(245, 247, 250, 0.9);
   color: var(--rui-slate);
-  font-size: 13px;
+  font-size: 14px;
   line-height: 1.5;
 }
 
@@ -473,7 +473,7 @@
   background: var(--rui-teal-soft);
   color: var(--rui-teal);
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -492,7 +492,7 @@
 
 .mandatorySignalText small {
   color: var(--rui-slate);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.35;
 }
 
@@ -546,7 +546,7 @@
   min-width: 0;
   flex: 1 1 auto;
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.15;
   color: var(--rui-dark);
   white-space: nowrap;
@@ -562,7 +562,7 @@
   margin-left: auto;
   flex: 0 0 auto;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 15px;
   color: inherit;
   padding: 5px 8px;
   border: 1px solid rgba(25, 28, 31, 0.12);
@@ -579,7 +579,7 @@
   border-radius: 8px;
   background: var(--rui-surface);
   color: var(--rui-slate);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .draftSummary strong {
@@ -591,13 +591,13 @@
 .draftSummary p {
   grid-column: 1 / -1;
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--rui-gray);
 }
 
 .queueList {
-  --queue-item-preview-height: 176px;
+  --queue-item-preview-height: 190px;
   display: grid;
   gap: 10px;
   max-height: calc(var(--queue-item-preview-height) * 2 + 10px);
@@ -621,7 +621,7 @@
   justify-content: space-between;
   gap: 12px;
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 15px;
   color: var(--rui-dark);
 }
 
@@ -639,13 +639,13 @@
   border-radius: 999px;
   background: var(--rui-dark);
   color: var(--rui-white);
-  font-size: 11px;
+  font-size: 12px;
   line-height: 1;
 }
 
 .queueItem p {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--rui-slate);
 }
@@ -658,7 +658,7 @@
   background: var(--rui-white);
   color: var(--rui-dark);
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   padding: 7px 12px;
   cursor: pointer;
 }
@@ -727,12 +727,12 @@
   gap: 10px;
   color: var(--rui-dark);
   font-family: var(--font-display);
-  font-size: 13px;
+  font-size: 14px;
 }
 
 .previousDecisionDayHeader span {
   color: var(--rui-gray);
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .previousDecisionItem {
@@ -746,13 +746,13 @@
 
 .previousDecisionMeta {
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   color: var(--rui-dark);
 }
 
 .previousDecisionItem p {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.45;
   color: var(--rui-slate);
 }
@@ -833,7 +833,7 @@
 }
 
 .regionDesc {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--rui-gray);
   line-height: 1.45;
 }
@@ -855,7 +855,7 @@
   border: 2px solid var(--rui-border);
   border-radius: var(--radius-pill);
   cursor: pointer;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--rui-slate);
   background: var(--rui-white);
   transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
@@ -899,14 +899,14 @@
 .featureIntelTitle {
   margin: 0 0 6px;
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--rui-dark);
 }
 
 .featureIntelLine {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--rui-slate);
   line-height: 1.5;
 }
@@ -917,14 +917,14 @@
 
 .featureIntelFlavor {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: 14px;
   color: #334155;
   font-style: italic;
 }
 
 .featureIntelEmpty {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--rui-gray);
 }
 
