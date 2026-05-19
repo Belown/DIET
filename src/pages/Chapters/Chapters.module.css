@@ -356,6 +356,7 @@
 
 .chapterPanel {
   display: block;
+  scroll-margin-top: 112px;
 }
 
 .chapterPanel[hidden] {

@@ -87,6 +87,12 @@ export default function Chapters() {
   const chromeRef = useRef<HTMLDivElement>(null);
   const endingRef = useRef<HTMLDivElement>(null);
   const hasScrolledToEndingRef = useRef(false);
+  const chapterPanelRefs = useRef<Record<ChapterId, HTMLElement | null>>({
+    ch1: null,
+    ch2: null,
+    ch3: null,
+  });
+  const pendingChapterScrollRef = useRef<ChapterId | null>(null);
 
   const activeIndex = CHAPTERS.findIndex((c) => c.id === active);
   const progress = ((activeIndex + 0.5) / CHAPTERS.length) * 100;
@@ -111,10 +117,30 @@ export default function Chapters() {
     setVisitedChapters((prev) => (prev[active] ? prev : { ...prev, [active]: true }));
   }, [active]);
 
+  useEffect(() => {
+    if (isEndingPage || showStoryIntro || pendingChapterScrollRef.current !== active) return;
+
+    const panel = chapterPanelRefs.current[active];
+    if (!panel) return;
+
+    pendingChapterScrollRef.current = null;
+    window.requestAnimationFrame(() => {
+      panel.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [active, isEndingPage, showStoryIntro, visitedChapters]);
+
   const selectChapter = (chapter: ChapterId) => {
+    pendingChapterScrollRef.current = chapter;
     setActive(chapter);
     setChapterTutorialOverlayOpen(false);
     setSearchParams({ chapter });
+
+    if (chapter === active) {
+      window.requestAnimationFrame(() => {
+        chapterPanelRefs.current[chapter]?.scrollIntoView({ behavior: "smooth", block: "start" });
+        pendingChapterScrollRef.current = null;
+      });
+    }
   };
 
   const recordChapterResult = (chapter: ChapterId, result: ChapterResult) => {
@@ -247,7 +273,15 @@ export default function Chapters() {
             />
           ) : (
             <>
-              <section className={styles.chapterPanel} hidden={active !== "ch1"} aria-hidden={active !== "ch1"}>
+              <section
+                ref={(node) => {
+                  chapterPanelRefs.current.ch1 = node;
+                }}
+                id="chapter-ch1"
+                className={styles.chapterPanel}
+                hidden={active !== "ch1"}
+                aria-hidden={active !== "ch1"}
+              >
                 <Chapter1SamplingBias
                   isActive={active === "ch1"}
                   onTutorialOverlayOpenChange={setChapterTutorialOverlayOpen}
@@ -255,7 +289,15 @@ export default function Chapters() {
                 />
               </section>
               {visitedChapters.ch2 && (
-                <section className={styles.chapterPanel} hidden={active !== "ch2"} aria-hidden={active !== "ch2"}>
+                <section
+                  ref={(node) => {
+                    chapterPanelRefs.current.ch2 = node;
+                  }}
+                  id="chapter-ch2"
+                  className={styles.chapterPanel}
+                  hidden={active !== "ch2"}
+                  aria-hidden={active !== "ch2"}
+                >
                   <Chapter2COMPAS
                     isActive={active === "ch2"}
                     onChapterComplete={(result) => recordChapterResult("ch2", result)}
@@ -263,7 +305,15 @@ export default function Chapters() {
                 </section>
               )}
               {visitedChapters.ch3 && (
-                <section className={styles.chapterPanel} hidden={active !== "ch3"} aria-hidden={active !== "ch3"}>
+                <section
+                  ref={(node) => {
+                    chapterPanelRefs.current.ch3 = node;
+                  }}
+                  id="chapter-ch3"
+                  className={styles.chapterPanel}
+                  hidden={active !== "ch3"}
+                  aria-hidden={active !== "ch3"}
+                >
                   <Chapter3Alignment
                     isActive={active === "ch3"}
                     onChapterComplete={(result) => recordChapterResult("ch3", result)}
