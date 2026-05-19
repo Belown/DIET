@@ -292,7 +292,7 @@
   background: rgba(73, 79, 223, 0.14);
   color: #253a8f;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 15px;
   line-height: 1;
   white-space: nowrap;
 }
@@ -485,7 +485,7 @@
 
 .mandatorySignalText strong {
   font-family: var(--font-display);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--rui-dark);
 }
@@ -501,16 +501,20 @@
   flex: 0 0 auto;
   padding: 5px 8px;
   border-radius: 999px;
+  border: 1px solid rgba(47, 111, 100, 0.34);
   background: var(--rui-teal-soft);
   color: var(--rui-teal);
   font-family: var(--font-display);
-  font-size: 11px;
+  font-size: 13px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.58),
+    0 1px 2px rgba(25, 28, 31, 0.08);
 }
 
 .signalSectionLabel {
   margin: 20px 0 -6px;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -558,9 +562,10 @@
   margin-left: auto;
   flex: 0 0 auto;
   font-family: var(--font-display);
-  font-size: 12px;
+  font-size: 14px;
   color: inherit;
   padding: 5px 8px;
+  border: 1px solid rgba(25, 28, 31, 0.12);
   border-radius: 999px;
   background: rgba(25, 28, 31, 0.08);
 }
@@ -863,8 +868,10 @@
 }
 
 .featureChipOn {
-  border-color: var(--rui-blue);
-  background: #f0f0ff;
+  border-color: var(--rui-teal-border);
+  background: 
+    linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(47, 111, 100, 0.1)),
+    var(--rui-white);;
   color: var(--rui-dark);
 }
 

@@ -298,7 +298,7 @@ export default function MissionPlanner({
               <p className={styles.panelEyebrow}>Signals</p>
               <h3 className={styles.missionCardTitle}>Model inputs and candidate signals</h3>
             </div>
-            <span className={styles.missionPill}>2 core / {planQuestions.length} candidate</span>
+            <span className={styles.missionPill}>2 core + {planQuestions.length} candidate</span>
           </div>
 
           <p className={styles.signalHint}>
