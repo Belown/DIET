@@ -1,172 +1,312 @@
+import { useEffect, useRef, useState } from "react";
 import Nav from "../../components/Nav/Nav";
 import Footer from "../../components/Footer/Footer";
 import Button from "../../components/Button/Button";
+import { SCENE_IMAGES } from "../../assets/image/image";
 import styles from "./Landing.module.css";
 
-const GROUP_A: Array<[number, number]> = [
-  [160, 190], [200, 170], [240, 150], [280, 135], [320, 120],
-  [360, 110], [400, 100], [440, 85], [480, 75], [520, 60],
-  [260, 185], [330, 155], [390, 135], [220, 255], [350, 210],
-];
-
-const GROUP_B: Array<[number, number]> = [
-  [100, 295], [140, 275], [180, 260], [220, 250], [260, 230],
-  [300, 215], [340, 200], [380, 180], [150, 310], [230, 290],
-  [290, 265], [420, 170], [460, 155], [110, 245], [180, 225],
-];
-
-type Step = {
+type Chapter = {
   num: string;
   title: string;
+  theme: string;
   body: string;
   accent: "blue" | "pink" | "teal";
 };
 
-const STEPS: Step[] = [
+const CHAPTERS: Chapter[] = [
   {
     num: "01",
-    title: "Collect the evidence",
-    body: "Open the candidate records and inspect the population before the machine learns from it. Missing data is the first clue.",
+    title: "Sampling Bias",
+    theme: "Data collection gaps",
+    body: "Choose where the detective searches, who gets counted, and what evidence the model sees before it is deployed across the whole city.",
     accent: "blue",
   },
   {
     num: "02",
-    title: "Draw the verdict line",
-    body: "Sketch a decision boundary, chase accuracy, then compare how the same line treats two groups with different histories.",
+    title: "COMPAS Trade-offs",
+    theme: "Fairness definitions collide",
+    body: "Step into a criminal-justice risk system and test why equal treatment, equal error rates, and predictive accuracy cannot always be satisfied together.",
     accent: "pink",
   },
   {
     num: "03",
-    title: "Interrogate the system",
-    body: "Unlock the hidden axis and watch why a model can look correct while still reproducing an unfair pattern.",
+    title: "LLM Alignment",
+    theme: "Human feedback shapes the model",
+    body: "Rate model answers, watch the system learn from those choices, and see how majority preference can drown out harder truths.",
     accent: "teal",
   },
 ];
 
 const TAKEAWAYS = [
-  "A clear intuition for why Overall Accuracy and Equal Opportunity can point in opposite directions.",
-  "A felt understanding of why relying on a single feature can quietly enforce inequality.",
-  "A stronger habit of asking what evidence the model never got to see.",
+  "Bias can enter before a model is trained, through who appears in the dataset and who is missing.",
+  "A fairness rule can protect one value while quietly sacrificing another.",
+  "Human feedback can make an AI sound helpful while teaching it whose judgment matters most.",
 ];
 
+const SECTIONS = [
+  { label: "Opening case", id: "top" },
+  { label: "Mission briefing", id: "concept" },
+  { label: "Chapters", id: "chapters" },
+  { label: "Why it matters", id: "audience" },
+  { label: "Case status", id: "case-status" },
+];
+
+const NAV_OFFSET = 88;
+const SCROLL_DURATION_MS = 760;
+const WHEEL_QUIET_MS = 220;
+
+const easeInOutCubic = (t: number) =>
+  t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
 export default function Landing() {
+  const animationFrameRef = useRef<number | null>(null);
+  const wheelQuietTimerRef = useRef<number | null>(null);
+  const wheelLockedRef = useRef(false);
+  const isAnimatingRef = useRef(false);
+  const [activeSection, setActiveSection] = useState(0);
+
+  useEffect(() => {
+    document.documentElement.classList.add("landingPagedScroll");
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const unlockWheelAfterQuiet = () => {
+      if (wheelQuietTimerRef.current !== null) {
+        window.clearTimeout(wheelQuietTimerRef.current);
+      }
+
+      wheelQuietTimerRef.current = window.setTimeout(() => {
+        wheelLockedRef.current = false;
+        wheelQuietTimerRef.current = null;
+      }, WHEEL_QUIET_MS);
+    };
+
+    const getSectionTargets = () =>
+      Array.from(document.querySelectorAll<HTMLElement>(`.${styles.pageSection}`)).map((section) =>
+        Math.max(0, section.getBoundingClientRect().top + window.scrollY - NAV_OFFSET),
+      );
+
+    const getCurrentSectionIndex = (targets: number[], currentY = window.scrollY) =>
+      targets.reduce((bestIndex, target, nextIndex) => {
+        const bestDistance = Math.abs(targets[bestIndex] - currentY);
+        const nextDistance = Math.abs(target - currentY);
+        return nextDistance < bestDistance ? nextIndex : bestIndex;
+      }, 0);
+
+    const animateTo = (target: number, targetIndex?: number) => {
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+      }
+
+      if (reduceMotion) {
+        window.scrollTo(0, target);
+        if (targetIndex !== undefined) setActiveSection(targetIndex);
+        isAnimatingRef.current = false;
+        return;
+      }
+
+      isAnimatingRef.current = true;
+      if (targetIndex !== undefined) setActiveSection(targetIndex);
+      const start = window.scrollY;
+      const distance = target - start;
+      const startTime = performance.now();
+
+      const tick = (now: number) => {
+        const progress = Math.min(1, (now - startTime) / SCROLL_DURATION_MS);
+        window.scrollTo(0, start + distance * easeInOutCubic(progress));
+
+        if (progress < 1) {
+          animationFrameRef.current = window.requestAnimationFrame(tick);
+          return;
+        }
+
+        animationFrameRef.current = null;
+        isAnimatingRef.current = false;
+        if (targetIndex !== undefined) setActiveSection(targetIndex);
+      };
+
+      animationFrameRef.current = window.requestAnimationFrame(tick);
+    };
+
+    const updateActiveSection = () => {
+      if (isAnimatingRef.current) return;
+
+      const targets = getSectionTargets();
+      if (!targets.length) return;
+
+      setActiveSection(getCurrentSectionIndex(targets));
+    };
+
+    const onWheel = (event: WheelEvent) => {
+      if (isAnimatingRef.current || wheelLockedRef.current) {
+        event.preventDefault();
+        unlockWheelAfterQuiet();
+        return;
+      }
+
+      if (Math.abs(event.deltaY) < 12 || Math.abs(event.deltaX) > Math.abs(event.deltaY)) return;
+
+      const targets = getSectionTargets();
+      if (targets.length < 2) return;
+
+      const currentIndex = getCurrentSectionIndex(targets);
+      const nextIndex =
+        event.deltaY > 0
+          ? Math.min(currentIndex + 1, targets.length - 1)
+          : Math.max(currentIndex - 1, 0);
+
+      if (nextIndex === currentIndex) return;
+
+      event.preventDefault();
+      wheelLockedRef.current = true;
+      unlockWheelAfterQuiet();
+      animateTo(targets[nextIndex], nextIndex);
+    };
+
+    window.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
+    updateActiveSection();
+
+    return () => {
+      document.documentElement.classList.remove("landingPagedScroll");
+      window.removeEventListener("wheel", onWheel);
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+      if (wheelQuietTimerRef.current !== null) {
+        window.clearTimeout(wheelQuietTimerRef.current);
+      }
+      if (animationFrameRef.current !== null) {
+        window.cancelAnimationFrame(animationFrameRef.current);
+      }
+      wheelLockedRef.current = false;
+      isAnimatingRef.current = false;
+    };
+  }, []);
+
   return (
     <>
       <Nav />
-      <main id="top">
-        <section className={styles.hero}>
+      <main id="top" className={styles.pagedMain}>
+        <nav className={styles.progressDots} aria-label="Landing page sections">
+          {SECTIONS.map((section, index) => (
+            <button
+              key={section.id}
+              type="button"
+              className={`${styles.progressDot} ${activeSection === index ? styles.progressDotActive : ""}`}
+              onClick={() => {
+                if (isAnimatingRef.current) return;
+
+                const target = document.getElementById(section.id);
+                if (!target) return;
+                const top = Math.max(0, target.getBoundingClientRect().top + window.scrollY - NAV_OFFSET);
+                const start = window.scrollY;
+                const distance = top - start;
+                const startTime = performance.now();
+
+                if (animationFrameRef.current !== null) {
+                  window.cancelAnimationFrame(animationFrameRef.current);
+                }
+
+                isAnimatingRef.current = true;
+                setActiveSection(index);
+
+                const tick = (now: number) => {
+                  const progress = Math.min(1, (now - startTime) / SCROLL_DURATION_MS);
+                  window.scrollTo(0, start + distance * easeInOutCubic(progress));
+                  if (progress < 1) {
+                    animationFrameRef.current = window.requestAnimationFrame(tick);
+                    return;
+                  }
+                  animationFrameRef.current = null;
+                  isAnimatingRef.current = false;
+                  setActiveSection(index);
+                };
+
+                animationFrameRef.current = window.requestAnimationFrame(tick);
+              }}
+              aria-label={`Go to ${section.label}`}
+              aria-current={activeSection === index ? "step" : undefined}
+            >
+              <span>{section.label}</span>
+            </button>
+          ))}
+        </nav>
+
+        <section className={`${styles.hero} ${styles.pageSection}`}>
           <div className={styles.text}>
-            <p className="eyebrow">Case file: Novus algorithm division</p>
-            <h1 className={styles.display}>Detecting Bias</h1>
+            <p className="eyebrow">Case file: Novus AI justice system</p>
+            <h1 className={styles.display}>Θmen</h1>
             <p className={styles.lede}>
-              The city trusts a machine to draw the line. You travel through
-              its data, interrogate its verdicts, and expose who disappears on
-              the wrong side.
+              A future court trusts an AI to decide who is dangerous. When the
+              machine condemns someone close to you, the only way forward is
+              back: before the data was collected, before fairness was defined,
+              before human feedback became machine judgment.
             </p>
             <div className={styles.ctaRow}>
               <Button variant="primary" to="/chapters?intro=story" id="start">
-                Open case file
+                Start investigation
               </Button>
-              <Button variant="outline" href="#how">
-                Scan clues
+              <Button variant="outline" href="#chapters">
+                Review chapters
               </Button>
             </div>
           </div>
 
-          <figure className={styles.viz} aria-labelledby="vizTitle">
-            <svg viewBox="0 0 600 380" role="img" aria-labelledby="vizTitle">
-              <title id="vizTitle">
-                A machine verdict boundary across two demographic groups
-              </title>
-
-              <line x1="60" y1="320" x2="560" y2="320" stroke="#1c2836" strokeWidth="1.5" />
-              <line x1="60" y1="40" x2="60" y2="320" stroke="#1c2836" strokeWidth="1.5" />
-
-              <text x="310" y="358" textAnchor="middle" fontSize="13" fill="#8ba4b8" fontFamily="JetBrains Mono, Consolas, monospace">
-                TECHNICAL SCORE
-              </text>
-              <text x="22" y="180" textAnchor="middle" fontSize="13" fill="#8ba4b8" fontFamily="JetBrains Mono, Consolas, monospace" transform="rotate(-90 22 180)">
-                EXPERIENCE
-              </text>
-
-              {GROUP_A.map(([cx, cy], i) => (
-                <circle key={`a-${i}`} cx={cx} cy={cy} r="7" fill="#5b9bd5" opacity="0.9" />
-              ))}
-              {GROUP_B.map(([cx, cy], i) => (
-                <circle key={`b-${i}`} cx={cx} cy={cy} r="7" fill="#b44cf0" opacity="0.9" />
-              ))}
-
-              <line
-                x1="95"
-                y1="290"
-                x2="540"
-                y2="95"
-                stroke="#ff3347"
-                strokeWidth="3"
-                strokeDasharray="8 8"
-                strokeLinecap="round"
-                className={styles.boundary}
-              />
-
-              <g transform="translate(430, 55)">
-                <rect x="-12" y="-8" width="140" height="58" rx="2" fill="#141b22" stroke="#1c2836" strokeWidth="1" />
-                <circle cx="4" cy="10" r="6" fill="#5b9bd5" />
-                <text x="20" y="14" fontSize="13" fontWeight="500" fill="#dce6f0" fontFamily="JetBrains Mono, Consolas, monospace">
-                  Group A
-                </text>
-                <circle cx="4" cy="32" r="6" fill="#b44cf0" />
-                <text x="20" y="36" fontSize="13" fontWeight="500" fill="#dce6f0" fontFamily="JetBrains Mono, Consolas, monospace">
-                  Group B
-                </text>
-              </g>
-            </svg>
-            <figcaption className={styles.vizCaption}>
-              AI verdict boundary: accuracy hides the missing witness.
+          <figure className={styles.heroMedia}>
+            <img
+              src={SCENE_IMAGES[7]}
+              alt="A detective stands before a time machine in the city of Novus."
+            />
+            <figcaption className={styles.mediaCaption}>
+              Back to before bias became a verdict.
             </figcaption>
           </figure>
         </section>
 
-        <section className={styles.concept_section} id="concept">
+        <section className={`${styles.concept_section} ${styles.pageSection}`} id="concept">
           <div className={styles.concept_inner}>
-            <p className="eyebrow eyebrow--light">Machine transcript</p>
-            <h2 className="section__title">Accuracy is not<br />an alibi.</h2>
+            <p className="eyebrow eyebrow--light">Mission briefing</p>
+            <h2 className="section__title">Bias is a chain<br />of decisions.</h2>
             <p className={styles.concept_lede}>
-              Loss functions, gradients, and accuracy scores can all look clean
-              while the case file underneath is contaminated. DIET turns that
-              hidden record into evidence you can test.
+              Θmen turns AI fairness into a playable investigation. Each
+              chapter sends you to a different point in the system's history:
+              the data that was collected, the fairness rule the algorithm was
+              asked to follow, and the human feedback that taught the model
+              what counts as good.
             </p>
           </div>
         </section>
 
-        <section className={styles.how_section} id="how">
-          <p className="eyebrow">Three things you will do</p>
+        <section className={`${styles.how_section} ${styles.pageSection}`} id="chapters">
+          <p className="eyebrow">Three playable chapters</p>
           <h2 className="section__title section__title--dark">
-            Three clues.<br />One buried truth.
+            Three origins.<br />One unstable verdict.
           </h2>
 
           <div className={styles.how_cards}>
-            {STEPS.map((s) => (
+            {CHAPTERS.map((chapter) => (
               <article
-                className={`${styles.how_card} ${styles[`how_accent_${s.accent}`]}`}
-                key={s.num}
+                className={`${styles.how_card} ${styles[`how_accent_${chapter.accent}`]}`}
+                key={chapter.num}
               >
-                <div className={styles.how_num}>{s.num}</div>
-                <h3 className={styles.how_title}>{s.title}</h3>
-                <p className={styles.how_body}>{s.body}</p>
+                <div className={styles.how_num}>Chapter {chapter.num}</div>
+                <h3 className={styles.how_title}>{chapter.title}</h3>
+                <p className={styles.how_theme}>{chapter.theme}</p>
+                <p className={styles.how_body}>{chapter.body}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <section className={styles.audience_section} id="audience">
+        <section className={`${styles.audience_section} ${styles.pageSection}`} id="audience">
           <div>
-            <p className="eyebrow">Why bother?</p>
+            <p className="eyebrow">Why it matters</p>
             <h2 className={`section__title section__title--dark ${styles.audience_title}`}>
-              Because your<br />first model<br />will not be neutral.
+              The machine<br />inherits more<br />than data.
             </h2>
             <p className={styles.audience_sub}>
-              Built for CS and data science students who have been taught to
-              chase accuracy, and are starting to wonder what that costs.
+              Built for non-CS students meeting AI fairness for the first time, Θmen makes abstract trade-offs visible through
+              choices, consequences, and case evidence.
             </p>
           </div>
           <div>
@@ -183,18 +323,21 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className={styles.cta_section}>
-          <p className={`eyebrow ${styles.cta_eyebrow}`}>Case status</p>
-          <h2 className={styles.cta_title}>Evidence waiting.</h2>
-          <p className={styles.cta_sub}>
-            Open the simulator and see why one line can tell two different stories.
-          </p>
-          <Button variant="primary" size="lg" to="/chapters?intro=story">
-            Start investigation
-          </Button>
+        <section className={`${styles.cta_section} ${styles.pageSection}`} id="case-status">
+          <div className={styles.ctaContent}>
+            <p className={`eyebrow ${styles.cta_eyebrow}`}>Case status</p>
+            <h2 className={styles.cta_title}>The past is still editable.</h2>
+            <p className={styles.cta_sub}>
+              Travel back through the AI pipeline and find where the verdict
+              started to bend.
+            </p>
+            <Button variant="primary" size="lg" to="/chapters?intro=story">
+              Start investigation
+            </Button>
+          </div>
+          <Footer className={styles.ctaFooter} />
         </section>
       </main>
-      <Footer />
     </>
   );
 }

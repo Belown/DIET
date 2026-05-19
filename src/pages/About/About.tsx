@@ -11,28 +11,31 @@ export default function About() {
         <section className={styles.section}>
           <p className="eyebrow">About the project</p>
           <h1 className={styles.title}>
-            A sandbox for thinking about fairness.
+            A time-travel case file for AI fairness.
           </h1>
           <p className={styles.lede}>
-            Manifold is a teaching prototype built around one idea: an accurate model isn't the same thing as a fair one. You'll train a tiny classifier on synthetic CV data, audit it, and watch what happens when "good enough" accuracy leaves a whole group behind.
+            Θmen is a teaching prototype about how AI bias enters a system
+            before anyone sees the final verdict. Players investigate Novus by
+            tracing bias through data collection, algorithmic fairness choices,
+            and human feedback used to guide AI behavior.
           </p>
           <div className={styles.facts}>
             <div className={styles.fact}>
               <span className={styles.factK}>Audience</span>
               <span className={styles.factV}>
-                Undergrad CS students meeting ML fairness for the first time.
+                Non-CS students meeting AI fairness for the first time.
               </span>
             </div>
             <div className={styles.fact}>
               <span className={styles.factK}>Format</span>
               <span className={styles.factV}>
-                A three-phase interactive sandbox.
+                A three-chapter interactive investigation.
               </span>
             </div>
             <div className={styles.fact}>
-              <span className={styles.factK}>Status</span>
+              <span className={styles.factK}>Chapters</span>
               <span className={styles.factV}>
-                Prototype, under development in 2026.
+                Sampling Bias, COMPAS Trade-offs, and LLM Alignment.
               </span>
             </div>
             <div className={styles.fact}>
@@ -43,7 +46,7 @@ export default function About() {
             </div>
           </div>
           <Link to="/chapters" className={styles.back}>
-            → Open the chapters
+            Open the chapters
           </Link>
         </section>
       </main>

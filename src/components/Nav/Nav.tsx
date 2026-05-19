@@ -18,15 +18,15 @@ export default function Nav() {
       <Logo />
       <nav className={styles.links}>
         <a href="#concept">What's this?</a>
-        <a href="#how">How it works</a>
+        <a href="#chapters">Chapters</a>
         <a href="#audience">Why it matters</a>
       </nav>
       <div className={styles.cta}>
         <Button variant="ghost-dark" to="/about">
-          About us
+          About
         </Button>
         <Button variant="primary" to="/chapters?intro=story">
-          Start exploring
+          Start investigation
         </Button>
       </div>
     </header>

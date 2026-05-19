@@ -13,7 +13,7 @@ export const STORY_SCENES = [
     image: SCENE_IMAGES[0],
     audio: SCENE_AUDIO[0],
     title: "Scene 1",
-    text: "In the future city of Nova, humanity has handed its hardest choices to AI. It decides who receives a loan, who gets a job, who enters school, and who is found guilty. People believe it never gets tired, never takes sides, and is never influenced by emotion. In this city, AI is known as 'the fairest judge'.",
+    text: "In the future city of Novus, humanity has handed its hardest choices to AI. It decides who receives a loan, who gets a job, who enters school, and who is found guilty. People believe it never gets tired, never takes sides, and is never influenced by emotion. In this city, AI is known as 'the fairest judge'.",
   },
   {
     image: SCENE_IMAGES[1],

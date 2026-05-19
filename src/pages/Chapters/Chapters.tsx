@@ -84,7 +84,6 @@ export default function Chapters() {
     ch2: null,
     ch3: null,
   });
-  const [endingChooserOpen, setEndingChooserOpen] = useState(false);
   const chromeRef = useRef<HTMLDivElement>(null);
   const endingRef = useRef<HTMLDivElement>(null);
   const hasScrolledToEndingRef = useRef(false);
@@ -115,18 +114,7 @@ export default function Chapters() {
   const selectChapter = (chapter: ChapterId) => {
     setActive(chapter);
     setChapterTutorialOverlayOpen(false);
-    setEndingChooserOpen(false);
     setSearchParams({ chapter });
-  };
-
-  const selectEnding = (ending: EndingTier) => {
-    setChapterTutorialOverlayOpen(false);
-    setEndingChooserOpen(false);
-    setTimelineOpen(false);
-    setSearchParams({ ending });
-    window.setTimeout(() => {
-      endingRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }, 50);
   };
 
   const recordChapterResult = (chapter: ChapterId, result: ChapterResult) => {
@@ -235,31 +223,6 @@ export default function Chapters() {
                 );
               })}
             </ol>
-            {/* Debug for ending */}
-            {/* <div className={styles.endingNavigator}>
-              <button
-                type="button"
-                className={styles.endingNavigatorButton}
-                onClick={() => setEndingChooserOpen((open) => !open)}
-                aria-expanded={endingChooserOpen}
-              >
-                Ending preview
-              </button>
-              {endingChooserOpen && (
-                <div className={styles.endingNavigatorMenu}>
-                  {(["good", "medium", "bad"] as EndingTier[]).map((tier) => (
-                    <button
-                      key={tier}
-                      type="button"
-                      className={styles.endingNavigatorChoice}
-                      onClick={() => selectEnding(tier)}
-                    >
-                      {tier === "good" ? "Good ending" : tier === "medium" ? "Medium ending" : "Bad ending"}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div> */}
           </nav>
         </div>
       </div>
