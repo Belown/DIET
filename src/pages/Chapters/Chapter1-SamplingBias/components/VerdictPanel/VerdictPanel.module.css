@@ -383,19 +383,23 @@
   display: grid;
   place-items: center;
   gap: 3px;
-  width: 58%;
+  width: 76%;
   aspect-ratio: 1;
+  padding: 6px;
   border-radius: 50%;
-  background: rgba(250, 247, 240, 0.94);
+  background: #faf7f0;
   text-align: center;
 }
 
 .scoreRingLabel,
 .scoreRingStatus {
+  max-width: 100%;
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.1;
   color: #5f4c3f;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 .scoreRingValue {
