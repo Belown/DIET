@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { hasCompleted } from "../../utils/assessmentStorage";
 import Logo from "../../components/Logo/Logo";
 import Chapter1SamplingBias from "./Chapter1-SamplingBias/Chapter1SamplingBias";
 import Chapter2COMPAS from "./Chapter2-COMPAS";
@@ -66,6 +67,7 @@ const createPreviewResults = (passCount: number): Record<ChapterId, ChapterResul
 });
 
 export default function Chapters() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const chapterParam = searchParams.get("chapter");
   const endingParam = searchParams.get("ending");
@@ -94,13 +96,17 @@ export default function Chapters() {
   });
   const pendingChapterScrollRef = useRef<ChapterId | null>(null);
 
+  const [preComplete] = useState(() => hasCompleted("pre"));
+  const [postComplete] = useState(() => hasCompleted("post"));
   const activeIndex = CHAPTERS.findIndex((c) => c.id === active);
-  const progress = ((activeIndex + 0.5) / CHAPTERS.length) * 100;
   const completedResults = CHAPTERS.map((chapter) => chapterResults[chapter.id]);
   const isCaseComplete = completedResults.every(Boolean);
   const passCount = completedResults.filter((result) => result?.passed).length;
   const endingRoute = isEndingRoute(endingParam) ? endingParam : null;
   const isEndingPage = endingRoute !== null && (endingRoute !== "final" || isCaseComplete);
+  // 5-step overall index: 0=pre, 1-3=ch1-ch3, 4=post (must come after isEndingPage)
+  const overallActiveIndex = isEndingPage ? 4 : 1 + activeIndex;
+  const progress = ((overallActiveIndex + 0.5) / 5) * 100;
   const endingPagePassCount =
     endingRoute === "final" ? passCount : endingRoute ? PREVIEW_PASS_COUNT[endingRoute] : passCount;
   const endingPageResults =
@@ -218,9 +224,29 @@ export default function Chapters() {
               />
             </div>
             <ol className={styles.timelineList}>
+              {/* Pre-Test */}
+              <li className={styles.timelineItem}>
+                <button
+                  type="button"
+                  className={[
+                    styles.timelineNode,
+                    preComplete ? styles.timelineNodePast : "",
+                  ].filter(Boolean).join(" ")}
+                  onClick={() => navigate("/assessment")}
+                >
+                  <span className={styles.timelineDot} aria-hidden />
+                  <span className={styles.timelineMeta}>
+                    <span className={styles.timelineNum}>Assessment</span>
+                    <span className={styles.timelineTitle}>Pre-Test</span>
+                    <span className={styles.timelineHint}>Test your intuitions</span>
+                  </span>
+                </button>
+              </li>
+
+              {/* Chapters */}
               {CHAPTERS.map((c, i) => {
-                const isActive = c.id === active;
-                const isPast = i < activeIndex;
+                const isActive = c.id === active && !isEndingPage;
+                const isPast = i < activeIndex || isEndingPage;
                 return (
                   <li key={c.id} className={styles.timelineItem}>
                     <button
@@ -229,9 +255,7 @@ export default function Chapters() {
                         styles.timelineNode,
                         isPast ? styles.timelineNodePast : "",
                         isActive ? styles.timelineNodeActive : "",
-                      ]
-                        .filter(Boolean)
-                        .join(" ")}
+                      ].filter(Boolean).join(" ")}
                       onClick={() => selectChapter(c.id)}
                       aria-current={isActive ? "step" : undefined}
                     >
@@ -248,6 +272,26 @@ export default function Chapters() {
                   </li>
                 );
               })}
+
+              {/* Post-Test */}
+              <li className={styles.timelineItem}>
+                <button
+                  type="button"
+                  className={[
+                    styles.timelineNode,
+                    postComplete ? styles.timelineNodePast : "",
+                    isEndingPage && !postComplete ? styles.timelineNodeActive : "",
+                  ].filter(Boolean).join(" ")}
+                  onClick={() => navigate("/assessment?mode=post")}
+                >
+                  <span className={styles.timelineDot} aria-hidden />
+                  <span className={styles.timelineMeta}>
+                    <span className={styles.timelineNum}>Assessment</span>
+                    <span className={styles.timelineTitle}>Post-Test</span>
+                    <span className={styles.timelineHint}>Reflect on what you learned</span>
+                  </span>
+                </button>
+              </li>
             </ol>
           </nav>
         </div>
@@ -264,6 +308,7 @@ export default function Chapters() {
                 passCount={endingPagePassCount}
                 chapterResults={endingPageResults}
                 onReviewChapters={() => setTimelineOpen(true)}
+                onTakePostAssessment={() => navigate("/assessment?mode=post")}
               />
             </div>
           ) : showStoryIntro ? (
@@ -332,11 +377,13 @@ function EndingPanel({
   passCount,
   chapterResults,
   onReviewChapters,
+  onTakePostAssessment,
   mode = "final",
 }: {
   passCount: number;
   chapterResults: Record<ChapterId, ChapterResult | null>;
   onReviewChapters: () => void;
+  onTakePostAssessment: () => void;
   mode?: "final" | "preview";
 }) {
   const tier = passCount === 3 ? "good" : passCount === 2 ? "medium" : "bad";
@@ -382,6 +429,11 @@ function EndingPanel({
         <button type="button" className={styles.endingButton} onClick={onReviewChapters}>
           Review chapters
         </button>
+        {mode === "final" && (
+          <button type="button" className={`${styles.endingButton} ${styles.endingButtonPost}`} onClick={onTakePostAssessment}>
+            Take Post-Assessment →
+          </button>
+        )}
       </div>
     </section>
   );

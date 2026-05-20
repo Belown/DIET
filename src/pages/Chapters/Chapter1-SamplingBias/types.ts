@@ -58,4 +58,7 @@ export type StrategySummary = {
   otherCityAccs: number[];
   sampledFlags: boolean[];
   committedCount: number;
+  usefulSignal: number;
+  noiseSignal: number;
+  biasSignal: number;
 };

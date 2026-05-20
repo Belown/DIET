@@ -145,7 +145,7 @@
   margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   gap: 16px;
   position: relative;
   z-index: 1;
@@ -509,6 +509,7 @@
 .endingActions {
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
   margin-top: 24px;
 }
 
@@ -529,6 +530,17 @@
 .endingButton:hover {
   background: var(--ending-accent);
   transform: translateY(-1px);
+}
+
+/* ── Post-assessment button variant ──────────────── */
+
+.endingButtonPost {
+  background: var(--diet-stamp-red);
+  border-color: var(--diet-stamp-red);
+}
+
+.endingButtonPost:hover {
+  background: #6b0f0f;
 }
 
 @keyframes canvasTutorialBackdropIn {

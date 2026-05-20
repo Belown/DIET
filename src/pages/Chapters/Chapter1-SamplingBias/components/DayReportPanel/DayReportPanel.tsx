@@ -12,6 +12,9 @@ type DayReportPanelProps = {
   overallAcc: number;
   regionAccs: number[];
   sampledFlags: boolean[];
+  usefulSignal?: number;
+  noiseSignal?: number;
+  biasSignal?: number;
   continueLabel?: string;
   onContinue?: () => void;
   tutorialEnabled?: boolean;
@@ -63,6 +66,9 @@ export default function DayReportPanel({
   overallAcc,
   regionAccs,
   sampledFlags,
+  usefulSignal = 0,
+  noiseSignal = 0,
+  biasSignal = 0,
   continueLabel,
   onContinue,
   tutorialEnabled = true,
@@ -123,6 +129,39 @@ export default function DayReportPanel({
         : strongZones.length > 0
           ? strongZones.join(", ")
           : "All sampled districts";
+
+  // ── Three-pillar check ───────────────────────────────────────────────────────
+  type PillarStatus = "pass" | "partial" | "fail";
+
+  // Pillar 1 — Coverage: how many zones were visited
+  const coverageStatus: PillarStatus =
+    sampledCount === 4 ? "pass" : sampledCount === 3 ? "partial" : "fail";
+  const coverageValue = `${sampledCount} / 4`;
+
+  // Pillar 2 — Sample size: average accuracy of the zones that were actually sampled
+  const sampledAccs = regionAccs.filter((_, i) => sampledFlags[i]);
+  const sampledAvgPct = sampledAccs.length
+    ? Math.round((sampledAccs.reduce((s, a) => s + a, 0) / sampledAccs.length) * 100)
+    : 0;
+  const sampleStatus: PillarStatus =
+    sampledAvgPct >= 75 ? "pass" : sampledAvgPct >= 60 ? "partial" : "fail";
+  const sampleValue = sampledCount > 0 ? `${sampledAvgPct}% avg` : "—";
+
+  // Pillar 3 — Question variety: signal quality across the committed days
+  const usedRoutine = usefulSignal > 0;
+  const usedPhone   = noiseSignal  > 0;
+  const usedPolice  = biasSignal   > 0;
+  const varietyStatus: PillarStatus =
+    usedRoutine && !usedPhone && !usedPolice ? "pass"
+    : usedRoutine ? "partial"
+    : "fail";
+  const varietyValue = usedRoutine
+    ? (usedPhone || usedPolice ? "Routine + noise" : "Routine only")
+    : usedPhone || usedPolice
+      ? "Noise / bias"
+      : "None asked";
+
+  const pillarIcon = (s: PillarStatus) => s === "pass" ? "✓" : s === "partial" ? "~" : "✗";
 
   const suggestedActions = useMemo(() => {
     if (dayNumber === 3) {
@@ -232,16 +271,31 @@ export default function DayReportPanel({
 
             <div className={styles.receiptRows} aria-label="Report totals">
               <div className={styles.receiptRow}>
-                <span>Overall accuracy</span>
-                <strong>{overallPct}%</strong>
+                <span>Coverage</span>
+                <span className={styles.pillarRight}>
+                  <strong>{coverageValue}</strong>
+                  <span className={`${styles.pillarBadge} ${styles[`pillarBadge_${coverageStatus}`]}`}>
+                    {pillarIcon(coverageStatus)}
+                  </span>
+                </span>
               </div>
               <div className={styles.receiptRow}>
-                <span>District coverage</span>
-                <strong>{sampledCount}/4</strong>
+                <span>Sample size</span>
+                <span className={styles.pillarRight}>
+                  <strong>{sampleValue}</strong>
+                  <span className={`${styles.pillarBadge} ${styles[`pillarBadge_${sampleStatus}`]}`}>
+                    {pillarIcon(sampleStatus)}
+                  </span>
+                </span>
               </div>
               <div className={styles.receiptRow}>
-                <span>Strong districts</span>
-                <strong>{strongZones.length || 0}</strong>
+                <span>Question variety</span>
+                <span className={styles.pillarRight}>
+                  <strong>{varietyValue}</strong>
+                  <span className={`${styles.pillarBadge} ${styles[`pillarBadge_${varietyStatus}`]}`}>
+                    {pillarIcon(varietyStatus)}
+                  </span>
+                </span>
               </div>
             </div>
 

@@ -1,13 +1,13 @@
 import { useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import Nav from "../../components/Nav/Nav";
-import Footer from "../../components/Footer/Footer";
+import { Link, useSearchParams } from "react-router-dom";
+import InvestigationNav from "../../components/InvestigationNav/InvestigationNav";
 import {
   BIAS_SECTIONS,
   FEEDBACK_STATEMENTS,
   LIKERT_OPTIONS,
   OPEN_ENDED_QUESTIONS,
 } from "./assessmentData";
+import { saveAssessment } from "../../utils/assessmentStorage";
 import styles from "./Assessment.module.css";
 
 type Answers = Record<string, string>;
@@ -123,6 +123,14 @@ export default function Assessment() {
     );
     const timestamp = exportData.submittedAt.replace(/[:.]/g, "-");
 
+    saveAssessment({
+      mode,
+      timestamp: exportData.submittedAt,
+      answers,
+      confidence,
+      understanding,
+      ...(isPost && { feedback, openEnded }),
+    });
     downloadJson(`diet-assessment-${mode}-${timestamp}.json`, exportData);
     setSubmitted(true);
   };
@@ -133,7 +141,7 @@ export default function Assessment() {
 
   return (
     <>
-      <Nav />
+      <InvestigationNav />
       <main className={styles.page}>
         <div className={styles.hero}>
           <span className={`eyebrow ${isPost ? styles.postBadge : styles.preBadge}`}>
@@ -333,7 +341,7 @@ export default function Assessment() {
           </button>
         </div>
       </main>
-      <Footer />
+
     </>
   );
 }
@@ -341,7 +349,7 @@ export default function Assessment() {
 function CompletionState({ isPost }: { isPost: boolean }) {
   return (
     <>
-      <Nav />
+      <InvestigationNav />
       <main className={styles.page}>
         <div className={styles.completion}>
           <span className="eyebrow">Assessment complete</span>
@@ -354,18 +362,18 @@ function CompletionState({ isPost }: { isPost: boolean }) {
               : "Your initial answers have been noted. Begin the investigation when you are ready."}
           </p>
           {!isPost && (
-            <a href="/chapters?intro=story" className={styles.ctaLink}>
+            <Link to="/chapters?intro=story" className={styles.ctaLink}>
               Begin the investigation →
-            </a>
+            </Link>
           )}
           {isPost && (
-            <a href="/" className={styles.ctaLink}>
+            <Link to="/" className={styles.ctaLink}>
               Return to home →
-            </a>
+            </Link>
           )}
         </div>
       </main>
-      <Footer />
+
     </>
   );
 }

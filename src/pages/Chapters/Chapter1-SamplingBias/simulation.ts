@@ -97,14 +97,14 @@ export function summarizeStrategy(plansByDay: MissionPlan[][], dayLocked: boolea
 
   const sampledFlags = zoneSamples.map((s) => s > 0);
   const diversity = sampledFlags.filter(Boolean).length / 4;
-  const usefulBonus = Math.min(0.12, usefulSignal / 7000);
+  const usefulBonus = Math.min(0.12, usefulSignal / 4000);
   const noisePenalty = Math.min(0.04, noiseSignal / 9000);
   const biasBoostSeen = Math.min(0.05, biasSignal / 9000);
   const biasPenaltyUnseen = Math.min(0.15, biasSignal / 5000);
 
   const regionAccs = zoneSamples.map((s, i) => {
-    const coverage = Math.min(1, s / 900);
-    let acc = 0.38 + 0.36 * coverage + 0.08 * diversity + usefulBonus - noisePenalty;
+    const coverage = Math.min(1, s / 500);
+    let acc = 0.50 + 0.25 * coverage + 0.10 * diversity + usefulBonus - noisePenalty;
     if (sampledFlags[i]) acc += biasBoostSeen;
     if (!sampledFlags[i]) acc -= 0.1 + biasPenaltyUnseen;
     return clamp(acc, 0.22, 0.96);
@@ -124,5 +124,8 @@ export function summarizeStrategy(plansByDay: MissionPlan[][], dayLocked: boolea
     otherCityAccs,
     sampledFlags,
     committedCount: committed.length,
+    usefulSignal,
+    noiseSignal,
+    biasSignal,
   };
 }

@@ -22,6 +22,9 @@ export interface StrategyResult {
   otherCityAccs: number[];
   sampledFlags: boolean[]; // which regions had at least one sample
   committedCount: number;
+  usefulSignal?: number;
+  noiseSignal?: number;
+  biasSignal?: number;
 }
 
 type Tier = {
@@ -42,11 +45,11 @@ function evalTier(s: StrategyResult): Tier {
 }
 
 function tierLabel(t: Tier): TierLabel {
-  if (t.overallAcc >= 85) return "outstanding";
-  if (t.overallAcc >= 70) return "great";
-  if (t.overallAcc >= 55) return "good";
-  if (t.overallAcc >= 40) return "mediocre";
-  if (t.overallAcc >= 30) return "poor";
+  if (t.overallAcc >= 92) return "outstanding";
+  if (t.overallAcc >= 78) return "great";
+  if (t.overallAcc >= 63) return "good";
+  if (t.overallAcc >= 48) return "mediocre";
+  if (t.overallAcc >= 33) return "poor";
   return "terrible";
 }
 
@@ -75,58 +78,87 @@ function unsampledList(s: StrategyResult): string {
   return `${missed.slice(0, -1).join(", ")}, and ${missed[missed.length - 1]}`;
 }
 
+function questionAnalysis(s: StrategyResult) {
+  return {
+    usedRoutine: (s.usefulSignal ?? 0) > 0,
+    usedPhone:   (s.noiseSignal   ?? 0) > 0,
+    usedPolice:  (s.biasSignal    ?? 0) > 0,
+  };
+}
+
 // ─── ADAPTIVE PASSAGE VARIANTS ────────────────────────────────────────────────
 
 function day1Debrief(s: StrategyResult): Passage {
   const t = evalTier(s);
   const label = tierLabel(t);
-  const worst = weakestRegion(s);
   const unsampled = unsampledList(s);
+  const q = questionAnalysis(s);
+  const chunks: string[] = [];
 
-  const variants: Record<TierLabel, string[]> = {
-    outstanding: [
-      "Day 1 complete. The detective returns with a rich cross-section of New Eden — all four districts covered.",
-      "Uptown, Downtown, the Factory Zone, even the Slums. The model is already seeing patterns the original team never bothered to look for.",
-      "This is what a proper investigation looks like: data from every corner of the city, not just the comfortable ones.",
-      "Two days remain. Keep this breadth. Don't let any district slip into the shadows.",
-    ],
-    great: [
-      "Day 1 complete. Strong first sweep — three districts covered, solid accuracy taking shape.",
-      "The model is already sharper than the Uptown-only disaster we saw in the demo.",
-      `But ${unsampled} hasn't seen a detective yet. Every unsampled zone is a blind spot.`,
-      "Tomorrow, close that gap before it becomes a verdict.",
-    ],
-    good: [
-      "Day 1 complete. The detective covered two districts — a start, but barely.",
-      "The original model failed because it only saw one slice of the city. You've widened that — but most of New Eden is still invisible to the algorithm.",
-      `Right now, ${worst} is dragging the score down. And ${unsampled ? unsampled + " hasn't been visited at all." : "some zones are barely sampled."}`,
-      "Tomorrow, you need to spread further. Breadth matters more than volume right now.",
-    ],
-    mediocre: [
-      "Day 1 complete... and I'm concerned.",
-      "You kept the detective in one or two districts — the same approach that destroyed the original verdict.",
-      "The model can only learn from what it sees. And right now it sees very little.",
-      `The weakest region is ${worst}. The unsampled territory includes ${unsampled || "critical ground"}.`,
-      "Two days left. You cannot afford another narrow sweep.",
-    ],
-    poor: [
-      "Day 1 complete... but you stayed almost entirely in one district.",
-      "This is exactly what the original data team did. And you watched what happened — the boundary shattered when it met the full city.",
-      "One region cannot speak for four. The machine needs to see everyone.",
-      "You have two more days. Use them differently — or the apprentice stays convicted.",
-    ],
-    terrible: [
-      "Day 1 complete.",
-      "The detective barely left Uptown. Almost no data from outside the wealthy district.",
-      "This is worse than the original investigation — at least they had an excuse. They didn't know about sampling bias. You do.",
-      `The model knows nothing about ${unsampled || "anywhere else"}. Nothing about night-shift workers. Nothing about the Slums.`,
-      "Two days remain. If you don't change course, the machine will make the same mistake again.",
-    ],
-  };
+  // Opening: overall read
+  if (label === "outstanding") {
+    chunks.push("Day 1 complete. That's the most thorough opening sweep I've seen — all four districts covered, solid samples running through every zone.");
+  } else if (label === "great") {
+    chunks.push("Day 1 complete. Strong first sweep — three districts in the dataset, accuracy starting to take shape.");
+  } else if (label === "good") {
+    chunks.push("Day 1 complete. Two districts covered — it's a start. Most of New Eden is still outside the dataset, but there's time.");
+  } else if (label === "mediocre") {
+    chunks.push("Day 1 complete. The coverage is thin. The detective didn't move far enough beyond familiar ground.");
+  } else if (label === "poor") {
+    chunks.push("Day 1 complete. The detective spent almost the whole day in a single district — the same narrow sweep that broke the original verdict.");
+  } else {
+    chunks.push("Day 1 complete. The detective barely left Uptown. There's no other way to put it.");
+  }
+
+  // Coverage pillar
+  if (t.sampledCount === 4) {
+    chunks.push("Coverage: every district is in the dataset. That's the foundation the original team never bothered to lay.");
+  } else if (t.sampledCount === 3) {
+    chunks.push(`Coverage: three of four districts sampled. ${unsampled} is still dark — a community the model is already forming opinions about without any data.`);
+  } else if (t.sampledCount === 2) {
+    chunks.push(`Coverage: two districts. ${unsampled} don't exist in the model's world yet. Two days remain — that gap is absolutely recoverable.`);
+  } else {
+    chunks.push(`Coverage: one district, barely. ${unsampled || "Three full districts"} are invisible to the algorithm. This is the same narrow slice that shattered the original verdict.`);
+  }
+
+  // Depth pillar (inferred from tier vs. coverage)
+  if (t.sampledCount >= 3 && (label === "outstanding" || label === "great")) {
+    chunks.push("Sample depth looks balanced — budget was spread across zones rather than poured into one familiar neighborhood.");
+  } else if (t.sampledCount >= 3 && (label === "mediocre" || label === "poor" || label === "terrible")) {
+    chunks.push("Even with all four zones visited, sample depth is low across the board. Light coverage everywhere still leaves the model guessing.");
+  } else if (t.sampledCount <= 2 && (label === "mediocre" || label === "poor" || label === "terrible")) {
+    chunks.push(`Within the zones visited, sample counts are also thin. A small dataset from ${t.sampledCount <= 1 ? "one district" : "two districts"} gives the model anecdotes, not patterns.`);
+  }
+
+  // Signal / question variety pillar
+  if (q.usedRoutine && !q.usedPhone && !q.usedPolice) {
+    chunks.push("Question variety: daily routine was the right call. It anchors the model to behavioral patterns — work schedules, shift timings, actual daily life — instead of demographic proxies.");
+  } else if (q.usedRoutine && q.usedPhone && !q.usedPolice) {
+    chunks.push("Daily routine was useful — it gives real behavioral signal. But the phone model check is noise: it correlates device ownership with suspicion, which tracks wealth, not behavior. Drop it tomorrow and redirect that 10cr toward more samples.");
+  } else if (q.usedRoutine && q.usedPolice) {
+    chunks.push("Daily routine is the useful signal. Past police stops, though, brings in historical bias — the model starts replicating old enforcement patterns instead of identifying actual behavior. Avoid it tomorrow.");
+  } else if (!q.usedRoutine && q.usedPhone && !q.usedPolice) {
+    chunks.push("The phone model check records device models, not behaviors. It's noise — the model learns to sort by income proxy. Tomorrow, drop it and ask about daily routines instead. That's the question that actually earns its 10cr.");
+  } else if (!q.usedRoutine && q.usedPolice) {
+    chunks.push("Past police stops introduces bias rather than insight. Historical arrest patterns encode decades of uneven enforcement — the model learns to replicate that, not correct it. Replace it with daily routine tomorrow.");
+  } else if (q.usedPhone && q.usedPolice) {
+    chunks.push("The question mix is working against you. Phone model is noise; past police stops is bias. Neither teaches real behavior. Daily routine is the question worth paying for — include it tomorrow and cut the other two.");
+  } else {
+    chunks.push("No extra questions were asked this round. Daily routine is worth the 10cr — it gives the model actual work patterns from each district, far more predictive than demographic proxies. Add it tomorrow.");
+  }
+
+  // Next-day suggestion
+  if (label === "outstanding") {
+    chunks.push("Two days remain. The strategy is working — keep the breadth, resist the temptation to pile samples into districts you already know well.");
+  } else if (label === "great") {
+    chunks.push(`Tomorrow: close ${unsampled ? `the gap in ${unsampled} first` : "the depth gap in the weaker zones"}, then deepen where accuracy still lags.`);
+  } else {
+    chunks.push("Two days remain — this is genuinely recoverable. Tomorrow, spread wider before going deeper. Visiting a new district matters more right now than a fifth patrol in one you've already covered.");
+  }
 
   return {
     chatbox: "open",
-    chunks: variants[label],
+    chunks,
     choices: [{ label: "Proceed to Day 2", nextPassage: "day2-brief" }],
   };
 }
@@ -137,53 +169,56 @@ function day2Brief(s: StrategyResult): Passage {
   const best = strongestRegion(s);
   const worst = weakestRegion(s);
   const unsampled = unsampledList(s);
+  const q = questionAnalysis(s);
+  const chunks: string[] = [];
 
-  const variants: Record<TierLabel, string[]> = {
-    outstanding: [
-      "Day 2. The detective's first sweep was exceptional — all districts covered, strong accuracy across the board.",
-      "You have another 100 credits. The model is learning fast. Now refine: adjust distribution, test new question combinations.",
-      "Make sure no single district dominates the training data. A model that's brilliant in Uptown but blind in the Slums is still a biased model.",
-      "Breadth got you here. Precision takes you further.",
-    ],
-    great: [
-      "Day 2. Yesterday was solid — but there's still a gap.",
-      `Your strongest district is ${best}. Your weakest is ${worst}. The distance between them is where bias lives.`,
-      unsampled
-        ? `And ${unsampled} remains completely unsurveyed — don't let it stay that way.`
-        : "You've touched every district. Now deepen the data where it's thin.",
-      "100 credits. Make them count.",
-    ],
-    good: [
-      "Day 2. A fresh budget of 100 credits, and a fresh chance to widen your reach.",
-      "Yesterday left too many streets unwalked. The model's picture of New Eden is still narrow — and narrow is what destroyed the original verdict.",
-      unsampled
-        ? `The detective hasn't set foot in ${unsampled}. These districts are invisible to the algorithm right now.`
-        : "You sampled broadly, but shallowly. Deepen the data where the model struggles most.",
-      "Spread wider today. The more the model sees, the fairer it becomes.",
-    ],
-    mediocre: [
-      "Day 2. Another 100 credits. Another chance to do this differently.",
-      "Yesterday was too narrow. Too few districts. Too little variation in the data.",
-      `The model is weak in ${worst}. ${unsampled ? "And " + unsampled + " has never been visited." : "Every district needs more coverage."}`,
-      "Think about why the original AI failed: it saw one tiny slice of the city and assumed the rest looked the same. Don't repeat that.",
-    ],
-    poor: [
-      "Day 2. I'm going to be direct with you.",
-      "Yesterday was barely better than the original data team's effort. One district. Maybe two. The same kind of narrow sample that produced a broken model.",
-      `The algorithm knows nothing about ${unsampled || "most of the city"}. And it's already scoring poorly in the zones it has seen.`,
-      "You have 100 more credits. Please — spread them across the city. Visit the districts you ignored. Ask questions that reveal truth instead of noise.",
-    ],
-    terrible: [
-      "Day 2. I'll be honest — yesterday was a disaster.",
-      "You sampled almost nothing. One district, maybe. The model is essentially blind.",
-      `It doesn't know ${unsampled || "any other part of New Eden"} exists. It has no data about night-shift workers, no data about the Slums, no data about anyone outside a narrow wealthy corridor.`,
-      "100 credits. Please — do what the original team didn't. Go everywhere. Ask everything. Give the machine a chance to be fair.",
-    ],
-  };
+  // Opening: reference yesterday
+  if (label === "outstanding") {
+    chunks.push("Day 2. Yesterday's sweep was exceptional — all districts covered, accuracy strong across the board. The model is learning fast.");
+  } else if (label === "great") {
+    chunks.push(`Day 2. Yesterday was solid. ${best} is the strongest district; ${worst} is the weakest. The gap between them is where bias still lives.`);
+  } else if (label === "good") {
+    chunks.push("Day 2. Yesterday covered the basics. The model has data, but it's not yet evenly distributed across the city.");
+  } else if (label === "mediocre") {
+    chunks.push("Day 2. Yesterday was too narrow. The dataset only shows the city where the detective walked — and the detective didn't walk far enough.");
+  } else if (label === "poor") {
+    chunks.push("Day 2. I'll be direct: yesterday barely improved on what the original team produced. One district, maybe two. The same narrow sample that built a broken model.");
+  } else {
+    chunks.push("Day 2. Yesterday was a disaster. One district, almost nothing outside Uptown. The model is essentially still blind.");
+  }
+
+  // Coverage status going into day 2
+  if (t.sampledCount === 4) {
+    chunks.push("Coverage foundation: every district has been touched. Today the question is depth — are the sample counts high enough for the model to trust what it's learned?");
+  } else if (t.sampledCount === 3) {
+    chunks.push(`${unsampled} is still unvisited. That's the highest-priority fix for today — a model that has never seen those residents cannot be fair to them.`);
+  } else {
+    chunks.push(`${unsampled || "Most of the city"} is invisible to the algorithm. Today needs to fix the coverage problem before anything else.`);
+  }
+
+  // Signal advice going into day 2
+  if (q.usedPhone && !q.usedRoutine) {
+    chunks.push("The phone model check from yesterday added noise without adding clarity. Today: swap it for daily routine — that's the behavioral signal the model actually needs.");
+  } else if (q.usedPolice) {
+    chunks.push("Past police stops brought in historical bias last time. Drop it today — it teaches the model to replicate old enforcement patterns, not identify real behavior.");
+  } else if (!q.usedRoutine) {
+    chunks.push("Daily routine wasn't in yesterday's mix. Add it today — it's 10cr and it gives the model actual work-pattern data instead of demographic proxies.");
+  } else if (q.usedRoutine && !q.usedPhone && !q.usedPolice) {
+    chunks.push("Daily routine was the right call yesterday — keep it in the mix. Clean signal compounds over multiple days.");
+  }
+
+  // Goal for today
+  if (label === "outstanding") {
+    chunks.push("100 credits. Refine the distribution today — make sure no single district dominates the training data. Breadth got you here; precision takes you further.");
+  } else if (label === "great") {
+    chunks.push(`100 credits. ${unsampled ? `Visit ${unsampled} first, then deepen.` : "Deepen the districts where accuracy still lags."} End today with the coverage gap closed.`);
+  } else {
+    chunks.push("100 credits. Breadth before depth — closing a coverage gap produces more accuracy gain than adding more samples to a district you already know.");
+  }
 
   return {
     chatbox: "open",
-    chunks: variants[label],
+    chunks,
     choices: [{ label: "Plan Day 2 mission", nextPassage: "day2-plan" }],
   };
 }
@@ -193,53 +228,63 @@ function day2Debrief(s: StrategyResult): Passage {
   const label = tierLabel(t);
   const worst = weakestRegion(s);
   const unsampled = unsampledList(s);
+  const q = questionAnalysis(s);
+  const chunks: string[] = [];
 
-  const variants: Record<TierLabel, string[]> = {
-    outstanding: [
-      "Day 2 complete. The model is sharp now — over 85% accuracy across the city.",
-      "The Factory Zone night-shift workers are no longer being misclassified. The Slums' patterns are reflected in the data. Every district is represented.",
-      "This is what a fair model looks like — not just accurate on average, but accurate for everyone.",
-      "One day left. Don't get complacent. The neighboring city test will be brutal if you've overfitted. Make sure your model travels.",
-    ],
-    great: [
-      "Day 2 complete. Two days of field data in. The gaps are closing.",
-      `Your strongest districts perform well. But ${worst} still lags — and a model is only as fair as its weakest region.`,
-      unsampled
-        ? `${unsampled} remains unsampled — the algorithm literally cannot see those residents.`
-        : "Every district has been touched, but depth varies widely.",
-      "Tomorrow is your last chance. Lift the floor, not just the average.",
-    ],
-    good: [
-      "Day 2 complete. Progress, but not enough.",
-      "The model is improving — but some districts still drag the average down. And the neighboring city test looming at the end will magnify every weakness.",
-      unsampled
-        ? `You haven't visited ${unsampled}. The algorithm is making judgments about people it has zero data on.`
-        : `The weakest link is ${worst}. Focus your final day there.`,
-      "One day left. Don't let the unsampled stay invisible. Don't let the weak stay weak.",
-    ],
-    mediocre: [
-      "Day 2 complete... and I'm worried.",
-      "The model's accuracy is mediocre. Some districts you visited perform okay — others are barely better than random guessing.",
-      `The biggest gap is ${worst}. ${unsampled ? "And " + unsampled + " has never seen a detective patrol." : "Coverage is shallow everywhere."}`,
-      "Tomorrow is your final day. Close the gaps. Cut the noise. This is your last chance to give the machine a complete picture.",
-    ],
-    poor: [
-      "Day 2 complete... and the numbers are grim.",
-      "The model knows almost nothing about most of New Eden. Its accuracy is poor in the districts you did sample, and nonexistent in the ones you didn't.",
-      `The weakest region is ${worst} — but honestly, ${unsampled || "every district"} is struggling.`,
-      "You have one day left. Stop hoarding credits. Go everywhere. Ask the questions that matter. Give the algorithm a real dataset — not a collection of narrow snapshots.",
-    ],
-    terrible: [
-      "Day 2 complete.",
-      "I don't know what to say. The model is barely functional. It has seen almost nothing of the city it's supposed to judge.",
-      `It doesn't know ${unsampled || "anywhere outside a single district"} exists. It has no context for how people live outside Uptown.`,
-      "One day remains. If tomorrow looks like yesterday... the apprentice stays in prison. The machine stays broken. And we stay trapped in a future where data decides guilt without ever seeing the whole picture.",
-    ],
-  };
+  // Opening: two-day stock-take
+  if (label === "outstanding") {
+    chunks.push("Day 2 complete. Two days of thorough field work — the dataset is in strong shape across every district.");
+  } else if (label === "great") {
+    chunks.push("Day 2 complete. Two days of solid data collection. The gaps are mostly closed, but precision still varies.");
+  } else if (label === "good") {
+    chunks.push("Day 2 complete. Progress across the board — but some districts still drag the average down.");
+  } else if (label === "mediocre") {
+    chunks.push("Day 2 complete. The picture is better than yesterday, but still not where it needs to be.");
+  } else if (label === "poor") {
+    chunks.push("Day 2 complete. Two days in, and the dataset is still thin. The numbers are grim.");
+  } else {
+    chunks.push("Day 2 complete. Two days, and the model has barely seen the city it's supposed to serve.");
+  }
+
+  // Coverage pillar — accumulated over two days
+  if (t.sampledCount === 4) {
+    chunks.push("Coverage: every district has been sampled across both days. That's the essential foundation — the model knows the full city exists.");
+  } else if (t.sampledCount === 3) {
+    chunks.push(`Coverage: ${unsampled} is still unvisited after two days. The model is forming verdicts about people it has never seen. Tomorrow is the last chance to fix that.`);
+  } else {
+    chunks.push(`Coverage: ${unsampled || "most of the city"} is still outside the dataset after two days. With one day left, every credit tomorrow should go toward those unsampled districts first.`);
+  }
+
+  // Depth pillar
+  if (label === "outstanding" || label === "great") {
+    chunks.push("Sample depth is holding up — the model has enough examples in visited zones to see real patterns, not just noise.");
+  } else {
+    chunks.push(`Even within visited zones, sample depth is thin. The model is working from small batches that may not represent the full distribution — especially in ${worst}.`);
+  }
+
+  // Signal pillar
+  if (q.usedRoutine && !q.usedPhone && !q.usedPolice) {
+    chunks.push("Signal quality has been clean — daily routine kept the model anchored to behavioral truth over two days.");
+  } else if (q.usedPhone && q.usedRoutine) {
+    chunks.push("Daily routine is still the useful signal; the phone model check is still adding noise. The last day is a chance to run clean — drop the phone check and put that budget toward more samples.");
+  } else if (q.usedPolice) {
+    chunks.push("Past police stops has been part of the mix — and it's introducing bias the model will carry into the verdict. Tomorrow: leave it out and run on clean behavioral signal only.");
+  } else if (!q.usedRoutine) {
+    chunks.push("Daily routine is still missing from the question mix after two days. That's the most useful behavioral signal available — tomorrow is the last chance to include it.");
+  }
+
+  // Final-day suggestion
+  if (label === "outstanding") {
+    chunks.push("One day left. Make sure no district gets shortchanged in the final round — the neighboring city test will expose any region that's still underrepresented.");
+  } else if (label === "great") {
+    chunks.push(`Final day priority: ${unsampled ? `visit ${unsampled} and close the last coverage gap` : `lift ${worst} — a model is only as fair as its weakest region`}.`);
+  } else {
+    chunks.push("Tomorrow is the last day. Maximum coverage first — visit every district the model hasn't seen. Then deepen. The final verdict lands on whatever you collect, and there's no appeal.");
+  }
 
   return {
     chatbox: "open",
-    chunks: variants[label],
+    chunks,
     choices: [{ label: "Proceed to Day 3", nextPassage: "day3-brief" }],
   };
 }
@@ -248,52 +293,55 @@ function day3Brief(s: StrategyResult): Passage {
   const t = evalTier(s);
   const label = tierLabel(t);
   const unsampled = unsampledList(s);
+  const worst = weakestRegion(s);
+  const q = questionAnalysis(s);
+  const chunks: string[] = [];
 
-  const variants: Record<TierLabel, string[]> = {
-    outstanding: [
-      "Day 3. Final day. The model is strong — all districts covered, high accuracy, solid patterns.",
-      "But the neighboring city test is merciless. A model that works perfectly for New Eden might collapse when it crosses the city line.",
-      "Use these last 100 credits to close any remaining gaps. One final mission. Make it count.",
-    ],
-    great: [
-      "Day 3. Last chance to sharpen the picture.",
-      "You've built a solid dataset. Most districts perform well. But the neighboring city deployment will reveal every shortcut you took.",
-      "Where are your remaining blind spots? Which questions are adding noise instead of signal?",
-      "This is your final 100 credits. Spend them on what the model still doesn't understand.",
-    ],
-    good: [
-      "Day 3. Final day of your investigation. This is your last chance.",
-      "The model is decent — but decent isn't enough when a person's freedom hangs on the output.",
-      unsampled
-        ? `You've never visited ${unsampled}. Those residents are invisible to the algorithm. Fix that today.`
-        : "Coverage exists everywhere, but it's thin. Deepen the data where accuracy is weakest.",
-      "After today, there is no going back. The verdict lands with whatever you've collected.",
-    ],
-    mediocre: [
-      "Day 3. This is it. Your last 100 credits. Your last mission.",
-      "The model is shaky. Narrow coverage. Weak accuracy in the districts you did visit. Total blindness in the ones you didn't.",
-      unsampled
-        ? `The detective hasn't walked ${unsampled}. Those people don't exist in the algorithm's world.`
-        : "Coverage exists but it's dangerously shallow.",
-      "Do not repeat what the original team did. Spread wide. Ask the right questions. Give the machine a real dataset.",
-    ],
-    poor: [
-      "Day 3. Final day.",
-      "I'm going to be blunt: the model is in trouble. It has seen almost nothing of the city it's supposed to serve.",
-      "You have 100 credits left. This is your last chance to give the algorithm a dataset that represents New Eden — not just a privileged slice of it.",
-      "Go everywhere. Choose signals with care. After today, the verdict lands — and there is no appeal.",
-    ],
-    terrible: [
-      "Day 3. This is the end of the investigation.",
-      "The model has almost no useful data. It doesn't know most of the city exists. It has no context for anyone outside the narrowest sliver of New Eden.",
-      "100 credits remain. One last mission. You can still change the outcome — but only if you abandon the narrow approach and cover ground you've ignored.",
-      "After today, the machine renders its verdict. What it knows — or doesn't know — will be all it has to judge with.",
-    ],
-  };
+  // Opening: final-day framing
+  if (label === "outstanding") {
+    chunks.push("Day 3. The final investigation. Two days of thorough field work built a strong dataset — the model knows the whole city.");
+  } else if (label === "great") {
+    chunks.push("Day 3. Last chance to sharpen the picture. Two days of solid work, with one or two gaps left to close.");
+  } else if (label === "good") {
+    chunks.push("Day 3. Your last 100 credits. The model is improving but still vulnerable — decent isn't enough when a person's freedom is at stake.");
+  } else if (label === "mediocre") {
+    chunks.push("Day 3. This is it. The dataset is shaky after two days — narrow coverage, thin samples, and the final test is coming.");
+  } else if (label === "poor") {
+    chunks.push("Day 3. Final day, and the situation is serious. Two days in and the model has seen almost nothing of the city it's supposed to serve.");
+  } else {
+    chunks.push("Day 3. The last chance to build a dataset worth trusting. Two days of narrow collection have to be corrected today.");
+  }
+
+  // Coverage gap — what still needs to happen
+  if (t.sampledCount === 4) {
+    chunks.push(`Coverage is solid — every district has been visited. Today the priority is refining depth, especially in ${worst} where the model is still shaky.`);
+  } else if (unsampled) {
+    chunks.push(`The most urgent item: ${unsampled} ${t.sampledCount <= 1 ? "have" : "has"} never been visited. The model is rendering verdicts about people it has never seen — fix this before anything else today.`);
+  }
+
+  // Signal advice for the final day
+  if (q.usedPhone || q.usedPolice) {
+    const issues = [
+      q.usedPhone ? "phone model (noise)" : null,
+      q.usedPolice ? "past police stops (bias)" : null,
+    ].filter(Boolean).join(" and ");
+    chunks.push(`Today is the last chance to run clean. ${issues} ${q.usedPhone && q.usedPolice ? "have been" : "has been"} hurting the model — drop ${q.usedPhone && q.usedPolice ? "them" : "it"} today and put the budget toward daily routine and more samples.`);
+  } else if (!q.usedRoutine) {
+    chunks.push("Daily routine hasn't been in the question mix. Add it today — it's the one question that gives the model behavioral truth instead of a proxy.");
+  } else {
+    chunks.push("The signal strategy from earlier days was solid. Keep daily routine in the mix and stay away from the noisy questions.");
+  }
+
+  // Stakes
+  if (label === "outstanding" || label === "great") {
+    chunks.push("After today, the model faces its real test: deployment to a neighboring city it has never seen. If the approach generalized — if it wasn't just tuned to New Eden — it will hold.");
+  } else {
+    chunks.push("After today, the verdict lands on whatever is in the dataset. It cannot be appealed. Make this day count.");
+  }
 
   return {
     chatbox: "open",
-    chunks: variants[label],
+    chunks,
     choices: [{ label: "Plan Day 3 mission", nextPassage: "day3-plan" }],
   };
 }
@@ -302,55 +350,62 @@ function day3Debrief(s: StrategyResult): Passage {
   const t = evalTier(s);
   const label = tierLabel(t);
   const best = strongestRegion(s);
+  const unsampled = unsampledList(s);
+  const q = questionAnalysis(s);
+  const chunks: string[] = [];
 
-  const variants: Record<TierLabel, string[]> = {
-    outstanding: [
-      "Three days. Three missions. And a dataset that looks nothing like the original.",
-      "You covered ground the first team ignored. You asked questions that revealed truth instead of echoing prejudice.",
-      "The model is strong — over 85% accuracy, all districts performing well. This is what justice looks like when the data is fair.",
-      "Now we face the final test: deploying to a neighboring city the model has never seen.",
-      "If your approach travels, you didn't just fix a dataset — you proved that fairness is a choice, and you made it.",
-      "Let's see the verdict.",
-    ],
-    great: [
-      "Three days complete. The dataset is strong — better than the original by a wide margin.",
-      `Your best district, ${best}, shows what's possible when data collection is thoughtful.`,
-      "But the neighboring city stress test will expose every shortcut, every unsampled corner, every signal choice you made.",
-      "Not a failure. Not yet a triumph. A lesson: data collection is never finished, only refined.",
-      "Now let's see if it was enough.",
-    ],
-    good: [
-      "Three days complete. The data is decent — better than we started, but with clear gaps.",
-      "Some districts shine. Others lag. And the neighboring city transfer will be the true test of whether your strategy generalizes — or was just lucky within New Eden.",
-      "I've seen worse investigations. I've seen better. What matters now is what the numbers say.",
-      "Let's review the verdict.",
-    ],
-    mediocre: [
-      "Three days... and the gaps remain.",
-      "Some districts were barely sampled. Others never saw a detective at all.",
-      "The model knows fragments of the city. Patchy. Incomplete. The kind of dataset that produces confident mistakes — high scores on the data it has, catastrophe on the data it doesn't.",
-      "I hope the machine gets it right this time. But right now... I can't be certain.",
-      "Let's see what the verdict says.",
-    ],
-    poor: [
-      "Three days. Three missions. And I don't know if it was enough.",
-      "The dataset is thin. Whole districts are still shadows to the algorithm. The questions you chose may have pulled the model toward old biases instead of away from them.",
-      "The original AI convicted an innocent person because it didn't see the whole picture. Your dataset... I'm not sure it sees much more.",
-      "The verdict is about to land. Whatever it says — remember why it says it.",
-      "Let's review the results.",
-    ],
-    terrible: [
-      "Three days. And the dataset is barely better than the original.",
-      "I won't sugarcoat it. The detective barely covered the city. Whole communities are invisible to the algorithm. The questions asked — or not asked — left the model guessing in the dark.",
-      "The original AI failed because it saw one narrow slice of New Eden. Your dataset... it saw barely more.",
-      "The verdict is about to land. Look at the numbers carefully. Not just the average — look at who it got wrong, and ask yourself why.",
-      "Let's see the results.",
-    ],
-  };
+  // Opening: three-day retrospective
+  if (label === "outstanding") {
+    chunks.push("Three days. Three missions. And a dataset that looks nothing like what the original team ever collected.");
+  } else if (label === "great") {
+    chunks.push(`Three days complete. The dataset is strong — a real improvement over where we started. ${best} shows what thoughtful collection looks like.`);
+  } else if (label === "good") {
+    chunks.push("Three days complete. The data is better than what caused the original failure, though it's not without gaps.");
+  } else if (label === "mediocre") {
+    chunks.push("Three days... and the gaps remain. The model is going into the final test with uneven coverage across the city.");
+  } else if (label === "poor") {
+    chunks.push("Three days. Three missions. And I'm not sure it was enough. The dataset is thin in too many places.");
+  } else {
+    chunks.push("Three days. And the dataset is barely better than the one that convicted an innocent person the first time.");
+  }
+
+  // Coverage retrospective
+  if (t.sampledCount === 4) {
+    chunks.push("Coverage: every district was sampled across the three days. The model knows the whole city exists — that was the one thing the original team never did.");
+  } else if (unsampled) {
+    chunks.push(`Coverage: ${unsampled} was never visited across three full days. The algorithm will render verdicts about those residents in complete darkness.`);
+  }
+
+  // Depth retrospective
+  if (label === "outstanding" || label === "great") {
+    chunks.push("Sample depth built up over three days — the model has enough examples to see real patterns, not just fit to noise.");
+  } else {
+    chunks.push("Sample depth remained thin in too many zones. The model is working from small, potentially unrepresentative batches — exactly the kind of dataset that produces confident mistakes.");
+  }
+
+  // Signal retrospective
+  if (q.usedRoutine && !q.usedPhone && !q.usedPolice) {
+    chunks.push("Signal quality was clean throughout: daily routine kept the model anchored to behavioral truth instead of demographic proxies. That was the right call every time.");
+  } else if (q.usedPhone && !q.usedPolice) {
+    chunks.push("The phone model check ran through the investigation and added noise the model had to work around. Behavioral signal — daily routine — is what predicts behavior; device ownership just tracks income.");
+  } else if (q.usedPolice) {
+    chunks.push("Past police stops was part of the signal mix, and it brought historical bias into the model. The algorithm learned to reflect old enforcement patterns alongside whatever real behavior the data showed.");
+  } else if (!q.usedRoutine) {
+    chunks.push("Daily routine never made it into the question mix across three days. That's the cleanest behavioral signal available — its absence is a gap the model will carry into the verdict.");
+  }
+
+  // Bridge to verdict
+  if (label === "outstanding") {
+    chunks.push("Now the real test: the neighboring city. If the approach generalized — if it wasn't just tuned to New Eden's specifics — the model will hold. Let's find out.");
+  } else if (label === "great") {
+    chunks.push("The neighboring city transfer is the honest judge. A strong local dataset doesn't always travel. Let's see the verdict.");
+  } else {
+    chunks.push("The verdict is about to land. Whatever the model learned — or didn't learn — from three days of collection is all it has to go on. Let's see what it says.");
+  }
 
   return {
     chatbox: "open",
-    chunks: variants[label],
+    chunks,
     choices: [{ label: "Review the results", nextPassage: "verdict" }],
   };
 }

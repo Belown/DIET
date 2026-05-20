@@ -385,6 +385,9 @@ export default function Chapter1SamplingBias({
             overallAcc={overallAcc}
             regionAccs={regionAccs}
             sampledFlags={strategy.sampledFlags}
+            usefulSignal={strategy.usefulSignal}
+            noiseSignal={strategy.noiseSignal}
+            biasSignal={strategy.biasSignal}
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
             tutorialEnabled={!hasCompletedDayReportTutorial}
@@ -401,6 +404,9 @@ export default function Chapter1SamplingBias({
             overallAcc={overallAcc}
             regionAccs={regionAccs}
             sampledFlags={strategy.sampledFlags}
+            usefulSignal={strategy.usefulSignal}
+            noiseSignal={strategy.noiseSignal}
+            biasSignal={strategy.biasSignal}
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
             tutorialDebugEnabled={tutorialDebugEnabled}
@@ -415,6 +421,9 @@ export default function Chapter1SamplingBias({
             overallAcc={overallAcc}
             regionAccs={regionAccs}
             sampledFlags={strategy.sampledFlags}
+            usefulSignal={strategy.usefulSignal}
+            noiseSignal={strategy.noiseSignal}
+            biasSignal={strategy.biasSignal}
             continueLabel={passageChoices[0]?.label}
             onContinue={handleReportContinue}
             tutorialDebugEnabled={tutorialDebugEnabled}
