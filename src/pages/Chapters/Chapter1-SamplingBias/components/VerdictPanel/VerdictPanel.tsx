@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, type CSSProperties } from "react";
 import { REGIONS } from "../../chapterData";
+import { ZONE_VISUALS } from "../../../../../assets/image/image";
 import styles from "./VerdictPanel.module.css";
 import shared from "../../../../../styles/shared.module.css";
 
@@ -15,21 +16,25 @@ type VerdictPanelProps = {
   onNextChapter: () => void;
 };
 
-type AccBarProps = {
-  label: string;
-  color: string;
-  value: number;
-  note?: string;
-};
-
 type ScoreTone = "good" | "mid" | "low";
 
-type MetricCardProps = {
+const WEAKEST_LABEL_THRESHOLD = 0.85;
+const SCORE_TIE_EPSILON = 0.001;
+
+type ScoreRingProps = {
   label: string;
-  value: string;
-  status: string;
+  value: number;
   tone: ScoreTone;
-  percent?: number;
+  pct: (value: number) => string;
+};
+
+type DistrictCardProps = {
+  index: number;
+  localScore: number;
+  transferScore: number;
+  sampled: boolean;
+  isWeakest: boolean;
+  pct: (value: number) => string;
 };
 
 const scoreTone = (value: number): ScoreTone => {
@@ -41,47 +46,84 @@ const scoreTone = (value: number): ScoreTone => {
 const scoreStatus = (value: number) => {
   if (value >= 0.75) return "Strong";
   if (value >= 0.6) return "Watch";
-  return "Needs attention";
+  return "At Risk";
 };
 
-function MetricCard({ label, value, status, tone, percent }: MetricCardProps) {
+const districtName = (label: string) => label.replace(/\s+/g, " ").trim();
+
+function ScoreRing({ label, value, tone, pct }: ScoreRingProps) {
   return (
-    <div className={`${styles.metricCard} ${styles[`metricCard_${tone}`]}`}>
-      <div className={styles.metricTopline}>
-        <span>{label}</span>
-        <strong>{status}</strong>
+    <div
+      className={`${styles.scoreRing} ${styles[`scoreRing_${tone}`]}`}
+      style={{ "--score": `${Math.round(value * 100)}%` } as CSSProperties}
+      aria-label={`${label}: ${pct(value)}, ${scoreStatus(value)}`}
+    >
+      <div className={styles.scoreRingInner}>
+        <span className={styles.scoreRingLabel}>{label}</span>
+        <strong className={styles.scoreRingValue}>{pct(value)}</strong>
+        <span className={styles.scoreRingStatus}>{scoreStatus(value)}</span>
       </div>
-      <p className={styles.metricValue}>{value}</p>
-      {typeof percent === "number" ? (
-        <div className={styles.metricTrack} aria-hidden="true">
-          <div className={styles.metricFill} style={{ "--bar-width": `${Math.round(percent * 100)}%` } as React.CSSProperties} />
-        </div>
-      ) : (
-        <div className={styles.riskBand} aria-hidden="true" />
-      )}
     </div>
   );
 }
 
-function AccBar({ label, color, value, note }: AccBarProps) {
-  const [width, setWidth] = useState(0);
-
-  useEffect(() => {
-    const timer = setTimeout(() => setWidth(Math.round(value * 100)), 80);
-    return () => clearTimeout(timer);
-  }, [value]);
+function DistrictCard({ index, localScore, transferScore, sampled, isWeakest, pct }: DistrictCardProps) {
+  const region = REGIONS[index];
+  const visual = ZONE_VISUALS[index];
+  const localTone = scoreTone(localScore);
+  const transferTone = scoreTone(transferScore);
+  const transferDrop = localScore - transferScore;
+  const hasTransferDrop = transferDrop >= 0.08;
+  const name = districtName(region.label);
 
   return (
-    <div className={styles.accRow}>
-      <div className={styles.accMeta}>
-        <span className={styles.accLabel} style={{ color }}>{label}</span>
-        <span className={styles.accValue}>{width}%</span>
+    <article
+      className={`${styles.districtCard} ${isWeakest ? styles.districtCardWeak : ""}`}
+      style={{ "--district-color": region.color } as CSSProperties}
+    >
+      <div className={styles.districtVisual}>
+        <img className={styles.districtImage} src={visual.image} alt="" aria-hidden="true" />
+        <div className={styles.districtShade} />
+        <img className={styles.districtIcon} src={visual.icon} alt="" aria-hidden="true" />
       </div>
-      <div className={styles.accTrack}>
-        <div className={styles.accFill} style={{ "--bar-width": `${width}%`, background: color } as React.CSSProperties} />
+
+      <div className={styles.districtInfo}>
+        <div>
+          <h3 className={styles.districtName}>{name}</h3>
+          <p className={styles.districtDesc}>{region.desc}</p>
+        </div>
+
+        <div className={styles.badgeRow} aria-label={`${name} status`}>
+          <span className={`${styles.badge} ${sampled ? styles.badgeGood : styles.badgeWarn}`}>
+            {sampled ? "Sampled" : "Unsampled"}
+          </span>
+          {isWeakest ? <span className={`${styles.badge} ${styles.badgeDanger}`}>Weakest</span> : null}
+          {hasTransferDrop ? <span className={`${styles.badge} ${styles.badgeWarn}`}>Transfer drop</span> : null}
+        </div>
+
+        <div className={styles.scorePair}>
+          <div className={styles.scoreColumn}>
+            <div className={styles.scoreMeta}>
+              <span>New Eden</span>
+              <strong className={styles[`tone_${localTone}`]}>{pct(localScore)}</strong>
+            </div>
+            <div className={styles.miniTrack} aria-hidden="true">
+              <div className={styles.miniFill} style={{ "--bar-width": `${Math.round(localScore * 100)}%` } as CSSProperties} />
+            </div>
+          </div>
+
+          <div className={styles.scoreColumn}>
+            <div className={styles.scoreMeta}>
+              <span>Neighbor</span>
+              <strong className={styles[`tone_${transferTone}`]}>{pct(transferScore)}</strong>
+            </div>
+            <div className={styles.miniTrack} aria-hidden="true">
+              <div className={styles.miniFill} style={{ "--bar-width": `${Math.round(transferScore * 100)}%` } as CSSProperties} />
+            </div>
+          </div>
+        </div>
       </div>
-      {note ? <span className={styles.accNote}>{note}</span> : null}
-    </div>
+    </article>
   );
 }
 
@@ -100,17 +142,34 @@ export default function VerdictPanel({
   const riskTone: ScoreTone = overallAcc >= 0.8 ? "good" : overallAcc >= 0.6 ? "mid" : "low";
   const showCelebration = riskTone === "good";
 
-  const narrativeInsights = useMemo(() => {
-    const lowestIdx = regionAccs.reduce((minI, acc, i, arr) => (acc < arr[minI] ? i : minI), 0);
-    const unsampled = REGIONS.filter((_, i) => !sampledFlags[i]).map((r) => r.label);
+  const weakestRegionIndex = useMemo(
+    () => regionAccs.reduce((minI, acc, i, arr) => (acc < arr[minI] ? i : minI), 0),
+    [regionAccs],
+  );
+  const weakestScore = regionAccs[weakestRegionIndex] ?? 0;
+  const showWeakestLabel = weakestScore < WEAKEST_LABEL_THRESHOLD;
+  const weakestRegionIndices = useMemo(
+    () =>
+      showWeakestLabel
+        ? regionAccs.flatMap((acc, index) =>
+            Math.abs(acc - weakestScore) <= SCORE_TIE_EPSILON ? [index] : [],
+          )
+        : [],
+    [regionAccs, showWeakestLabel, weakestScore],
+  );
+  const weakestRegionNames = weakestRegionIndices.map((index) => districtName(REGIONS[index].label));
+  const sampledCount = sampledFlags.filter(Boolean).length;
+  const unsampledRegions = REGIONS.filter((_, i) => !sampledFlags[i]);
+  const transferDelta = otherCityOvr - overallAcc;
+  const transferDeltaTone: ScoreTone = transferDelta >= -0.03 ? "good" : transferDelta >= -0.12 ? "mid" : "low";
+  const transferDeltaLabel = `${transferDelta >= 0 ? "+" : ""}${Math.round(transferDelta * 100)} pts`;
 
-    const insights: string[] = [];
-    insights.push(`Most vulnerable district: ${REGIONS[lowestIdx].label} at ${pct(regionAccs[lowestIdx])}.`);
-    insights.push(`Model transfer dropped from ${pct(overallAcc)} to ${pct(otherCityOvr)} in neighboring city deployment.`);
-    if (unsampled.length) insights.push(`Unvisited districts in field plan: ${unsampled.join(", ")}.`);
-    insights.push("Evidence shows data collection choices directly shaped model behavior.");
-    return insights;
-  }, [otherCityOvr, overallAcc, pct, regionAccs, sampledFlags]);
+  const conclusion =
+    riskTone === "good"
+      ? "Dataset held up well, deploy with monitoring."
+      : riskTone === "mid"
+        ? "Model improved, but review weak districts before rollout."
+        : "Deployment should stop until coverage and transfer gaps are fixed.";
 
   const suggestedActions = useMemo(() => {
     const actions: string[] = [];
@@ -121,6 +180,9 @@ export default function VerdictPanel({
     actions.push("Audit who gets misclassified, not just the average score.");
     return actions;
   }, [otherCityOvr, overallAcc, sampledFlags]);
+
+  const primaryRecommendation = suggestedActions[0];
+  const secondaryActions = suggestedActions.slice(1, 3);
 
   return (
     <>
@@ -137,7 +199,7 @@ export default function VerdictPanel({
                   "--particle-distance": `${140 + (index % 7) * 32}px`,
                   "--particle-hue": 138 + index * 13,
                   "--particle-delay": `${(index % 6) * 0.035}s`,
-                } as React.CSSProperties}
+                } as CSSProperties}
               />
             ))}
           </div>
@@ -145,94 +207,112 @@ export default function VerdictPanel({
             <span className={styles.celebrationSeal} aria-hidden="true">LOW RISK</span>
             <span className={styles.celebrationKicker}>Timeline stabilized</span>
             <strong>Congratulations</strong>
-            <div className={styles.celebrationStats} aria-hidden="true">
-              <span>Bias reduced</span>
-              <span>Coverage restored</span>
-              <span>Case cleared</span>
-            </div>
           </div>
         </div>
       )}
 
-      <section className={styles.panel}>
-        <p className={styles.panelEyebrow}>Case Closure · Day 3 Final Report</p>
-        <h2 className={styles.h2}>AI Justice Investigation Outcome</h2>
-        <p className={styles.panelBody}>Three field days are complete. This report summarizes model performance, transfer risk, and what to do next.</p>
-        <div className={styles.metricStrip}>
-          <MetricCard
-            label="Overall"
-            value={pct(overallAcc)}
-            status={scoreStatus(overallAcc)}
-            tone={scoreTone(overallAcc)}
-            percent={overallAcc}
-          />
-          <MetricCard
-            label="Neighbor City"
-            value={pct(otherCityOvr)}
-            status={scoreStatus(otherCityOvr)}
-            tone={scoreTone(otherCityOvr)}
-            percent={otherCityOvr}
-          />
-          <MetricCard
-            label="Risk"
-            value={riskLevel}
-            status={riskTone === "good" ? "Deploy watch" : riskTone === "mid" ? "Review" : "Stop"}
-            tone={riskTone}
-          />
+      <section className={`${styles.verdictHero} ${styles[`verdictHero_${riskTone}`]}`}>
+        <div className={styles.heroCopy}>
+          <p className={styles.panelEyebrow}>Case Closure · Day 3 Final Report</p>
+          <h2 className={styles.verdictLabel}>{riskLevel}</h2>
+          <p className={styles.heroSummary}>{conclusion}</p>
+
+          <div className={styles.heroStats} aria-label="Verdict summary">
+            <span className={styles.heroStat}>
+              <strong>{committedCount}</strong>
+              missions committed
+            </span>
+            <span className={styles.heroStat}>
+              <strong>{sampledCount}/4</strong>
+              districts sampled
+            </span>
+            {showWeakestLabel ? (
+              <span className={styles.heroStat}>
+                <strong>{weakestRegionNames.join(", ")}</strong>
+                weakest {weakestRegionNames.length > 1 ? "districts" : "district"}
+              </span>
+            ) : (
+              <span className={styles.heroStat}>
+                <strong>All above 85%</strong>
+                district floor
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.heroScoreDeck}>
+          <ScoreRing label="New Eden" value={overallAcc} tone={scoreTone(overallAcc)} pct={pct} />
+          <ScoreRing label="Neighbor" value={otherCityOvr} tone={scoreTone(otherCityOvr)} pct={pct} />
+          <div className={`${styles.transferDelta} ${styles[`transferDelta_${transferDeltaTone}`]}`}>
+            <span>Transfer shift</span>
+            <strong>{transferDeltaLabel}</strong>
+          </div>
         </div>
       </section>
 
-      <div className={styles.grid2}>
-        <section className={styles.panel}>
-          <p className={styles.panelEyebrow}>Region-by-Region Results</p>
-          <div className={styles.accGrid}>
-            {REGIONS.map((r, i) => (
-              <AccBar
-                key={`local-${r.id}`}
-                label={`${r.label} · New Eden`}
-                color={r.color}
-                value={regionAccs[i]}
-                note={!sampledFlags[i] ? "not sampled in 3-day plan" : undefined}
-              />
+      <section className={styles.districtBoard}>
+        <div className={styles.boardHeader}>
+          <p className={styles.panelEyebrow}>District Comparison Board</p>
+          <h3>Where the model holds, and where it breaks</h3>
+        </div>
+
+        <div className={styles.districtGrid}>
+          {REGIONS.map((region, index) => (
+            <DistrictCard
+              key={region.id}
+              index={index}
+              localScore={regionAccs[index]}
+              transferScore={otherCityAccs[index]}
+              sampled={sampledFlags[index]}
+              isWeakest={weakestRegionIndices.includes(index)}
+              pct={pct}
+            />
+          ))}
+        </div>
+      </section>
+
+      <section className={styles.insightBoard}>
+        <div className={styles.statChipGrid} aria-label="What changed the verdict">
+          <div className={styles.statChip}>
+            <span className={styles.statIcon}>01</span>
+            <span className={styles.statLabel}>Coverage</span>
+            <strong className={styles.statValue}>{sampledCount}/4 districts</strong>
+          </div>
+          <div className={styles.statChip}>
+            <span className={styles.statIcon}>02</span>
+            <span className={styles.statLabel}>Transfer</span>
+            <strong className={`${styles.statValue} ${styles[`tone_${transferDeltaTone}`]}`}>{transferDeltaLabel}</strong>
+          </div>
+          <div className={styles.statChip}>
+            <span className={styles.statIcon}>03</span>
+            <span className={styles.statLabel}>{showWeakestLabel ? "Weak point" : "District floor"}</span>
+            <strong className={styles.statValue}>
+              {showWeakestLabel
+                ? `${weakestRegionNames.join(", ")} · ${pct(weakestScore)}`
+                : "None · all above 85%"}
+            </strong>
+          </div>
+          <div className={styles.statChip}>
+            <span className={styles.statIcon}>04</span>
+            <span className={styles.statLabel}>Unvisited</span>
+            <strong className={styles.statValue}>
+              {unsampledRegions.length ? unsampledRegions.map((region) => districtName(region.label)).join(", ") : "None"}
+            </strong>
+          </div>
+        </div>
+
+        <div className={`${styles.recommendation} ${styles[`recommendation_${riskTone}`]}`}>
+          <span className={styles.recommendationKicker}>
+            {riskTone === "good" ? "Recommended action" : riskTone === "mid" ? "Review before deploy" : "Stop deployment"}
+          </span>
+          <h3 className={styles.recommendationTitle}>{primaryRecommendation}</h3>
+          <div className={styles.secondaryActions}>
+            {secondaryActions.map((action) => (
+              <span key={action} className={styles.secondaryAction}>{action}</span>
             ))}
           </div>
-          <p className={styles.deployNote}>Committed detective missions: {committedCount}</p>
-        </section>
-
-        <section className={styles.panel}>
-          <p className={styles.panelEyebrow}>Does the Model Travel?</p>
-          <div className={styles.accGrid}>
-            {REGIONS.map((r, i) => (
-              <AccBar key={`transfer-${r.id}`} label={`${r.label} · Neighbor City`} color={r.color} value={otherCityAccs[i]} />
-            ))}
-          </div>
-          <p className={styles.deployNote}>
-            {otherCityOvr >= 0.7
-              ? "Transfer quality is acceptable, but ongoing audits are still required."
-              : "Transfer quality is weak. Retraining with local data is required before deployment."}
-          </p>
-        </section>
-      </div>
-
-      <div className={styles.grid2}>
-        <section className={styles.panel}>
-          <p className={styles.panelEyebrow}>Narrative Insights</p>
-          <ul className={styles.list}>
-            {narrativeInsights.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
-
-        <section className={styles.panel}>
-          <p className={styles.panelEyebrow}>Suggested Next Actions</p>
-          <ul className={styles.list}>
-            {suggestedActions.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </section>
-      </div>
+        </div>
+      </section>
 
       <div className={styles.continueRow}>
         <p className={shared.continueHint}>Case closed for this timeline. Reopen with a different strategy?</p>

@@ -11,6 +11,7 @@ type SelectedQuestionInfo = QuestionOption & { line: string };
 
 type MissionPlannerProps = {
   currentDay: number;
+  dayPlans?: MissionPlan[][];
   currentPlans: MissionPlan[];
   dayLocked: boolean[];
   spentToday: number;
@@ -136,6 +137,7 @@ const QUESTION_VISUALS: Record<QuestionKey, { icon: string }> = {
 
 export default function MissionPlanner({
   currentDay,
+  dayPlans = [],
   currentPlans,
   dayLocked,
   spentToday,
@@ -169,6 +171,14 @@ export default function MissionPlanner({
   const coverageProgress = Math.round((zoneCount / REGIONS.length) * 100);
   const selectedDistricts = REGIONS.filter((_, i) => planZones[i]).map((region) => region.label);
   const dayCopy = DAY_COPY[currentDay];
+  const previousDecisionDays = dayPlans
+    .slice(0, currentDay)
+    .map((plans, index) => ({
+      day: index + 1,
+      plans,
+      totalCost: plans.reduce((sum, plan) => sum + plan.cost, 0),
+    }))
+    .filter((day) => day.plans.length > 0);
 
   return (
     <div className={`${styles.missionDashboard} ${tutorial.open ? styles.missionDashboardTutorial : ""}`}>
@@ -288,7 +298,7 @@ export default function MissionPlanner({
               <p className={styles.panelEyebrow}>Signals</p>
               <h3 className={styles.missionCardTitle}>Model inputs and candidate signals</h3>
             </div>
-            <span className={styles.missionPill}>2 core / {planQuestions.length} candidate</span>
+            <span className={styles.missionPill}>2 core + {planQuestions.length} candidate</span>
           </div>
 
           <p className={styles.signalHint}>
@@ -369,7 +379,7 @@ export default function MissionPlanner({
             Add Sortie
           </button>
 
-          <div className={styles.queueList}>
+          <div className={`${styles.queueList} prettyScrollbar`}>
             {currentPlans.length === 0 ? (
               <p className={styles.featureIntelEmpty}>No missions queued for Day {currentDay + 1}.</p>
             ) : (
@@ -402,6 +412,48 @@ export default function MissionPlanner({
               ))
             )}
           </div>
+
+          <section className={styles.previousDecisions} aria-label="Previous decisions">
+            <div className={styles.previousDecisionsHeader}>
+              <div>
+                <p className={styles.panelEyebrow}>Previous decisions</p>
+                <h3 className={styles.previousDecisionsTitle}>Earlier mission plans</h3>
+              </div>
+              <span className={styles.missionPill}>{previousDecisionDays.length}</span>
+            </div>
+
+            {previousDecisionDays.length === 0 ? (
+              <p className={styles.featureIntelEmpty}>No earlier missions yet.</p>
+            ) : (
+              <div className={styles.previousDecisionList}>
+                {previousDecisionDays.map((day) => (
+                  <div key={day.day} className={styles.previousDecisionDay}>
+                    <div className={styles.previousDecisionDayHeader}>
+                      <strong>Day {day.day}</strong>
+                      <span>{day.totalCost} credits</span>
+                    </div>
+                    {day.plans.map((plan, index) => {
+                      const planDistricts = REGIONS.filter((_, i) => plan.zones[i]).map((region) => region.label);
+                      const planQuestions = plan.questions
+                        .map((key) => QUESTION_OPTIONS.find((question) => question.key === key))
+                        .filter((question): question is QuestionOption => Boolean(question))
+                        .map((question) => getQuestionDisplayLabel(question.label));
+
+                      return (
+                        <div key={plan.id} className={styles.previousDecisionItem}>
+                          <span className={styles.previousDecisionMeta}>
+                            Mission {index + 1} | {plan.population} residents | {plan.cost} credits
+                          </span>
+                          <p>{planDistricts.join(", ")}</p>
+                          <p>Candidate: {planQuestions.length ? planQuestions.join("; ") : "No candidate signals"}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
 
           {currentPlans.length > 0 && !locked && (
             <button type="button" className={`${shared.continueBtn} ${styles.queueDeployBtn}`} onClick={sendDetectiveAndAdvance}>

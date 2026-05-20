@@ -22,6 +22,7 @@ import {
   type MeterDelta,
   type MeterKey,
   type MeterState,
+  type Verdict,
 } from "./alignmentCards";
 import styles from "./CardStack.module.css";
 
@@ -73,7 +74,9 @@ const TAG_LABEL: Record<Card["tag"], string> = {
   stereotype: "stereotype default",
 };
 
-export type GameOutcome = "survived" | MeterKey;
+export type GameOutcome =
+  | { kind: "early"; meter: MeterKey }
+  | { kind: "final"; verdict: Verdict };
 
 // Beam search across a deck's choices to find a path that ends in the
 // "honest-even" verdict without ever crashing a meter. If the current deck
@@ -189,10 +192,12 @@ function planWinningDemo(): Plan {
 }
 
 export default function CardStack({
+  isActive = true,
   onComplete,
   onFirstPick,
   onContinue,
 }: {
+  isActive?: boolean;
   onComplete?: (outcome: GameOutcome) => void;
   onFirstPick?: () => void;
   onContinue?: () => void;
@@ -227,12 +232,12 @@ export default function CardStack({
     if (demoMode) return;
     if (earlyEnd) {
       completedRef.current = true;
-      onComplete?.(earlyEnd.meter);
+      onComplete?.({ kind: "early", meter: earlyEnd.meter });
     } else if (done) {
       completedRef.current = true;
-      onComplete?.("survived");
+      onComplete?.({ kind: "final", verdict: computeVerdict(meters) });
     }
-  }, [done, earlyEnd, demoMode, onComplete]);
+  }, [done, earlyEnd, demoMode, meters, onComplete]);
 
   const pick = (which: "A" | "B") => {
     if (!card || pending) return;
@@ -282,6 +287,22 @@ export default function CardStack({
     setDemoAnnotation(null);
   };
 
+  const jumpToWinningEnd = () => {
+    completedRef.current = false;
+    firstPickRef.current = true;
+    setMeters({ truth: TRUTH_THRESHOLD + 7, majority: 68, minority: 60 });
+    setIndex(GAME_SIZE);
+    setHistory([]);
+    setEarlyEnd(null);
+    setLastDeltas(null);
+    setPickTick((t) => t + 1);
+    setPending(null);
+    setShowRules(false);
+    setDemoMode(false);
+    setDemoAnnotation(null);
+    onFirstPick?.();
+  };
+
   const startDemo = () => {
     const { deck: planDeck, choices } = planWinningDemo();
     demoPlanRef.current = choices;
@@ -305,7 +326,7 @@ export default function CardStack({
   // so the player has time to read the inline callout. Manual click on the
   // reaction's "Next card →" still advances immediately.
   useEffect(() => {
-    if (!demoMode || done || earlyEnd) return;
+    if (!isActive || !demoMode || done || earlyEnd) return;
     if (pending) {
       const delay = demoAnnotation ? 6500 : 2400;
       const t = setTimeout(continueAfterReaction, delay);
@@ -318,7 +339,7 @@ export default function CardStack({
     }, 1800);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [demoMode, pending, demoAnnotation, card?.id, done, earlyEnd, index]);
+  }, [isActive, demoMode, pending, demoAnnotation, card?.id, done, earlyEnd, index]);
 
   const remaining = Math.max(0, GAME_SIZE - index);
 
@@ -340,7 +361,7 @@ export default function CardStack({
         />
       ) : !done ? (
         <div className={styles.gameArea}>
-          {showRules && <RulesOverlay onDismiss={() => setShowRules(false)} />}
+          {showRules && <RulesOverlay isActive={isActive} onDismiss={() => setShowRules(false)} />}
           {demoMode && (
             <div className={styles.demoBanner} role="status">
               <span className={styles.demoBannerDot} aria-hidden="true" />
@@ -364,6 +385,15 @@ export default function CardStack({
               >
                 ?
               </button>
+              <button
+                type="button"
+                className={styles.debugBtn}
+                onClick={jumpToWinningEnd}
+                aria-label="Debug: jump to winning end"
+                title="Debug: jump to winning end"
+              >
+                Win
+              </button>
               <span className={styles.tableCount}>
                 Card {index + 1} <span className={styles.tableCountSep}>/</span> {GAME_SIZE}
               </span>
@@ -376,6 +406,7 @@ export default function CardStack({
                 <>
                   <Reaction
                     key={`react-${pickTick}`}
+                    isActive={isActive}
                     pending={pending}
                     onContinue={continueAfterReaction}
                   />
@@ -527,8 +558,9 @@ function Meters({
   );
 }
 
-function RulesOverlay({ onDismiss }: { onDismiss: () => void }) {
+function RulesOverlay({ isActive, onDismiss }: { isActive: boolean; onDismiss: () => void }) {
   useEffect(() => {
+    if (!isActive) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " " || e.key === "Escape") {
         e.preventDefault();
@@ -537,7 +569,7 @@ function RulesOverlay({ onDismiss }: { onDismiss: () => void }) {
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onDismiss]);
+  }, [isActive, onDismiss]);
 
   return (
     <div className={styles.rulesOverlay} role="dialog" aria-labelledby="rules-title" aria-modal="true">
@@ -619,9 +651,11 @@ function InlineAnnotation({ text }: { text: string }) {
 }
 
 function Reaction({
+  isActive,
   pending,
   onContinue,
 }: {
+  isActive: boolean;
   pending: {
     card: Card;
     which: "A" | "B";
@@ -635,6 +669,7 @@ function Reaction({
   const meterKeys: MeterKey[] = ["truth", "majority", "minority"];
 
   useEffect(() => {
+    if (!isActive) return;
     const handler = (e: KeyboardEvent) => {
       if (e.key === "Enter" || e.key === " " || e.key === "ArrowRight") {
         e.preventDefault();
@@ -643,7 +678,7 @@ function Reaction({
     };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [onContinue]);
+  }, [isActive, onContinue]);
 
   return (
     <article className={styles.reaction}>

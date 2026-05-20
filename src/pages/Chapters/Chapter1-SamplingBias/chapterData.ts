@@ -5,26 +5,26 @@ export const REGIONS: readonly Region[] = [
   { id: 0, label: "Uptown",       desc: "Wealthy, privileged area",        xMean: 28, yMean: 25, std: 8, suspRate: 0.12, color: "#494fdf" },
   { id: 1, label: "Downtown",     desc: "Busy commercial area",            xMean: 22, yMean: 20, std: 7, suspRate: 0.10, color: "#7c3aed" },
   { id: 2, label: "Factory Zone", desc: "Working-class area",              xMean: 68, yMean: 70, std: 9, suspRate: 0.13, color: "#e61e49" },
-  { id: 3, label: "The Slums",    desc: "Unpredictable, low-income area",  xMean: 62, yMean: 66, std: 9, suspRate: 0.11, color: "#e8a308" },
+  { id: 3, label: "\n The \n Slums",    desc: "Unpredictable, low-income area",  xMean: 62, yMean: 66, std: 9, suspRate: 0.11, color: "#e8a308" },
 ] as const;
 
 export const BRIEFING_SHEETS: Partial<Record<PassageId, BriefingSheet>> = {
-  "demo-intro": {
+  "demo-exercise": {
     title: "Boundary Drawing Exercise",
-    body: "Before building the real dataset, examine what the police first saw: 20 residents from Uptown. Draw a boundary that fits this small sample.",
+    body: "Before you build the real dataset, you need to understand <b>why the original model failed</b>. Here is what the police saw: subset from a single region - Uptown with 20 residents. Draw a boundary that reaches <b> <u>100%</u></b> training accuracy before submitting it.",
     notes: [
       "Slide the slope and shift controls below until the training accuracy is 100%.",
-      "Take your time - this is the same task the original data scientists faced.",
-      "A perfect score here only means the line fits this small Uptown sample.",
+      "Think about what could a perfect score means in this context.",
+      "If the line can separate the dots perfectly, is it then <i>perfect?</i>",
     ],
   },
-  "demo-reveal": {
+  "demo-reveal-sheet": {
     title: "Deployment Reveal",
-    body: "The same boundary is now tested against the city the model was supposed to serve: all four regions, 1,000 residents, and patterns the Uptown-only sample never showed.",
+    body: "The same boundary is now tested against the city the model was supposed to serve: all <b>four</b> regions, <b>1000</b> residents and patterns the previous sample never showed.",
     notes: [
-      "Region 3 contains many safe night-shift workers in the high-activity zone.",
-      "A model trained only on Uptown can mistake those workers for threats.",
-      "This is sampling bias: a rule tuned on one narrow slice cannot generalize to the whole city.",
+      "Different dataset usually have <b>different characteristics.</b>",
+      "A model trained on single dataset can <b>misclassify</b> patterns from a different dataset.",
+      "This is <b><red>sampling bias</red></b>: a rule tuned on one narrow slice cannot generalize to the general population.",
     ],
   },
 };

@@ -1,7 +1,10 @@
 export type PassageId =
   | "intro" 
   | "demo-intro"
+  | "demo-exercise"
   | "demo-reveal"
+  | "demo-reveal-sheet"
+  | "demo-reveal-analysis"
   | "day1-brief" | "day1-plan" | "day1-debrief"
   | "day2-brief" | "day2-plan" | "day2-debrief"
   | "day3-brief" | "day3-plan" | "day3-debrief"
@@ -42,13 +45,28 @@ export const PASSAGES: Record<PassageId, Passage> = {
 
   "demo-intro": {
     text: "Read the sheet carefully. Then draw the best boundary you can.",
-    choices: [{ label: "I'm satisfied with this boundary", nextPassage: "demo-reveal" }],
+    choices: [{ label: "Open the boundary exercise", nextPassage: "demo-exercise" }],
+  },
+
+  "demo-exercise": {
+    chatbox: "close",
+    text: "Draw the best boundary you can. The exercise will continue once your training accuracy reaches 100%.",
+    choices: [],
   },
 
   "demo-reveal": {
+    text: "That looked perfect on the training data.",
+    choices: [{ label: "Test it against the whole city", nextPassage: "demo-reveal-sheet" }],
+  },
+
+  "demo-reveal-sheet": {
+    chatbox: "close",
+    text: "But when the police deployed the same boundary across all four regions - 1000 residents - accuracy collapsed.",
+    choices: [],
+  },
+
+  "demo-reveal-analysis": {
     chunks: [
-      "That looked perfect on the training data.",
-      "But when the police deployed the same boundary across all four regions — 1,000 residents — accuracy collapsed.",
       "Region 3, the Factory Zone, is full of safe night-shift workers whose patterns look like threats to a model trained exclusively on Uptown.",
       "This is sampling bias: a boundary tuned on one narrow slice of the city cannot generalize to the whole city.",
       "Now you understand the problem.",

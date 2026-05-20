@@ -7,7 +7,7 @@ import type { DemoBoundary } from "../../types";
 import BriefingSheet from "../BriefingSheet/BriefingSheet";
 import ScatterPlot from "../ScatterPlot/ScatterPlot";
 
-const clampShift = (shift: number) => Math.max(-40, Math.min(120, shift));
+const clampIntercept = (intercept: number) => Math.max(-40, Math.min(120, intercept));
 
 type BoundaryExerciseProps = {
   boundary: DemoBoundary;
@@ -25,8 +25,8 @@ export default function BoundaryExercise({
   onSubmit,
 }: BoundaryExerciseProps) {
   const [submitError, setSubmitError] = useState("");
-  const [xShift, setXShift] = useState(() => clampShift(boundary.slope === 0 ? 50 : -boundary.intercept / boundary.slope));
-  const sheet = BRIEFING_SHEETS["demo-intro"];
+  const intercept = clampIntercept(boundary.intercept);
+  const sheet = BRIEFING_SHEETS["demo-exercise"];
   const hasPerfectAccuracy = trainingAccuracyValue >= 1;
 
   useEffect(() => {
@@ -51,17 +51,18 @@ export default function BoundaryExercise({
       <div className={styles.boundaryWorkbench}>
         <div className={styles.boundaryHeader}>
           <div>
-            <p className={styles.panelEyebrow}>Initial view | Uptown only | {DEMO_INIT.length} points</p>
-            <h2 className={styles.h2}>Draw a perfect-looking boundary.</h2>
+            <p className={styles.panelEyebrow}>Initial view | Region 1 only | {DEMO_INIT.length} points</p>
+            <h2 className={styles.h2}>Draw a boundary that looks perfect.</h2>
           </div>
           <span className={styles.boundaryAccuracy}>
             Training accuracy <strong>{trainingAccuracy}</strong>
           </span>
         </div>
 
-        <p className={styles.boundaryBody}>
-          Move the line to separate Safe from Threat. Black rings mark mistakes.
-        </p>
+        {/* <p className={styles.boundaryBody}>
+          Move the line to separate Safe from Threat. You need 100% training accuracy before this boundary can be submitted.
+          Black rings mark mistakes.
+        </p> */}
 
         <div className={styles.boundaryInteractive}>
           <div className={styles.boundaryPlot}>
@@ -80,28 +81,27 @@ export default function BoundaryExercise({
                   value={boundary.slope}
                   onChange={(e) => {
                     const slope = parseFloat(e.target.value);
-                    setBoundary((b) => ({ ...b, slope, intercept: -slope * xShift }));
+                    setBoundary((b) => ({ ...b, slope }));
                   }}
                   className={shared.sliderInput}
                 />
                 <span className={shared.sliderValue}>{boundary.slope.toFixed(2)}</span>
               </div>
               <div className={shared.sliderRow}>
-                <span className={shared.sliderLabel}>X-shift</span>
+                <span className={shared.sliderLabel}>Intercept</span>
                 <input
                   type="range"
                   min={-40}
                   max={120}
                   step={1}
-                  value={xShift}
+                  value={intercept}
                   onChange={(e) => {
-                    const shift = parseFloat(e.target.value);
-                    setXShift(shift);
-                    setBoundary((b) => ({ ...b, intercept: -b.slope * shift }));
+                    const intercept = parseFloat(e.target.value);
+                    setBoundary((b) => ({ ...b, intercept }));
                   }}
                   className={shared.sliderInput}
                 />
-                <span className={shared.sliderValue}>{xShift.toFixed(0)}</span>
+                <span className={shared.sliderValue}>{intercept.toFixed(0)}</span>
               </div>
             </div>
 
@@ -123,7 +123,7 @@ export default function BoundaryExercise({
 
               <div className={styles.sheetSubmitRow}>
                 <div>
-                  <p className={styles.sheetSubmitHint}>Unlocks when there are no mistakes.</p>
+                  <p className={styles.sheetSubmitHint}>Submit unlocks when the training sample has no mistakes.</p>
                   {submitError && <p className={styles.sheetSubmitError}>{submitError}</p>}
                 </div>
                 <button type="button" className={styles.sheetSubmitBtn} onClick={handleSubmit}>

@@ -25,7 +25,6 @@
   box-shadow:
     0 0 0 8px rgba(77, 201, 246, 0.16),
     0 18px 46px rgba(77, 201, 246, 0.22);
-  animation: tutorialTargetIn 0.34s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .popover {
