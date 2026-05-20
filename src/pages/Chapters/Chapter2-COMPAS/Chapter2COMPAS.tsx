@@ -1,268 +1,211 @@
-import { useCallback, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { useSearchParams } from "react-router-dom";
 import Chatbox from "../../../components/Chatbox/Chatbox";
 import { portraits } from "../../../assets/detective/portraits";
 import { CHAPTER1_BACKGROUNDS } from "../../../assets/image/image";
 import styles from "./Chapter2COMPAS.module.css";
-import {
-  DAILY_OPERATING_COST,
-  FAIRNESS_DEFINITIONS,
-  INTRO_CHUNKS,
-  STARTING_RESOURCES,
-  STUDY_COST,
-  STUDY_METRICS,
-  TOTAL_GAME_DAYS,
-  type FairnessDefinitionId,
-  type StudyMetricId,
-} from "./chapter2Data";
-import {
-  algorithmDecision,
-  generatePopulation,
-  scoreDay,
-  studyReadout,
-  summarizeDayForPlayer,
-} from "./chapter2Simulation";
-import type { Defendant } from "./chapter2Simulation";
-import DocketBoard from "./components/DocketBoard";
+import { INTRO_CHUNKS, MAX_CURRENT_DAY, STARTING_BUDGET, STUDY_METRICS, type FairnessDefinitionId, type StudyMetricId } from "./chapter2Data";
+import { aggregatedAccuracy, computeDailyAccuracy, resolveDayStudies } from "./chapter2Simulation";
+import type { DayRecord } from "./chapter2Types";
+import { INITIAL_GAME_STATE } from "./chapter2Types";
+import DaySummaryPanel from "./components/DaySummaryPanel";
 import EndgamePanel from "./components/EndgamePanel";
+import FairnessMetricSelector from "./components/FairnessMetricSelector";
 import GameHud from "./components/GameHud";
-import StudyMailPanel, { type StudyMailItem } from "./components/StudyMailPanel";
-import StudyOrderForm from "./components/StudyOrderForm";
+import StudyQueuePanel from "./components/StudyQueuePanel";
+import StudyResultsPanel from "./components/StudyResultsPanel";
 
-type Phase = "intro" | "fairnessPick" | "day" | "legacyPick" | "end";
-
-type PendingStudy = { metricId: StudyMetricId; arrivesOnDay: number };
+type Phase = "intro" | "game" | "end";
 
 const getPortrait = (text: string) => {
   const t = text.toLowerCase();
-  if (t.includes("error") || t.includes("rearrest") || t.includes("missed")) return portraits.alarmed;
-  if (t.includes("trade") || t.includes("tension") || t.includes("different")) return portraits.thoughtful;
-  if (t.includes("score") || t.includes("packet") || t.includes("metric")) return portraits.suspicious;
-  if (t.includes("sealed") || t.includes("legacy") || t.includes("remember")) return portraits.serious;
-  if (t.includes("choose") || t.includes("pick")) return portraits.encouraging;
+  if (t.includes("budget") || t.includes("insufficient")) return portraits.worried;
+  if (t.includes("trade") || t.includes("locked")) return portraits.thoughtful;
+  if (t.includes("accuracy") || t.includes("study")) return portraits.suspicious;
+  if (t.includes("final") || t.includes("confirm")) return portraits.serious;
+  if (t.includes("queue") || t.includes("advance")) return portraits.encouraging;
   return portraits.neutral;
 };
 
-const summarizeMailForVoice = (mail: StudyMailItem[]) => {
-  if (!mail.length) return "No delayed studies arrived overnight.";
-  return mail
-    .map((m) => {
-      const meta = STUDY_METRICS.find((x) => x.id === m.metricId);
-      const label = meta?.shortLabel ?? m.metricId;
-      return `${label}: Black cohort ${Math.round(m.black * 100)}% vs White cohort ${Math.round(m.white * 100)}%`;
-    })
-    .join(" · ");
-};
+function queueCost(queue: StudyMetricId[]) {
+  return queue.reduce((sum, id) => sum + (STUDY_METRICS.find((m) => m.id === id)?.cost ?? 0), 0);
+}
 
 export default function Chapter2COMPAS() {
   const [, setSearchParams] = useSearchParams();
   const [phase, setPhase] = useState<Phase>("intro");
   const [introIndex, setIntroIndex] = useState(0);
-  const [dayIndex, setDayIndex] = useState(0);
-  const [resources, setResources] = useState(STARTING_RESOURCES);
-  const [activeFairness, setActiveFairness] = useState<FairnessDefinitionId | null>(null);
-  const [finalFairness, setFinalFairness] = useState<FairnessDefinitionId | null>(null);
-  const [pendingStudies, setPendingStudies] = useState<PendingStudy[]>([]);
-  const [morningMail, setMorningMail] = useState<StudyMailItem[]>([]);
-  const [population, setPopulation] = useState<Defendant[]>([]);
-  const [decisions, setDecisions] = useState<Record<string, "detain" | "release">>({});
-  const [studyPick, setStudyPick] = useState<StudyMetricId | null>(null);
-  const [dayScores, setDayScores] = useState<number[]>([]);
-  const [docketSealed, setDocketSealed] = useState(false);
-  const [awaitingAdvance, setAwaitingAdvance] = useState(false);
+  const [currentDay, setCurrentDay] = useState(INITIAL_GAME_STATE.currentDay);
+  const [fairnessMetric, setFairnessMetric] = useState<FairnessDefinitionId>(INITIAL_GAME_STATE.fairnessMetric);
+  const [metricChangedToday, setMetricChangedToday] = useState(false);
+  const [budget, setBudget] = useState(STARTING_BUDGET);
+  const [aggregateAccuracy, setAggregateAccuracy] = useState<number[]>([]);
+  const [days, setDays] = useState<DayRecord[]>([]);
+  const [pendingQueue, setPendingQueue] = useState<StudyMetricId[]>([]);
 
-  const bootstrapDay = useCallback((d: number) => {
-    setPendingStudies((prev) => {
-      const arrived = prev.filter((p) => p.arrivesOnDay === d);
-      const stay = prev.filter((p) => p.arrivesOnDay !== d);
-      setMorningMail(
-        arrived.map((a) => ({
-          metricId: a.metricId,
-          ...studyReadout(a.metricId),
-        })),
-      );
-      return stay;
+  const pendingCost = queueCost(pendingQueue);
+  const canAdvance = budget - pendingCost >= 0;
+  const isFinalDay = currentDay === MAX_CURRENT_DAY;
+
+  const overnightResults = currentDay >= 1 ? (days[currentDay - 1]?.results ?? []) : [];
+  const overnightFromNight = currentDay >= 1 ? days[currentDay - 1]?.day ?? null : null;
+
+  const latestDaily =
+    aggregateAccuracy.length > 0 ? aggregateAccuracy[aggregateAccuracy.length - 1] : null;
+  const aggregateScore = aggregateAccuracy.length > 0 ? aggregatedAccuracy(aggregateAccuracy) : null;
+
+  const toggleQueue = (metricId: StudyMetricId) => {
+    if (currentDay >= MAX_CURRENT_DAY || budget <= 0) return;
+    setPendingQueue((prev) => {
+      if (prev.includes(metricId)) return prev.filter((id) => id !== metricId);
+      const next = [...prev, metricId];
+      const cost = queueCost(next);
+      if (cost > budget) return prev;
+      return next;
     });
+  };
 
-    const pop = generatePopulation(d);
-    setPopulation(pop);
-    const init: Record<string, "detain" | "release"> = {};
-    for (const def of pop) init[def.id] = algorithmDecision(def);
-    setDecisions(init);
-    setDocketSealed(false);
-    setAwaitingAdvance(false);
-  }, []);
+  const handleMetricSelect = (id: FairnessDefinitionId) => {
+    if (id === fairnessMetric) return;
+    if (isFinalDay) {
+      setFairnessMetric(id);
+      return;
+    }
+    if (metricChangedToday) return;
+    setFairnessMetric(id);
+    setMetricChangedToday(true);
+  };
 
-  const beginDayLoop = (fairness: FairnessDefinitionId) => {
-    setActiveFairness(fairness);
-    setPhase("day");
-    setDayIndex(0);
-    setDayScores([]);
-    setResources(STARTING_RESOURCES);
-    setStudyPick(null);
-    bootstrapDay(0);
+  const advanceDay = () => {
+    if (currentDay >= MAX_CURRENT_DAY || !canAdvance) return;
+
+    const record: DayRecord = {
+      day: currentDay,
+      metricActive: fairnessMetric,
+      studiesQueued: [...pendingQueue],
+      costDeducted: pendingCost,
+      results: [],
+    };
+
+    const resolvedResults = resolveDayStudies(record.studiesQueued, record.metricActive, record.day);
+    const dailyAcc = computeDailyAccuracy(record.metricActive, record.day);
+    const completedRecord: DayRecord = {
+      ...record,
+      results: resolvedResults,
+      dailyAccuracy: dailyAcc,
+    };
+
+    setDays((prev) => [...prev, completedRecord]);
+    setBudget((b) => b - pendingCost);
+    setAggregateAccuracy((prev) => [...prev, dailyAcc]);
+    setCurrentDay((d) => d + 1);
+    setPendingQueue([]);
+    setMetricChangedToday(false);
+  };
+
+  const confirmEnding = () => {
+    setPhase("end");
+  };
+
+  const resetGame = () => {
+    setPhase("intro");
+    setIntroIndex(0);
+    setCurrentDay(0);
+    setFairnessMetric("equal_rates");
+    setMetricChangedToday(false);
+    setBudget(STARTING_BUDGET);
+    setAggregateAccuracy([]);
+    setDays([]);
+    setPendingQueue([]);
   };
 
   const narrativeText = useMemo(() => {
-    switch (phase) {
-      case "intro":
-        return INTRO_CHUNKS[introIndex] ?? "";
-      case "fairnessPick":
-        return "Select the fairness lens you want to begin with. You can change it anytime from the HUD — but the city will record whichever lens you confirm at the end of the term.";
-      case "day": {
-        const mailVoice = summarizeMailForVoice(morningMail);
-        return `Day ${dayIndex + 1} of ${TOTAL_GAME_DAYS}. ${mailVoice} The docket is live: follow the instrument, override where you must, then seal the day when you are ready.`;
-      }
-      case "legacyPick":
-        return "The rotating assignment ends. Which fairness stance should the courthouse print in the annual report? This choice steers the epilogue — not your numeric score.";
-      case "end":
-        return "The file is sealed. Read the office’s memory of your term below.";
-      default:
-        return "";
+    if (phase === "intro") return INTRO_CHUNKS[introIndex] ?? "";
+    if (phase === "end") return "Term complete. The fairness metric you confirmed determines how the courthouse remembers this deployment.";
+    if (isFinalDay) {
+      return "Final night: review last night’s studies, then confirm the fairness metric that will define the system’s deployment outcome.";
     }
-  }, [phase, introIndex, dayIndex, morningMail]);
-
-  const narrativePassageId = `${phase}-${phase === "intro" ? introIndex : phase === "day" ? dayIndex : "x"}`;
+    if (currentDay === 0) {
+      return "Day 0 — planning night. Choose your fairness metric and queue studies. No results yet; advance when your queue is ready.";
+    }
+    return `Day ${currentDay}. Review overnight findings, adjust your metric if you have not already today, then queue studies for tomorrow.`;
+  }, [phase, introIndex, currentDay, isFinalDay]);
 
   const portraitSrc = useMemo(() => getPortrait(narrativeText), [narrativeText]);
 
   const chapterBackground = useMemo(() => {
-    if (phase === "day") return CHAPTER1_BACKGROUNDS.cityMapTable;
-    if (phase === "end" || phase === "legacyPick") return CHAPTER1_BACKGROUNDS.modelTraining;
+    if (phase === "game") return CHAPTER1_BACKGROUNDS.cityMapTable;
+    if (phase === "end") return CHAPTER1_BACKGROUNDS.modelTraining;
     return CHAPTER1_BACKGROUNDS.caseRoom;
   }, [phase]);
 
-  const phaseStyle = {
-    "--chapter-bg": `url(${chapterBackground})`,
-  } as CSSProperties;
+  const phaseStyle = { "--chapter-bg": `url(${chapterBackground})` } as CSSProperties;
 
   const dialogueHistory = useMemo(
-    () => [{ text: narrativeText, passageId: narrativePassageId, current: true }],
-    [narrativeText, narrativePassageId],
+    () => [{ text: narrativeText, passageId: `${phase}-${currentDay}`, current: true }],
+    [narrativeText, phase, currentDay],
   );
 
   const handleIntroAdvance = () => {
     if (introIndex < INTRO_CHUNKS.length - 1) {
       setIntroIndex((i) => i + 1);
     } else {
-      setPhase("fairnessPick");
+      setPhase("game");
     }
   };
 
-  const handleChatAdvance = () => {
-    if (phase === "intro") handleIntroAdvance();
-  };
+  const metricLocked = !isFinalDay && metricChangedToday;
 
-  const applyAlgorithmAll = () => {
-    setDecisions((prev) => {
-      const next = { ...prev };
-      for (const d of population) next[d.id] = algorithmDecision(d);
-      return next;
-    });
-  };
-
-  const sealCost =
-    DAILY_OPERATING_COST + (studyPick && dayIndex < TOTAL_GAME_DAYS - 1 ? STUDY_COST : 0);
-  const canSealDay = resources >= sealCost && activeFairness && population.length > 0;
-
-  const sealDay = () => {
-    if (!activeFairness || !population.length) return;
-    if (docketSealed) return;
-    if (resources < sealCost) return;
-
-    const score = scoreDay(population, decisions, activeFairness);
-    setDayScores((prev) => [...prev, score]);
-
-    const studyCostToday = studyPick ? STUDY_COST : 0;
-    setResources((r) => r - DAILY_OPERATING_COST - studyCostToday);
-
-    if (studyPick && dayIndex < TOTAL_GAME_DAYS - 1) {
-      setPendingStudies((ps) => [...ps, { metricId: studyPick, arrivesOnDay: dayIndex + 1 }]);
-    }
-    setStudyPick(null);
-    setDocketSealed(true);
-    setAwaitingAdvance(true);
-  };
-
-  const continueAfterSeal = () => {
-    if (!docketSealed) return;
-    if (dayIndex >= TOTAL_GAME_DAYS - 1) {
-      setPhase("legacyPick");
-      setAwaitingAdvance(false);
-      return;
-    }
-    const next = dayIndex + 1;
-    setDayIndex(next);
-    bootstrapDay(next);
-  };
-
-  const averageScore = dayScores.length ? dayScores.reduce((a, b) => a + b, 0) / dayScores.length : 0;
-
-  const canAffordStudy = resources >= DAILY_OPERATING_COST + STUDY_COST;
-
-  const daySummary = useMemo(() => {
-    if (!docketSealed || !population.length) return null;
-    return summarizeDayForPlayer(population, decisions);
-  }, [docketSealed, population, decisions]);
-
-  const centerPanel =
-    phase === "day" && activeFairness ? (
+  const gamePanel =
+    phase === "game" ? (
       <>
         <GameHud
-          dayIndex={dayIndex}
-          resources={resources}
-          activeFairness={activeFairness}
-          onFairnessChange={setActiveFairness}
-          studyPick={studyPick}
-          studyCost={STUDY_COST}
-          dailyCost={DAILY_OPERATING_COST}
-          awaitingAdvance={awaitingAdvance}
-          pendingStudyCount={pendingStudies.length}
+          currentDay={currentDay}
+          budget={budget}
+          dailyAccuracy={latestDaily}
+          aggregateAccuracy={aggregateScore}
         />
-        <StudyMailPanel items={morningMail} />
-        <DocketBoard
-          population={population}
-          decisions={decisions}
-          onDecisionChange={(id, v) => {
-            if (docketSealed) return;
-            setDecisions((prev) => ({ ...prev, [id]: v }));
-          }}
-          onApplyAlgorithm={applyAlgorithmAll}
-          sealed={docketSealed}
-          disabled={awaitingAdvance}
+        <StudyResultsPanel results={overnightResults} fromNight={overnightFromNight} />
+        <DaySummaryPanel
+          currentDay={currentDay}
+          dailyAccuracy={latestDaily}
+          aggregateAccuracy={aggregateScore}
+          queuedTonight={pendingQueue.length}
+          queueCost={pendingCost}
         />
-        <StudyOrderForm
-          value={studyPick}
-          onChange={setStudyPick}
-          canAfford={canAffordStudy}
-          disabled={docketSealed || awaitingAdvance}
-          isLastDay={dayIndex === TOTAL_GAME_DAYS - 1}
+        <FairnessMetricSelector
+          active={fairnessMetric}
+          locked={metricLocked}
+          showLockNotice={!isFinalDay}
+          onSelect={handleMetricSelect}
         />
-        {daySummary && (
-          <div className={styles.daySummary} role="status">
-            <span>
-              Wrongful detentions today: <strong>{daySummary.wrongDetentions}</strong>
-            </span>
-            <span>
-              Missed rearrests (released): <strong>{daySummary.missedRisk}</strong>
-            </span>
-            <span>
-              Today’s lens score: <strong>{dayScores[dayScores.length - 1]?.toFixed(1) ?? "—"}</strong>
-            </span>
-          </div>
+        {!isFinalDay && (
+          <StudyQueuePanel
+            pendingQueue={pendingQueue}
+            budget={budget}
+            disabled={false}
+            onToggle={toggleQueue}
+          />
+        )}
+        {isFinalDay && (
+          <p className={styles.day3Copy}>
+            This is your final decision. The fairness metric you confirm will determine the system&apos;s deployment
+            outcome.
+          </p>
         )}
         <div className={styles.dayActions}>
-          {!docketSealed && (
-            <button type="button" className={styles.primaryBtn} onClick={sealDay} disabled={!canSealDay}>
-              Seal today’s docket
+          {!isFinalDay ? (
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={advanceDay}
+              disabled={!canAdvance}
+            >
+              Advance to Day {currentDay + 1} →
             </button>
-          )}
-          {!docketSealed && !canSealDay && (
-            <span className={styles.warn}>Not enough resources to cover today’s overhead and any queued study.</span>
-          )}
-          {docketSealed && awaitingAdvance && (
-            <button type="button" className={styles.primaryBtn} onClick={continueAfterSeal}>
-              {dayIndex >= TOTAL_GAME_DAYS - 1 ? "Proceed to legacy choice" : "Open next docket"}
+          ) : (
+            <button type="button" className={styles.primaryBtn} onClick={confirmEnding}>
+              Confirm & see outcome →
             </button>
           )}
         </div>
@@ -270,26 +213,13 @@ export default function Chapter2COMPAS() {
     ) : null;
 
   const endPanel =
-    phase === "end" && finalFairness ? (
+    phase === "end" ? (
       <EndgamePanel
-        averageScore={averageScore}
-        finalFairness={finalFairness}
-        onReplay={() => {
-          setPhase("intro");
-          setIntroIndex(0);
-          setDayIndex(0);
-          setActiveFairness(null);
-          setFinalFairness(null);
-          setPendingStudies([]);
-          setMorningMail([]);
-          setPopulation([]);
-          setDecisions({});
-          setStudyPick(null);
-          setDayScores([]);
-          setDocketSealed(false);
-          setAwaitingAdvance(false);
-          setResources(STARTING_RESOURCES);
-        }}
+        dailyScores={aggregateAccuracy}
+        aggregatedAccuracy={aggregatedAccuracy(aggregateAccuracy)}
+        finalFairness={fairnessMetric}
+        finalBudget={budget}
+        onReplay={resetGame}
         onNextChapter={() => setSearchParams({ chapter: "ch3" })}
       />
     ) : null;
@@ -298,61 +228,16 @@ export default function Chapter2COMPAS() {
     <div className={`${styles.phase} ${styles.phaseWithBackground}`} style={phaseStyle}>
       <div className={styles.scene}>
         <div className={styles.sceneInner}>
-          {centerPanel}
+          {gamePanel}
           {endPanel}
         </div>
       </div>
-
-      {phase === "fairnessPick" && (
-        <div className={styles.overlayChoices} role="dialog" aria-label="Choose fairness lens">
-          <div className={styles.choiceCard}>
-            <p className={styles.choiceLead}>Starting fairness lens</p>
-            <div className={styles.choiceGrid}>
-              {FAIRNESS_DEFINITIONS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  className={styles.choice}
-                  onClick={() => beginDayLoop(f.id)}
-                >
-                  <span className={styles.choiceTitle}>{f.title}</span>
-                  <span className={styles.choiceBody}>{f.blurb}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {phase === "legacyPick" && (
-        <div className={styles.overlayChoices} role="dialog" aria-label="Final fairness stance">
-          <div className={styles.choiceCard}>
-            <p className={styles.choiceLead}>Which stance goes on the record?</p>
-            <div className={styles.choiceGrid}>
-              {FAIRNESS_DEFINITIONS.map((f) => (
-                <button
-                  key={f.id}
-                  type="button"
-                  className={styles.choice}
-                  onClick={() => {
-                    setFinalFairness(f.id);
-                    setPhase("end");
-                  }}
-                >
-                  <span className={styles.choiceTitle}>{f.title}</span>
-                  <span className={styles.choiceBody}>{f.scoringHint}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       <Chatbox
         text={narrativeText}
         portraitSrc={portraitSrc}
         history={dialogueHistory}
-        onAdvance={handleChatAdvance}
+        onAdvance={phase === "intro" ? handleIntroAdvance : undefined}
         speakerName="Pretrial clerk"
         disableKeyboardAdvance={phase !== "intro"}
         disablePreviousNavigation

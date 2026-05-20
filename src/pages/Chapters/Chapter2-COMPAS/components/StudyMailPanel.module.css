@@ -86,6 +86,45 @@
   color: rgba(25, 28, 31, 0.72);
 }
 
+.badgeWin {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(30, 77, 58, 0.14);
+  color: #1e4d3a;
+}
+
+.badgeWarn {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(122, 30, 30, 0.12);
+  color: #7a1e1e;
+}
+
+.badgeNeutral {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: rgba(25, 28, 31, 0.1);
+  color: rgba(25, 28, 31, 0.75);
+}
+
+.secondary {
+  display: block;
+  font-size: 12px;
+  margin-top: 4px;
+  color: rgba(25, 28, 31, 0.65);
+}
+
+.interpretation {
+  margin: 10px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(25, 28, 31, 0.82);
+  font-style: italic;
+}
+
 @media (max-width: 640px) {
   .grid {
     grid-template-columns: 1fr;

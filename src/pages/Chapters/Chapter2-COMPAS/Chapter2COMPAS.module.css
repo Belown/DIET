@@ -114,11 +114,52 @@
   gap: 6px;
 }
 
-.choice:hover {
+.choice:hover:not(:disabled) {
   background: var(--rui-dark);
   color: var(--rui-white);
   border-color: var(--rui-dark);
   transform: translateY(-1px);
+}
+
+.choice:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.choiceActive {
+  background: var(--rui-dark);
+  color: var(--rui-white);
+  border-color: var(--rui-dark);
+}
+
+.metricSection {
+  border-radius: 10px;
+  border: 1px solid rgba(25, 28, 31, 0.14);
+  background: rgba(255, 255, 255, 0.92);
+  padding: 16px 18px;
+  box-shadow: 0 12px 28px rgba(25, 28, 31, 0.08);
+}
+
+.metricHeading {
+  margin: 0 0 10px;
+  font-family: var(--font-display, serif);
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 600;
+}
+
+.metricNotice {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-style: italic;
+  color: rgba(73, 79, 223, 0.95);
+}
+
+.day3Copy {
+  margin: 0 0 14px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(25, 28, 31, 0.82);
+  max-width: 720px;
 }
 
 .choiceTitle {

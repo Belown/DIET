@@ -8,10 +8,16 @@
   box-shadow: 0 18px 40px rgba(25, 28, 31, 0.12);
 }
 
+.scoreRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px 24px;
+  margin-bottom: 16px;
+}
+
 .scoreBlock {
-  margin-bottom: 20px;
-  padding-bottom: 18px;
-  border-bottom: 1px solid rgba(25, 28, 31, 0.1);
+  margin-bottom: 0;
+  min-width: 120px;
 }
 
 .title {

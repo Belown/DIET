@@ -3,27 +3,48 @@ import type { FairnessDefinitionId } from "../chapter2Data";
 import { ENDINGS, FAIRNESS_DEFINITIONS } from "../chapter2Data";
 
 type EndgamePanelProps = {
-  averageScore: number;
+  dailyScores: number[];
+  aggregatedAccuracy: number;
   finalFairness: FairnessDefinitionId;
+  finalBudget: number;
   onReplay: () => void;
   onNextChapter: () => void;
 };
 
-export default function EndgamePanel({ averageScore, finalFairness, onReplay, onNextChapter }: EndgamePanelProps) {
+export default function EndgamePanel({
+  dailyScores,
+  aggregatedAccuracy,
+  finalFairness,
+  finalBudget,
+  onReplay,
+  onNextChapter,
+}: EndgamePanelProps) {
   const ending = ENDINGS[finalFairness];
   const def = FAIRNESS_DEFINITIONS.find((d) => d.id === finalFairness);
 
   return (
     <section className={styles.panel} aria-label="Term summary">
-      <div className={styles.scoreBlock}>
-        <h2 className={styles.title}>Average session score</h2>
-        <p className={styles.score}>{averageScore.toFixed(1)}</p>
-        <p className={styles.scoreNote}>
-          The number captures how closely your daily calls tracked the tensions implied by your <em>active</em> fairness lens — not moral worth. Different lenses score the same docket differently.
-        </p>
+      <h2 className={styles.title}>Three‑day term complete</h2>
+      <div className={styles.scoreRow}>
+        {dailyScores.map((score, i) => (
+          <div key={i} className={styles.scoreBlock}>
+            <h3 className={styles.subhead}>Day {i + 1} accuracy</h3>
+            <p className={styles.score}>{score.toFixed(1)}</p>
+          </div>
+        ))}
+        <div className={styles.scoreBlock}>
+          <h3 className={styles.subhead}>Aggregated accuracy</h3>
+          <p className={styles.score}>{aggregatedAccuracy.toFixed(1)}</p>
+        </div>
       </div>
+      <p className={styles.scoreNote}>
+        Daily accuracy reflects each completed work night (Days 1–3). Aggregate accuracy is the running average across those nights.
+      </p>
+      <p className={styles.body}>
+        Final budget: <strong>{Math.round(finalBudget)}</strong> units.
+      </p>
       <div className={styles.legacyBlock}>
-        <h3 className={styles.subhead}>Recorded fairness stance</h3>
+        <h3 className={styles.subhead}>Fairness metric</h3>
         <p className={styles.stance}>{def?.title}</p>
         <h3 className={styles.subhead}>{ending.headline}</h3>
         <p className={styles.body}>{ending.body}</p>
