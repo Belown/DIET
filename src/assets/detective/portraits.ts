@@ -1,27 +1,24 @@
-import alarmed from "./portrait/alarmed.png";
-import confident from "./portrait/confident.png";
-import confused from "./portrait/confused.png";
-import encouraging from "./portrait/encouraging.png";
-import happy from "./portrait/happy.png";
-import neutral from "./portrait/neutral.png";
-import sad from "./portrait/sad.png";
-import serious from "./portrait/serious.png";
-import shocked from "./portrait/shocked.png";
-import suspicious from "./portrait/suspecious.png";
-import thoughtful from "./portrait/thoughtful.png";
-import worried from "./portrait/worried.png";
+import angry from "./portrait/Angry.png";
+import curious from "./portrait/Curious.png";
+import happy from "./portrait/Happy.png";
+import neutral from "./portrait/Neutral.png";
+import sad from "./portrait/Sad.png";
+import scared from "./portrait/Scared.png";
 
 export const portraits = {
-  alarmed,
-  confident,
-  confused,
-  encouraging,
+  angry,
+  curious,
   happy,
   neutral,
   sad,
-  serious,
-  shocked,
-  suspicious,
-  thoughtful,
-  worried,
+  scared,
+  alarmed: scared,
+  confident: happy,
+  confused: curious,
+  encouraging: happy,
+  serious: neutral,
+  shocked: scared,
+  suspicious: curious,
+  thoughtful: curious,
+  worried: scared,
 };
