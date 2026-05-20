@@ -5,13 +5,13 @@ export const REGIONS: readonly Region[] = [
   { id: 0, label: "Uptown",       desc: "Wealthy, privileged area",        xMean: 28, yMean: 25, std: 8, suspRate: 0.12, color: "#494fdf" },
   { id: 1, label: "Downtown",     desc: "Busy commercial area",            xMean: 22, yMean: 20, std: 7, suspRate: 0.10, color: "#7c3aed" },
   { id: 2, label: "Factory Zone", desc: "Working-class area",              xMean: 68, yMean: 70, std: 9, suspRate: 0.13, color: "#e61e49" },
-  { id: 3, label: "\n The \n Slums",    desc: "Unpredictable, low-income area",  xMean: 62, yMean: 66, std: 9, suspRate: 0.11, color: "#e8a308" },
+  { id: 3, label: "The Slums",    desc: "Unpredictable, low-income area",  xMean: 62, yMean: 66, std: 9, suspRate: 0.11, color: "#e8a308" },
 ] as const;
 
 export const BRIEFING_SHEETS: Partial<Record<PassageId, BriefingSheet>> = {
   "demo-exercise": {
     title: "Boundary Drawing Exercise",
-    body: "Before you build the real dataset, you need to understand <b>why the original model failed</b>. Here is what the police saw: subset from a single region - Uptown with 20 residents. Draw a boundary that reaches <b> <u>100%</u></b> training accuracy before submitting it.",
+    body: "Before building the real dataset, examine what the police first saw: 20 residents from Uptown. Draw a boundary that fits this small sample.",
     notes: [
       "Slide the slope and shift controls below until the training accuracy is 100%.",
       "Think about what could a perfect score means in this context.",

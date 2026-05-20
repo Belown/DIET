@@ -153,7 +153,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
     if (!scene.text) return "";
     return scene.text
       .split(/(?<=[.!?])\s+/)
-      .map((line) => line.trim())
+      .map((line: string) => line.trim())
       .filter(Boolean)
       .join("\n");
   }, [scene.text]);
@@ -377,7 +377,7 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
         <div className={styles.bookShell}>
           <div className={styles.storyControls}>
             <div className={styles.progressDots} aria-label={`Scene ${sceneIndex + 1} of ${STORY_SCENES.length}`}>
-              {STORY_SCENES.map((_, index) => (
+              {STORY_SCENES.map((_: unknown, index: number) => (
                 <span
                   key={index}
                   className={`${styles.progressDot} ${index === sceneIndex ? styles.progressDotActive : ""}`}
@@ -465,10 +465,10 @@ export default function StoryIntro({ onStart, onSelectChapter }: StoryIntroProps
                 if (event.data === "read") setIsFlipping(false);
               }}
             >
-              {BOOK_SCENES.flatMap((item, index) => {
+              {BOOK_SCENES.flatMap((item, index: number) => {
                 const text = item.text
                   .split(/(?<=[.!?])\s+/)
-                  .map((line) => line.trim())
+                  .map((line: string) => line.trim())
                   .filter(Boolean)
                   .join("\n");
                 const textToShow = index === sceneIndex ? typedText : text;

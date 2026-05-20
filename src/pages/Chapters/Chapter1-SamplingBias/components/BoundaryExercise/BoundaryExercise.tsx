@@ -51,8 +51,8 @@ export default function BoundaryExercise({
       <div className={styles.boundaryWorkbench}>
         <div className={styles.boundaryHeader}>
           <div>
-            <p className={styles.panelEyebrow}>Initial view | Region 1 only | {DEMO_INIT.length} points</p>
-            <h2 className={styles.h2}>Draw a boundary that looks perfect.</h2>
+            <p className={styles.panelEyebrow}>Initial view | Uptown only | {DEMO_INIT.length} points</p>
+            <h2 className={styles.h2}>Draw a perfect-looking boundary.</h2>
           </div>
           <span className={styles.boundaryAccuracy}>
             Training accuracy <strong>{trainingAccuracy}</strong>
@@ -123,7 +123,7 @@ export default function BoundaryExercise({
 
               <div className={styles.sheetSubmitRow}>
                 <div>
-                  <p className={styles.sheetSubmitHint}>Submit unlocks when the training sample has no mistakes.</p>
+                  <p className={styles.sheetSubmitHint}>Unlocks when there are no mistakes.</p>
                   {submitError && <p className={styles.sheetSubmitError}>{submitError}</p>}
                 </div>
                 <button type="button" className={styles.sheetSubmitBtn} onClick={handleSubmit}>
