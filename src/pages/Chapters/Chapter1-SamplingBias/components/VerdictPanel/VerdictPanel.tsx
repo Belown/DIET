@@ -18,6 +18,9 @@ type VerdictPanelProps = {
 
 type ScoreTone = "good" | "mid" | "low";
 
+const WEAKEST_LABEL_THRESHOLD = 0.85;
+const SCORE_TIE_EPSILON = 0.001;
+
 type ScoreRingProps = {
   label: string;
   value: number;
@@ -43,7 +46,7 @@ const scoreTone = (value: number): ScoreTone => {
 const scoreStatus = (value: number) => {
   if (value >= 0.75) return "Strong";
   if (value >= 0.6) return "Watch";
-  return "Needs attention";
+  return "At Risk";
 };
 
 const districtName = (label: string) => label.replace(/\s+/g, " ").trim();
@@ -143,7 +146,18 @@ export default function VerdictPanel({
     () => regionAccs.reduce((minI, acc, i, arr) => (acc < arr[minI] ? i : minI), 0),
     [regionAccs],
   );
-  const weakestRegion = REGIONS[weakestRegionIndex];
+  const weakestScore = regionAccs[weakestRegionIndex] ?? 0;
+  const showWeakestLabel = weakestScore < WEAKEST_LABEL_THRESHOLD;
+  const weakestRegionIndices = useMemo(
+    () =>
+      showWeakestLabel
+        ? regionAccs.flatMap((acc, index) =>
+            Math.abs(acc - weakestScore) <= SCORE_TIE_EPSILON ? [index] : [],
+          )
+        : [],
+    [regionAccs, showWeakestLabel, weakestScore],
+  );
+  const weakestRegionNames = weakestRegionIndices.map((index) => districtName(REGIONS[index].label));
   const sampledCount = sampledFlags.filter(Boolean).length;
   const unsampledRegions = REGIONS.filter((_, i) => !sampledFlags[i]);
   const transferDelta = otherCityOvr - overallAcc;
@@ -152,7 +166,7 @@ export default function VerdictPanel({
 
   const conclusion =
     riskTone === "good"
-      ? "Dataset held up well; deploy only with monitoring."
+      ? "Dataset held up well, deploy with monitoring."
       : riskTone === "mid"
         ? "Model improved, but review weak districts before rollout."
         : "Deployment should stop until coverage and transfer gaps are fixed.";
@@ -212,16 +226,23 @@ export default function VerdictPanel({
               <strong>{sampledCount}/4</strong>
               districts sampled
             </span>
-            <span className={styles.heroStat}>
-              <strong>{districtName(weakestRegion.label)}</strong>
-              weakest district
-            </span>
+            {showWeakestLabel ? (
+              <span className={styles.heroStat}>
+                <strong>{weakestRegionNames.join(", ")}</strong>
+                weakest {weakestRegionNames.length > 1 ? "districts" : "district"}
+              </span>
+            ) : (
+              <span className={styles.heroStat}>
+                <strong>All above 85%</strong>
+                district floor
+              </span>
+            )}
           </div>
         </div>
 
         <div className={styles.heroScoreDeck}>
           <ScoreRing label="New Eden" value={overallAcc} tone={scoreTone(overallAcc)} pct={pct} />
-          <ScoreRing label="Neighbor City" value={otherCityOvr} tone={scoreTone(otherCityOvr)} pct={pct} />
+          <ScoreRing label="Neighbor" value={otherCityOvr} tone={scoreTone(otherCityOvr)} pct={pct} />
           <div className={`${styles.transferDelta} ${styles[`transferDelta_${transferDeltaTone}`]}`}>
             <span>Transfer shift</span>
             <strong>{transferDeltaLabel}</strong>
@@ -243,7 +264,7 @@ export default function VerdictPanel({
               localScore={regionAccs[index]}
               transferScore={otherCityAccs[index]}
               sampled={sampledFlags[index]}
-              isWeakest={index === weakestRegionIndex}
+              isWeakest={weakestRegionIndices.includes(index)}
               pct={pct}
             />
           ))}
@@ -264,8 +285,12 @@ export default function VerdictPanel({
           </div>
           <div className={styles.statChip}>
             <span className={styles.statIcon}>03</span>
-            <span className={styles.statLabel}>Weak point</span>
-            <strong className={styles.statValue}>{districtName(weakestRegion.label)} · {pct(regionAccs[weakestRegionIndex])}</strong>
+            <span className={styles.statLabel}>{showWeakestLabel ? "Weak point" : "District floor"}</span>
+            <strong className={styles.statValue}>
+              {showWeakestLabel
+                ? `${weakestRegionNames.join(", ")} · ${pct(weakestScore)}`
+                : "None · all above 85%"}
+            </strong>
           </div>
           <div className={styles.statChip}>
             <span className={styles.statIcon}>04</span>

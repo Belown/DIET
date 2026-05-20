@@ -1,0 +1,610 @@
+.page {
+  min-height: 100vh;
+  background: var(--diet-cream);
+  color: var(--diet-ink);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Hero ─────────────────────────────────────────── */
+
+.hero {
+  width: min(1040px, calc(100% - 2 * var(--gutter)));
+  margin: 0 auto;
+  padding: clamp(56px, 7vw, 96px) 0 clamp(32px, 4vw, 48px);
+}
+
+.preBadge {
+  color: var(--diet-copper);
+}
+
+.postBadge {
+  color: var(--diet-case-teal);
+}
+
+.title {
+  margin: 0 0 18px;
+  font-family: var(--font-display);
+  font-size: clamp(38px, 5.5vw, 68px);
+  font-weight: 560;
+  line-height: 1.06;
+  letter-spacing: 0;
+}
+
+.lede {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--diet-ink-faded);
+  font-size: clamp(16px, 1.15vw, 19px);
+  line-height: 1.6;
+}
+
+/* ── Sections wrapper ─────────────────────────────── */
+
+.sections {
+  width: min(1040px, calc(100% - 2 * var(--gutter)));
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  padding-bottom: clamp(40px, 6vw, 72px);
+}
+
+/* ── Bias section ─────────────────────────────────── */
+
+.biasSection {
+  border-top: 2px solid var(--diet-divider-light);
+  padding-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.sectionIndex {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(92, 61, 46, 0.28);
+  border-radius: 50%;
+  background: var(--diet-paper);
+  color: var(--diet-stamp-red);
+  font-family: var(--font-case-file);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  margin-top: 2px;
+}
+
+.sectionMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sectionLabel {
+  margin: 0;
+  font-family: var(--font-case-file);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--diet-ink);
+  line-height: 1.2;
+}
+
+.definition {
+  margin: 0;
+  color: var(--diet-ink-faded);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.scenario {
+  padding: 16px 20px;
+  border-left: 3px solid var(--diet-amber);
+  border-radius: 0 var(--diet-radius-document) var(--diet-radius-document) 0;
+  background: rgba(199, 125, 32, 0.06);
+  color: var(--diet-ink);
+  font-family: var(--font-case-file);
+  font-size: 15px;
+  line-height: 1.58;
+}
+
+/* ── Questions ────────────────────────────────────── */
+
+.questions {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.questionCard {
+  border: 1px solid rgba(92, 61, 46, 0.2);
+  border-radius: 8px;
+  background: rgba(250, 247, 240, 0.8);
+  box-shadow: var(--diet-shadow-paper);
+  overflow: hidden;
+}
+
+.questionHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid rgba(92, 61, 46, 0.12);
+}
+
+.questionNumber {
+  flex: 0 0 auto;
+  font-family: var(--font-case-file);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--diet-stamp-red);
+  letter-spacing: 0.3px;
+  padding-top: 2px;
+}
+
+.questionText {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.56;
+  color: var(--diet-ink);
+}
+
+/* ── MCQ Options ──────────────────────────────────── */
+
+.optionsFieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-bottom: 1px solid rgba(92, 61, 46, 0.1);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.option:last-child {
+  border-bottom: 0;
+}
+
+.option:hover {
+  background: rgba(199, 125, 32, 0.06);
+}
+
+.optionSelected {
+  background: rgba(199, 125, 32, 0.1) !important;
+  border-left: 3px solid var(--diet-amber);
+  padding-left: 17px;
+}
+
+.optionKey {
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid rgba(92, 61, 46, 0.3);
+  border-radius: 50%;
+  background: var(--diet-paper);
+  color: var(--diet-ink-faded);
+  font-family: var(--font-case-file);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.optionSelected .optionKey {
+  border-color: var(--diet-amber);
+  background: var(--diet-amber);
+  color: #fff;
+}
+
+.optionText {
+  font-size: 14px;
+  line-height: 1.48;
+  color: var(--diet-ink-faded);
+}
+
+.optionSelected .optionText {
+  color: var(--diet-ink);
+}
+
+/* ── Scale rows (confidence / understanding) ──────── */
+
+.scaleRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 14px 20px;
+  background: rgba(245, 240, 232, 0.5);
+  border-top: 1px solid rgba(92, 61, 46, 0.1);
+  flex-wrap: wrap;
+}
+
+.scaleRowLabel {
+  flex: 0 0 auto;
+  padding-top: 8px;
+  font-family: var(--font-case-file);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--diet-ink-faded);
+  white-space: nowrap;
+}
+
+.scaleFieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.scaleButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.scaleBtn {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid rgba(92, 61, 46, 0.26);
+  border-radius: var(--diet-radius-document);
+  background: var(--diet-paper);
+  color: var(--diet-ink-faded);
+  font-family: var(--font-case-file);
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+  user-select: none;
+}
+
+.scaleBtn:hover {
+  border-color: var(--diet-copper);
+  color: var(--diet-copper);
+}
+
+.scaleBtnSelected {
+  border-color: var(--diet-copper) !important;
+  background: var(--diet-copper) !important;
+  color: #fff !important;
+}
+
+.scaleBtnUnderstanding.scaleBtnSelected {
+  border-color: var(--diet-stamp-red) !important;
+  background: var(--diet-stamp-red) !important;
+}
+
+.scaleEndLabels {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+  color: var(--diet-ink-faded);
+  font-family: var(--font-case-file);
+  font-size: 10px;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+/* ── Understanding row ────────────────────────────── */
+
+.understandingRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(192, 57, 43, 0.2);
+  border-radius: 8px;
+  background: rgba(139, 26, 26, 0.04);
+  flex-wrap: wrap;
+}
+
+.understandingLabel {
+  flex: 0 0 auto;
+  padding-top: 8px;
+  font-family: var(--font-case-file);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--diet-stamp-red);
+  white-space: nowrap;
+}
+
+/* ── Feedback section ─────────────────────────────── */
+
+.feedbackSection {
+  border-top: 2px solid var(--diet-case-teal-border);
+  padding-top: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.feedbackHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedbackHeader .eyebrow {
+  color: var(--diet-case-teal);
+}
+
+.feedbackTitle {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(26px, 3.5vw, 44px);
+  font-weight: 560;
+  line-height: 1.1;
+}
+
+/* ── Likert rows ──────────────────────────────────── */
+
+.likertList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.likertRow {
+  border: 1px solid rgba(47, 111, 100, 0.2);
+  border-radius: 8px;
+  background: rgba(250, 247, 240, 0.8);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.statementText {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--diet-ink);
+}
+
+.likertFieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+
+.likertButtons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.likertBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 10px;
+  min-width: 76px;
+  border: 1.5px solid rgba(47, 111, 100, 0.25);
+  border-radius: var(--diet-radius-document);
+  background: var(--diet-paper);
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+
+.likertBtn:hover {
+  border-color: var(--diet-case-teal);
+  background: var(--diet-case-teal-soft);
+}
+
+.likertBtnSelected {
+  border-color: var(--diet-case-teal) !important;
+  background: var(--diet-case-teal) !important;
+}
+
+.likertBtnSelected .likertNum,
+.likertBtnSelected .likertLabel {
+  color: #fff !important;
+}
+
+.likertNum {
+  font-family: var(--font-case-file);
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--diet-case-teal);
+  line-height: 1;
+}
+
+.likertLabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1.3;
+  color: var(--diet-ink-faded);
+  text-align: center;
+}
+
+/* ── Open-ended ───────────────────────────────────── */
+
+.openEndedList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.openEndedRow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.openEndedLabel {
+  font-family: var(--font-case-file);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--diet-ink);
+  line-height: 1.4;
+}
+
+.openEndedInput {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1.5px solid rgba(92, 61, 46, 0.24);
+  border-radius: var(--diet-radius-document);
+  background: var(--diet-paper);
+  color: var(--diet-ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  resize: vertical;
+  transition: border-color 0.15s ease;
+}
+
+.openEndedInput::placeholder {
+  color: var(--diet-ink-faded);
+  opacity: 0.6;
+}
+
+.openEndedInput:focus {
+  outline: none;
+  border-color: var(--diet-copper);
+}
+
+/* ── Submit area ──────────────────────────────────── */
+
+.submitArea {
+  width: min(1040px, calc(100% - 2 * var(--gutter)));
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 48px) 0 clamp(40px, 6vw, 72px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 14px;
+  border-top: 1px solid var(--diet-divider-light);
+}
+
+.errorMsg {
+  margin: 0;
+  color: var(--diet-stamp-red);
+  font-family: var(--font-case-file);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.submitBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 36px;
+  border: 1px solid transparent;
+  border-radius: var(--diet-radius-document);
+  background: var(--diet-ink);
+  color: var(--diet-paper);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.submitBtn:hover {
+  background: #2a2018;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.submitBtn:active {
+  transform: translateY(1px);
+}
+
+/* ── Completion state ─────────────────────────────── */
+
+.completion {
+  width: min(1040px, calc(100% - 2 * var(--gutter)));
+  margin: 0 auto;
+  padding: clamp(80px, 10vw, 140px) 0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ctaLink {
+  display: inline-block;
+  align-self: flex-start;
+  color: var(--diet-ink);
+  border-bottom: 2px solid var(--diet-red-string);
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  padding-bottom: 4px;
+  transition: color 0.15s ease;
+}
+
+.ctaLink:hover {
+  color: var(--diet-stamp-red);
+}
+
+/* ── Responsive ───────────────────────────────────── */
+
+@media (max-width: 700px) {
+  .sectionHeader {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .scaleRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .understandingRow {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .understandingLabel,
+  .scaleRowLabel {
+    white-space: normal;
+  }
+
+  .likertButtons {
+    gap: 4px;
+  }
+
+  .likertBtn {
+    min-width: 60px;
+    padding: 7px 8px;
+  }
+}

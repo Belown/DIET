@@ -148,3 +148,33 @@ sub {
 .section__title--dark {
   color: var(--rui-dark);
 }
+
+html,
+.prettyScrollbar {
+  scrollbar-color: rgba(25, 28, 31, 0.34) rgba(25, 28, 31, 0.08);
+  scrollbar-width: thin;
+}
+
+html::-webkit-scrollbar,
+.prettyScrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html::-webkit-scrollbar-track,
+.prettyScrollbar::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(25, 28, 31, 0.08);
+}
+
+html::-webkit-scrollbar-thumb,
+.prettyScrollbar::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(245, 240, 232, 0.98);
+  border-radius: 999px;
+  background: rgba(25, 28, 31, 0.38);
+}
+
+html::-webkit-scrollbar-thumb:hover,
+.prettyScrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(25, 28, 31, 0.54);
+}

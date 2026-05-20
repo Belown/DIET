@@ -86,12 +86,6 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
     placement: "right",
   },
   {
-    target: "queue",
-    title: "Operation stack",
-    body: "Add the current sortie to today's queue, review what will be collected, then deploy the detective when the plan is ready.",
-    placement: "left",
-  },
-  {
     target: "sample",
     title: "Sample size",
     body: "Pick how many residents to sample. Larger samples cost more, but they give the model stronger evidence.",
@@ -102,6 +96,12 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
     title: "Signals",
     body: "Signals are model inputs. Some can sharpen the dataset, some can distract it, and some can carry bias, so choose which extra records belong in the case file.",
     placement: "top",
+  },
+  {
+    target: "queue",
+    title: "Operation stack",
+    body: "Add the current sortie to today's queue, review what will be collected, then deploy the detective when the plan is ready.",
+    placement: "left",
   },
   {
     target: "help",
@@ -298,7 +298,7 @@ export default function MissionPlanner({
               <p className={styles.panelEyebrow}>Signals</p>
               <h3 className={styles.missionCardTitle}>Model inputs and candidate signals</h3>
             </div>
-            <span className={styles.missionPill}>2 core / {planQuestions.length} candidate</span>
+            <span className={styles.missionPill}>2 core + {planQuestions.length} candidate</span>
           </div>
 
           <p className={styles.signalHint}>
@@ -379,7 +379,7 @@ export default function MissionPlanner({
             Add Sortie
           </button>
 
-          <div className={styles.queueList}>
+          <div className={`${styles.queueList} prettyScrollbar`}>
             {currentPlans.length === 0 ? (
               <p className={styles.featureIntelEmpty}>No missions queued for Day {currentDay + 1}.</p>
             ) : (
