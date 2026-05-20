@@ -15,6 +15,77 @@ type Scale = Record<string, number>;
 type Feedback = Record<number, number>;
 type OpenEnded = Record<number, string>;
 
+const downloadJson = (filename: string, data: unknown) => {
+  const blob = new Blob([JSON.stringify(data, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
+
+const createAssessmentExport = (
+  mode: "pre" | "post",
+  answers: Answers,
+  confidence: Scale,
+  understanding: Scale,
+  feedback: Feedback,
+  openEnded: OpenEnded
+) => {
+  const submittedAt = new Date().toISOString();
+  const sections = BIAS_SECTIONS.map((section) => ({
+    id: section.id,
+    label: section.label,
+    understanding: understanding[section.id],
+    questions: section.questions.map((question) => {
+      const selectedAnswer = answers[question.id];
+
+      return {
+        id: question.id,
+        number: question.number,
+        text: question.text,
+        selectedAnswer,
+        selectedAnswerText:
+          question.options.find((option) => option.key === selectedAnswer)?.text ?? null,
+        correctAnswer: question.correct,
+        isCorrect: selectedAnswer === question.correct,
+        confidence: confidence[question.id],
+      };
+    }),
+  }));
+  const allQuestions = sections.flatMap((section) => section.questions);
+  const correctCount = allQuestions.filter((question) => question.isCorrect).length;
+
+  return {
+    version: 1,
+    assessment: "DIET AI Bias Assessment",
+    mode,
+    submittedAt,
+    summary: {
+      totalQuestions: allQuestions.length,
+      correctCount,
+      scorePercent: Math.round((correctCount / allQuestions.length) * 100),
+    },
+    sections,
+    ...(mode === "post" && {
+      feedback: FEEDBACK_STATEMENTS.map((statement, index) => ({
+        statement,
+        rating: feedback[index],
+      })),
+      openEnded: OPEN_ENDED_QUESTIONS.map((question, index) => ({
+        question,
+        response: openEnded[index] ?? "",
+      })),
+    }),
+  };
+};
+
 export default function Assessment() {
   const [searchParams] = useSearchParams();
   const mode = searchParams.get("mode") === "post" ? "post" : "pre";
@@ -42,8 +113,18 @@ export default function Assessment() {
     }
 
     setError("");
+    const exportData = createAssessmentExport(
+      mode,
+      answers,
+      confidence,
+      understanding,
+      feedback,
+      openEnded
+    );
+    const timestamp = exportData.submittedAt.replace(/[:.]/g, "-");
+
+    downloadJson(`diet-assessment-${mode}-${timestamp}.json`, exportData);
     setSubmitted(true);
-    console.log({ mode, answers, confidence, understanding, ...(isPost && { feedback, openEnded }) });
   };
 
   if (submitted) {
