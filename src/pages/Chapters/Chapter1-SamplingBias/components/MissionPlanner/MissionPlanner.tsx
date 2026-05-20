@@ -85,12 +85,6 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
     placement: "right",
   },
   {
-    target: "queue",
-    title: "Operation stack",
-    body: "Add the current sortie to today's queue, review what will be collected, then deploy the detective when the plan is ready.",
-    placement: "left",
-  },
-  {
     target: "sample",
     title: "Sample size",
     body: "Pick how many residents to sample. Larger samples cost more, but they give the model stronger evidence.",
@@ -101,6 +95,12 @@ const TUTORIAL_STEPS: TutorialStep<TutorialTarget>[] = [
     title: "Signals",
     body: "Signals are model inputs. Some can sharpen the dataset, some can distract it, and some can carry bias, so choose which extra records belong in the case file.",
     placement: "top",
+  },
+  {
+    target: "queue",
+    title: "Operation stack",
+    body: "Add the current sortie to today's queue, review what will be collected, then deploy the detective when the plan is ready.",
+    placement: "left",
   },
   {
     target: "help",
