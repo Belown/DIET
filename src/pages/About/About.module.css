@@ -350,15 +350,70 @@
   font-weight: 800;
 }
 
-.faqQuestion span:last-child {
-  display: grid;
-  width: 24px;
-  height: 24px;
-  place-items: center;
-  border: 1px solid rgba(92, 61, 46, 0.24);
-  border-radius: 50%;
-  color: var(--diet-stamp-red);
+.faqQuestionText {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.faqToggleIcon {
+  display: block;
+  width: 26px;
+  height: 26px;
+  position: relative;
   flex: 0 0 auto;
+  border: 1px solid rgba(92, 61, 46, 0.34);
+  border-radius: 50%;
+  background: rgba(250, 247, 240, 0.6);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.faqToggleIcon::before,
+.faqToggleIcon::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 2px;
+  margin: -1px 0 0 -6px;
+  background: var(--diet-stamp-red);
+  border-radius: 1px;
+  transform-origin: 50% 50%;
+  transition: transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1), background 0.2s ease;
+}
+
+.faqToggleIcon::before { transform: rotate(0deg); }
+.faqToggleIcon::after  { transform: rotate(90deg); }
+
+.faqToggleIconOpen::before { transform: rotate(0deg); }
+.faqToggleIconOpen::after  { transform: rotate(0deg) scaleX(0); }
+
+.faqQuestion:hover .faqToggleIcon,
+.faqQuestion:focus-visible .faqToggleIcon {
+  border-color: var(--diet-stamp-red);
+  background: var(--diet-paper);
+}
+
+.faqQuestion:hover .faqToggleIcon::before,
+.faqQuestion:hover .faqToggleIcon::after,
+.faqQuestion:focus-visible .faqToggleIcon::before,
+.faqQuestion:focus-visible .faqToggleIcon::after {
+  background: var(--diet-ink);
+}
+
+.faqAnswerWrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faqAnswerWrapperOpen {
+  grid-template-rows: 1fr;
+}
+
+.faqAnswerInner {
+  overflow: hidden;
+  min-height: 0;
 }
 
 .faqAnswer {
@@ -367,6 +422,23 @@
   color: var(--diet-ink-faded);
   font-size: 15px;
   line-height: 1.55;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 0.24s ease 0.04s, transform 0.28s ease 0.04s;
+}
+
+.faqAnswerWrapperOpen .faqAnswer {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .faqToggleIcon::before,
+  .faqToggleIcon::after,
+  .faqAnswerWrapper,
+  .faqAnswer {
+    transition: none;
+  }
 }
 
 .back {

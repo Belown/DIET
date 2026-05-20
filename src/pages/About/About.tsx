@@ -249,7 +249,8 @@ export default function About() {
           </div>
           <div className={styles.faqList}>
             {FAQS.map((faq) => {
-              const isOpen = openFaqs[faq.question];
+              const isOpen = Boolean(openFaqs[faq.question]);
+              const answerId = `faq-answer-${faq.question.replace(/\s+/g, "-").toLowerCase()}`;
               return (
                 <article key={faq.question} className={`${styles.faqItem} ${faq.placeholder ? styles.placeholder : ""}`}>
                   <button
@@ -257,11 +258,24 @@ export default function About() {
                     className={styles.faqQuestion}
                     onClick={() => setOpenFaqs((prev) => ({ ...prev, [faq.question]: !prev[faq.question] }))}
                     aria-expanded={isOpen}
+                    aria-controls={answerId}
                   >
-                    <span>{faq.question}</span>
-                    <span aria-hidden>{isOpen ? "-" : "+"}</span>
+                    <span className={styles.faqQuestionText}>{faq.question}</span>
+                    <span
+                      className={`${styles.faqToggleIcon} ${isOpen ? styles.faqToggleIconOpen : ""}`}
+                      aria-hidden
+                    />
                   </button>
-                  {isOpen && <p className={styles.faqAnswer}>{faq.answer}</p>}
+                  <div
+                    id={answerId}
+                    className={`${styles.faqAnswerWrapper} ${isOpen ? styles.faqAnswerWrapperOpen : ""}`}
+                    role="region"
+                    aria-hidden={!isOpen}
+                  >
+                    <div className={styles.faqAnswerInner}>
+                      <p className={styles.faqAnswer}>{faq.answer}</p>
+                    </div>
+                  </div>
                 </article>
               );
             })}
